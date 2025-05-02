@@ -57,6 +57,6 @@ At the moment, there are such algorithms/strategies:
 3. v3 is a combined version based on v2 and v1. V2 is taken as a basis, but instead of sequentially iterating through and comparing all bytes, each buffered section of the file is converted into an array of bytes and a search is performed through the `IndexOf()` array. This gave a noticeable increase in speed. Although it seems that `IndexOf()` does a sequential iteration of the array elements (in this case, byte iteration), but probably there are some search optimizations under the hood, which makes it much faster than a regular sequential iteration.
 4. v3.1 - the same v3 algorithm, but using wildcards wildcards in search and replace patterns
 5. v4 - is v3-based search optimization has been added when there are several identical bytes at the beginning of the pattern
-6. v4.1 - the same v3 algorithm, but using wildcards wildcards in search and replace patterns
+6. v4.1 - the same v3 algorithm, but with some optimizations and using wildcards wildcards in search and replace patterns
 
 Of course, the patcher script uses the fastest algorithm/strategy to find and replace bytes. At the moment it's v3.

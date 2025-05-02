@@ -235,8 +235,8 @@ function Separate-Patterns {
         # Clean and split string with search and replace hex patterns
         [string[]]$temp = $pattern.Clone().Replace(" ","").Replace("\x","").Replace("\","/").Replace("|","/").ToUpper().Split("/")
 
-        if (-not ($temp.Count -eq 2)) {
-            throw "Wrong pattern $pattern and $temp"
+        if (-not ($temp.Count -eq 2) -or $temp[1].Length -eq 0) {
+            throw "Wrong pattern $pattern (and cleaned version of it $temp)"
         }
         
         if ($temp[0].Replace('??', '').Trim().Length -eq 0) {
