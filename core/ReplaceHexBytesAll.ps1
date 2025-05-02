@@ -236,7 +236,7 @@ function Separate-Patterns {
         [string[]]$temp = $pattern.Clone().Replace(" ","").Replace("\x","").Replace("\","/").Replace("|","/").ToUpper().Split("/")
 
         if (-not ($temp.Count -eq 2) -or $temp[1].Length -eq 0) {
-            throw "Wrong pattern $pattern (and cleaned version of it $temp)"
+            throw "Search pattern $pattern not have replace pattern"
         }
         
         if ($temp[0].Replace('??', '').Trim().Length -eq 0) {
