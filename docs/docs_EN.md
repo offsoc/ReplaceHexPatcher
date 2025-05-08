@@ -2,6 +2,24 @@
 
 Language: [Русский](docs_RU.md) | English
 
+- [ReplaceHexPatcher - Documentation](#replacehexpatcher---documentation)
+  - [Preface](#preface)
+  - [The basis (Core)](#the-basis-core)
+  - [Wrappers](#wrappers)
+    - [The "data inside" wrapper script](#the-data-inside-wrapper-script)
+    - [The "data in template" wrapper script](#the-data-in-template-wrapper-script)
+      - [Template template.txt](#template-templatetxt)
+  - [Testing](#testing)
+  - [Utilities](#utilities)
+  - [Small personal conclusions](#small-personal-conclusions)
+    - [About CMD](#about-cmd)
+    - [Adaptive restart with admin rights (UAC) is a very big hemorrhoid](#adaptive-restart-with-admin-rights-uac-is-a-very-big-hemorrhoid)
+    - [About Powershell](#about-powershell)
+  - [Usefulness](#usefulness)
+    - [Repositories with examples of competent scripts](#repositories-with-examples-of-competent-scripts)
+  - [Answers to possible questions](#answers-to-possible-questions)
+
+
 ## Preface
 
 Initially, my goal was to create a 2-click native Windows solution for finding and replacing bytes, as the `perl` and `sed` utilities can do in macOS and GNU Linux.

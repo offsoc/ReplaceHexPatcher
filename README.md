@@ -1,4 +1,20 @@
+# Replace Hex native for Windows
+
 Language: [Русский](README_RU.md) | English
+
+- [Replace Hex native for Windows](#replace-hex-native-for-windows)
+  - [What kind of repository is this](#what-kind-of-repository-is-this)
+  - [Alternatives](#alternatives)
+  - [Functions](#functions)
+  - [Usage examples](#usage-examples)
+    - [The main patcher script](#the-main-patcher-script)
+    - [Wrapper script with all the data inside](#wrapper-script-with-all-the-data-inside)
+    - [Wrapper script with data processing from template.txt](#wrapper-script-with-data-processing-from-templatetxt)
+  - [Where to start](#where-to-start)
+  - [Documentation](#documentation)
+  - [ToDo](#todo)
+  - [System requirements](#system-requirements)
+
 
 ## What kind of repository is this
 
