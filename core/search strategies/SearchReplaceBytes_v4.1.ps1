@@ -219,8 +219,6 @@ function GetIndexLastIdenticalByteFromStart {
         [System.Collections.Generic.List[int]]$wildcardsIndexes
     )
 
-    write-host inside
-
     if ((-not $pattern) -or ($pattern.Count -eq 0)) {
         Write-Error "No pattern for get number identical bytes from start"
         exit 1
