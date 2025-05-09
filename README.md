@@ -43,6 +43,7 @@ In this case, the alternative option is not a native method.:
 - [HexAndReplace](https://github.com/jjxtra/HexAndReplace)
 - [BinaryFilePatcher](https://github.com/Invertex/BinaryFilePatcher)
 - [BBE for Windows](https://anilech.blogspot.com/2016/09/binary-block-editor-bbe-for-windows.html)
+- [HexPatcher](https://github.com/Haapavuo/HexPatcher/)
 
 ## Functions
 

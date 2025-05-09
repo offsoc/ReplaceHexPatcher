@@ -9,6 +9,7 @@ Language: Русский | [English](additional_info_EN.md)
     - [О Powershell](#о-powershell)
   - [Полезности](#полезности)
     - [Репозитории с примерами грамотных скриптов](#репозитории-с-примерами-грамотных-скриптов)
+    - [Реализации поиска hex-паттернов на C#](#реализации-поиска-hex-паттернов-на-c)
 
 
 Здесь будет информация/заметки, которые не относятся напрямую к данному репозиторию/утилите/инструменту, но связаны с этапами разработки.
@@ -87,3 +88,16 @@ Powershell показал себя с хорошей стороны и явля�
 - https://github.com/npocmaka/batch.scripts
 - https://github.com/corpnewt/ProperTree/blob/master/ProperTree.bat
 - https://stackoverflow.com/a/45070967
+
+### Реализации поиска hex-паттернов на C#
+
+В качестве отдельных функций
+- https://www.cyberforum.ru/csharp-net/thread1946246.html
+- https://stackoverflow.com/questions/4859023/find-an-array-byte-inside-another-array
+- https://stackoverflow.com/questions/16252518/boyer-moore-horspool-algorithm-for-all-matches-find-byte-array-inside-byte-arra
+- https://forum.cheatengine.org/viewtopic.php?p=5726618
+  - https://stackoverflow.com/questions/44314769/using-boyer-moore-algorithms-in-64-bit-processes
+
+В составе утилит
+- https://github.com/jjxtra/HexAndReplace/
+- https://github.com/Haapavuo/HexPatcher/
