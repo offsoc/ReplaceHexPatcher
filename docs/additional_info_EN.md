@@ -95,6 +95,8 @@ As separate functions
 - https://stackoverflow.com/questions/16252518/boyer-moore-horspool-algorithm-for-all-matches-find-byte-array-inside-byte-arra
 - https://forum.cheatengine.org/viewtopic.php?p=5726618
   - https://stackoverflow.com/questions/44314769/using-boyer-moore-algorithms-in-64-bit-processes
+- https://stackoverflow.com/questions/28329974/byte-pattern-finding-needle-in-haystack-wildcard-mask
+- https://stackoverflow.com/a/50625581/8744985
 
 As part of utilities
 - https://github.com/jjxtra/HexAndReplace/
