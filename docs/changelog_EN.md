@@ -1,5 +1,7 @@
 ## List of changes:
 
+Language: [Русский](changelog_RU.md) | English
+
 ### v1.4
 
 - Fixed some bugs
