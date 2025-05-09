@@ -406,6 +406,10 @@ But it was not without drawbacks. And here they are:
 - There is no way (I have not found) to check if administrator rights are needed to delete a folder [without trying to delete it](https://qna.habr.com/q/1364540)
 - The `catch {}` block after `try {}` does not catch all errors
   - For example, if there is an error when executing `New-Item` or `Remove-Item`, then without the `-ErrorAction Stop` argument, the `catch {}` block will not catch the error
+- Processing (for example, searching) bytes directly by Powershell is noticeably slower than in compiled versions of the algorithms, if additional checks need to be performed after each byte found. The more constructions there are `if {...}` is executed after finding the desired byte, the slower the script runs. This is very noticeable when searching for small patterns, for example, searching for `00000090` and replacing it with `11223344` - try to do this using [strategy v4](../core/search%20strategies/SearchReplaceBytes_v4.ps1) (which does not support wildcards) and using [strategy v4.1](../core/search%20strategies/SearchReplaceBytes_v4.1.ps1) (which has wildcards support `??` and, accordingly, additional comparison conditions) and you will notice a difference in the speed of work.
+  - Therefore, it is better to write the business logic of byte search and replacement in C# and automatically compile this C# code in a Powershell script and import it into a script and process it using a compiled component, rather than using Powershell forces. This will significantly improve the speed of the utility.
+  - Perhaps the situation is better in Powershell Core, but in Powershell 5.1, which comes out of the box in Windows 10, the speed of the script is very different from the same when compiled in C#.
+
 
 ## Usefulness
 
