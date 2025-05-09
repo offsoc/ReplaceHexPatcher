@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace HexAndReplace
+namespace HexHandler
 {
     /// <summary>
     /// App
@@ -29,16 +29,23 @@ namespace HexAndReplace
                 return -1;
             }
 
-            byte[] find = ConvertHexStringToByteArray(Regex.Replace(args[1], "0x|[ ,]", string.Empty).Normalize().Trim());
-            byte[] replace = ConvertHexStringToByteArray(Regex.Replace(args[2], "0x|[ ,]", string.Empty).Normalize().Trim());
+            byte[] find = ConvertHexStringToByteArray(args[1]);
+            byte[] replace = ConvertHexStringToByteArray(args[2]);
             
-            using (BinaryReplacer replacer = new BinaryReplacer(File.Open(args[0], FileMode.Open)))
+            using (BytesReplacer replacer = new BytesReplacer(File.Open(args[0], FileMode.Open)))
             {
-                long pos = replacer.Replace(find, replace);
+                long pos = replacer.ReplaceOnce(find, replace);
 
                 if (pos >= 0)
                 {
                     Console.WriteLine(string.Format("Pattern found and replaced at position {0}", pos));
+                }
+
+                long[] positions = replacer.ReplaceAll(find, replace);
+
+                if (positions.Length >= 0)
+                {
+                    Console.WriteLine(string.Format("Pattern found and replaced at positions {0}", String.Join(", ", positions)));
                     return 0;
                 }
             }
@@ -49,16 +56,23 @@ namespace HexAndReplace
 
         private static byte[] ConvertHexStringToByteArray(string hexString)
         {
-            if (hexString.Length % 2 != 0)
+            string hexStringCleaned = hexString.Replace(" ", string.Empty)
+                                                .Replace("\\x", string.Empty)
+                                                .Replace("0x", string.Empty)
+                                                .Replace(",", string.Empty)
+                                                .Normalize()
+                                                .Trim();
+
+            if (hexStringCleaned.Length % 2 != 0)
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, 
-                    "The binary key cannot have an odd number of digits: {0}", hexString));
+                    "The binary key cannot have an odd number of digits: {0}", hexStringCleaned));
             }
 
-            byte[] data = new byte[hexString.Length / 2];
+            byte[] data = new byte[hexStringCleaned.Length / 2];
             for (int index = 0; index < data.Length; index++)
             {
-                string byteValue = hexString.Substring(index * 2, 2);
+                string byteValue = hexStringCleaned.Substring(index * 2, 2);
                 data[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             }
 
@@ -84,27 +98,27 @@ namespace HexAndReplace
                 ms.Write(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x03, 0x04, 0x07, 0x08 }, 0, 10);
                 ms.Seek(0, SeekOrigin.Begin);
                 
-                using (BinaryReplacer replacer = new BinaryReplacer(ms, bufferSize))
+                using (BytesReplacer replacer = new BytesReplacer(ms, bufferSize))
                 {
-                    long pos = replacer.Replace(new byte[] { 0x03, 0x04 }, new byte[] { 0x0A, 0x0B });
+                    long pos = replacer.ReplaceOnce(new byte[] { 0x03, 0x04 }, new byte[] { 0x0A, 0x0B });
                     if (pos != 2)
                     {
                         throw new ApplicationException("Test failed");
                     }
 
-                    pos = replacer.Replace(new byte[] { 0x03, 0x04 }, new byte[] { 0x0A, 0x0B });
+                    pos = replacer.ReplaceOnce(new byte[] { 0x03, 0x04 }, new byte[] { 0x0A, 0x0B });
                     if (pos != -1)
                     {
                         throw new ApplicationException("Test failed");
                     }
 
-                    pos = replacer.Replace(new byte[] { 0x07, 0x08 }, new byte[] { 0x0C, 0x0D });
+                    pos = replacer.ReplaceOnce(new byte[] { 0x07, 0x08 }, new byte[] { 0x0C, 0x0D });
                     if (pos != 8)
                     {
                         throw new ApplicationException("Test failed");
                     }
 
-                    pos = replacer.Replace(new byte[] { 0x07, 0x08 }, new byte[] { 0x0C, 0x0D });
+                    pos = replacer.ReplaceOnce(new byte[] { 0x07, 0x08 }, new byte[] { 0x0C, 0x0D });
                     if (pos != -1)
                     {
                         throw new ApplicationException("Test failed");
