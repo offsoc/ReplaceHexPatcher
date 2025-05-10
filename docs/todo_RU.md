@@ -33,7 +33,7 @@
 - [ ] Переписать ядро на C#
 - [ ] Реализовать перегрузки всех функций, в которые передаются паттерны
   - Чтобы паттерны можно было передавать как в виде строки, так и в виде массива байт, тк и массива байт и массива-маски для wildcard символов
-- [ ] Реализовать поддержку поиска с wildcard `??` в паттернах как в [AutoIt](https://www.autoitscript.com/autoit3/docs/functions/StringRegExp.htm)
+- [ ] Реализовать поддержку поиска с wildcard `??` в паттернах как в [AutoIt](https://www.autoitscript.com/autoit3/docs/functions/StringRegExp.htm) или в [010 Editor](https://www.sweetscape.com/010editor/manual/Find.htm) или в [Frida Memory scan](https://frida.re/docs/javascript-api/#memory)
 - [ ] Реализовать проверку наличия прав на изменение/перезапись файла сразу после первого найденного паттерна, а не после перебора всех паттернов в основном скрипте
 - [ ] Реорганизовать/переписать/разделить код ядра на разные файлы в ООП-стиле
   - Например как [тут](https://github.com/Invertex/BinaryFilePatcher/blob/master/BinaryFilePatcher/BinaryFilePatcher.cs)

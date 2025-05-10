@@ -33,7 +33,7 @@ Here is a list of functions that are specific and I may forget to implement them
 - [ ] Rewrite the core in C#
 - [ ] Implement overloads of all functions to which patterns are passed
   - So that patterns can be transmitted both as a string and as an array of bytes, as well as an array of bytes and an array mask for wildcard characters.
-- [ ] Implement search support with wildcard `??` in patterns like in [AutoIt](https://www.autoitscript.com/autoit3/docs/functions/StringRegExp.htm )
+- [ ] Implement search support with wildcard `??` in patterns like in [AutoIt](https://www.autoitscript.com/autoit3/docs/functions/StringRegExp.htm) or in [010 Editor](https://www.sweetscape.com/010editor/manual/Find.htm) or in [Frida Memory scan](https://frida.re/docs/javascript-api/#memory)
 - [ ] Implement a check for the rights to modify/overwrite the file immediately after the first found pattern, rather than after going through all the patterns in the main script
 - [ ] Reorganize/rewrite/split the kernel code into different files in an OOP-style
   - For example, how [тут](https://github.com/Invertex/BinaryFilePatcher/blob/master/BinaryFilePatcher/BinaryFilePatcher.cs )
@@ -41,7 +41,7 @@ Here is a list of functions that are specific and I may forget to implement them
   - Maybe [this one](https://stackoverflow.com/a/55314611 ) an example will help
 - [ ] Implement the search using the Boyer-Moore-Horspool algorithm
   - [ ] Compare the speed of the current algorithm with the Boyer-Moore-Horspool algorithm
-  - Links to examples of implemented search functions by this algorithm are in the [file](./additional_info_EN.md#implementation-search-hex-patterns-in-c) with additional information
+  - Links to examples of implemented search functions by this algorithm are in the [file](./additional_info_EN.md#implementations-of-hex-pattern-search-in-c) with additional information
 - [ ] Implement support for removing hex templates
 - [ ] Implement a hex pattern search function starting from a specific offset in the file or starting from a specific part of the file in %
 - [x] Implement support for limiting substitutions of found patterns (if not all found sequences need to be replaced)
