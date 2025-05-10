@@ -12,7 +12,7 @@ namespace HexHandler
     {
         private readonly Stream stream;
         private readonly int bufferSize;
-        private static readonly string wildcard = "??";
+        private const string wildcard = "??";
 
         /// <summary>
         /// Constructor
@@ -60,9 +60,10 @@ namespace HexHandler
             return data;
         }
 
-        private static Tuple<byte[], bool[]> ConvertHexStringWithWildcardsToByteArrayAndMask(string hexString)
+        private static Tuple<byte[], bool[]> ConvertHexStringWithWildcardsToByteArrayAndMask(string hexString, string wildcardExample = wildcard)
         {
             string hexStringCleaned = hexString.Replace(" ", string.Empty)
+                                                .Replace("[\\x00-\\xFF]", wildcardExample)
                                                 .Replace("\\x", string.Empty)
                                                 .Replace("0x", string.Empty)
                                                 .Replace(",", string.Empty)
@@ -83,7 +84,7 @@ namespace HexHandler
                 for (int index = 0; index < data.Length; index++)
                 {
                     string byteValue = hexStringCleaned.Substring(index * 2, 2);
-                    if (byteValue == wildcard)
+                    if (byteValue == wildcardExample)
                     {
                         data[index] = byte.Parse("00", NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                         mask[index] = true;
