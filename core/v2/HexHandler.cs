@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Globalization;
 using System.Collections.Generic;
 
 namespace HexHandler
@@ -24,6 +25,31 @@ namespace HexHandler
 
             this.stream = stream;
             this.bufferSize = bufferSize;
+        }
+
+        private static byte[] ConvertHexStringToByteArray(string hexString)
+        {
+            string hexStringCleaned = hexString.Replace(" ", string.Empty)
+                                                .Replace("\\x", string.Empty)
+                                                .Replace("0x", string.Empty)
+                                                .Replace(",", string.Empty)
+                                                .Normalize()
+                                                .Trim();
+
+            if (hexStringCleaned.Length % 2 != 0)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, 
+                    "The binary key cannot have an odd number of digits: {0}", hexStringCleaned));
+            }
+
+            byte[] data = new byte[hexStringCleaned.Length / 2];
+            for (int index = 0; index < data.Length; index++)
+            {
+                string byteValue = hexStringCleaned.Substring(index * 2, 2);
+                data[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            }
+
+            return data;
         }
 
         /// <summary>
@@ -170,6 +196,39 @@ namespace HexHandler
         }
 
         /// <summary>
+        /// Find byte array in a stream start from given decimal position
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <param name="position">Initial position in stream</param>
+        /// <returns>First index of byte array data, or -1 if find is not found</returns>
+        public long FindFromPosition(string searchPattern, long position = 0)
+        {
+            if (searchPattern == null)
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (position < 0)
+                throw new ArgumentNullException("position should more than zero");
+            if (position > stream.Length)
+                throw new ArgumentNullException("position must be within the stream");
+
+            byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+            return FindFromPosition(searchPatternBytes, position);
+        }
+
+        /// <summary>
+        /// Find byte array from start a stream
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <returns>First index of byte array data, or -1 if find is not found</returns>
+        public long Find(string searchPattern)
+        {
+            if (searchPattern == null)
+                throw new ArgumentNullException("searchPattern argument not given");
+
+            byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+            return FindFromPosition(searchPatternBytes, 0);
+        }
+
+        /// <summary>
         /// Find byte array from start a stream
         /// </summary>
         /// <param name="searchPattern">Find</param>
@@ -182,6 +241,25 @@ namespace HexHandler
                 throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             return FindFromPosition(searchPattern, 0);
+        }
+
+        /// <summary>
+        /// Find byte array from start a stream for a set number of times
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <returns>Indexes of found set occurrences or array with -1 or array with less amount indexes if occurrences less than given amount number</returns>
+        public long[] Find(string searchPattern, int amount)
+        {
+            if (searchPattern == null)
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (amount > stream.Length)
+                throw new ArgumentException("amount replace occurrences should be less than count bytes in stream");
+                
+            byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+
+            List<long> foundPositions = new List<long>();
+
+            return Find(searchPatternBytes, amount);
         }
 
         /// <summary>
