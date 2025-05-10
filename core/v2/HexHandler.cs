@@ -196,7 +196,7 @@ namespace HexHandler
             if (searchPattern.Length > bufferSize)
                 throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
-            long foundPosition = Find(searchPattern);
+            long foundPosition = FindFirst(searchPattern);
 
             if (foundPosition != -1)
             {
@@ -275,13 +275,13 @@ namespace HexHandler
 
 
         /// <summary>
-        /// Find byte array in a stream start from given decimal position
+        /// Find byte array with mask array in a stream start from given decimal position
         /// </summary>
         /// <param name="searchPattern">Find</param>
         /// <param name="wildcardsMask">Mask if symbol is wildcards</param>
         /// <param name="position">Initial position in stream</param>
         /// <returns>First index of byte array data, or -1 if find is not found</returns>
-        public long FindFromPosition_WithWildcards(byte[] searchPattern, bool[] wildcardsMask, long position = 0)
+        private long FindFromPosition_WithWildcardsMask(byte[] searchPattern, bool[] wildcardsMask, long position = 0)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
@@ -371,24 +371,46 @@ namespace HexHandler
             if (position > stream.Length)
                 throw new ArgumentOutOfRangeException("position must be within the stream body");
 
-            byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
-            return FindFromPosition(searchPatternBytes, position);
+            bool isSearchPatternContainWildcards = testHexStringContainWildcards(searchPattern);
+
+            if (isSearchPatternContainWildcards)
+            {
+                Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+                byte[] searchPatternBytes = dataPair.Item1;
+                bool[] wildcardsMask = dataPair.Item2;
+                return FindFromPosition_WithWildcardsMask(searchPatternBytes, wildcardsMask, position);
+            }
+            else
+            {
+                byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+                return FindFromPosition(searchPatternBytes, position);
+            }
         }
 
         /// <summary>
-        /// Find byte array from start a stream
+        /// Find first occurrence byte array from start a stream
         /// </summary>
         /// <param name="searchPattern">Find</param>
         /// <returns>First index of byte array data, or -1 if find is not found</returns>
-        public long Find_WithWildcards(string searchPattern)
+        public long FindFirst(string searchPattern)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
 
-            Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
-            byte[] searchPatternBytes = dataPair.Item1;
-            bool[] wildcardsMask = dataPair.Item2;
-            return FindFromPosition_WithWildcards(searchPatternBytes, wildcardsMask, 0);
+            bool isSearchPatternContainWildcards = testHexStringContainWildcards(searchPattern);
+
+            if (isSearchPatternContainWildcards)
+            {
+                Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+                byte[] searchPatternBytes = dataPair.Item1;
+                bool[] wildcardsMask = dataPair.Item2;
+                return FindFromPosition_WithWildcardsMask(searchPatternBytes, wildcardsMask, 0);
+            }
+            else
+            {
+                byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+                return FindFromPosition(searchPatternBytes, 0);
+            }
         }
 
         /// <summary>
@@ -396,21 +418,7 @@ namespace HexHandler
         /// </summary>
         /// <param name="searchPattern">Find</param>
         /// <returns>First index of byte array data, or -1 if find is not found</returns>
-        public long Find(string searchPattern)
-        {
-            if (searchPattern == null)
-                throw new ArgumentNullException("searchPattern argument not given");
-
-            byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
-            return FindFromPosition(searchPatternBytes, 0);
-        }
-
-        /// <summary>
-        /// Find byte array from start a stream
-        /// </summary>
-        /// <param name="searchPattern">Find</param>
-        /// <returns>First index of byte array data, or -1 if find is not found</returns>
-        public long Find(byte[] searchPattern)
+        public long FindFirst(byte[] searchPattern)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
@@ -424,6 +432,7 @@ namespace HexHandler
         /// Find byte array from start a stream for a set number of times
         /// </summary>
         /// <param name="searchPattern">Find</param>
+        /// <param name="amount">number of times find</param>
         /// <returns>Indexes of found set occurrences or array with -1 or array with less amount indexes if occurrences less than given amount number</returns>
         public long[] Find(string searchPattern, int amount)
         {
@@ -432,17 +441,102 @@ namespace HexHandler
             if (amount > stream.Length)
                 throw new ArgumentOutOfRangeException("amount search occurrences should be less than count bytes in stream");
 
-            byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+            bool isSearchPatternContainWildcards = testHexStringContainWildcards(searchPattern);
+
+            if (isSearchPatternContainWildcards)
+            {
+                Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+                byte[] searchPatternBytes = dataPair.Item1;
+                bool[] wildcardsMask = dataPair.Item2;
+                return Find_WithWildcardsMask(searchPatternBytes, wildcardsMask, amount);
+            }
+            else
+            {
+                byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+                return Find(searchPatternBytes, amount);
+            }
+        }
+
+        /// <summary>
+        /// Find byte array with wildcards mask from start a stream for a set number of times
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <param name="wildcardsMask">Mask if symbol is wildcards</param>
+        /// <param name="amount">number of times find</param>
+        /// <returns>Indexes of found all occurrences or array with -1</returns>
+        private long[] Find_WithWildcardsMask(byte[] searchPattern, bool[] wildcardsMask, int amount)
+        {
+            if (searchPattern == null)
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (wildcardsMask == null)
+                throw new ArgumentNullException("wildcardsMask argument not given");
+            if (searchPattern.Length != wildcardsMask.Length)
+                throw new ArgumentException("wildcardsMask and search pattern must be same length");
+            if (amount > stream.Length)
+                throw new ArgumentOutOfRangeException("amount replace occurrences should be less than count bytes in stream");
+            if (searchPattern.Length > bufferSize)
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+
+            bool isMaskHasNoWildcards = Array.TrueForAll(wildcardsMask, x => !x);
+            if (isMaskHasNoWildcards)
+            {
+                return Find(searchPattern, amount);
+            }
 
             List<long> foundPositions = new List<long>();
 
-            return Find(searchPatternBytes, amount);
+            bool isMaskFilledWildcards = Array.TrueForAll(wildcardsMask, x => x);
+            if (isMaskFilledWildcards)
+            {
+                long tempPosition = 0;
+                long counter = 0;
+                foundPositions.Add(tempPosition);
+
+                while (tempPosition < stream.Length || counter < amount)
+                {
+                    tempPosition += searchPattern.Length;
+                    if (tempPosition < stream.Length)
+                    {
+                        foundPositions.Add(tempPosition);
+                        counter++;
+                    }
+                    else
+                    {
+                        return foundPositions.ToArray();
+                    }
+                }
+
+                return foundPositions.ToArray();
+            }
+
+            long firstFoundPosition = FindFromPosition_WithWildcardsMask(searchPattern, wildcardsMask, 0);
+            foundPositions.Add(firstFoundPosition);
+
+            if (firstFoundPosition > 0 || amount > 1)
+            {
+                for (int i = 1; i < amount; i++)
+                {
+                    long nextFoundPosition = FindFromPosition_WithWildcardsMask(searchPattern, wildcardsMask, foundPositions[foundPositions.Count - 1] + 1);
+
+                    if (nextFoundPosition > 0)
+                    {
+                        foundPositions.Add(nextFoundPosition);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return foundPositions.ToArray();
         }
 
         /// <summary>
         /// Find byte array from start a stream for a set number of times
         /// </summary>
         /// <param name="searchPattern">Find</param>
+        /// <param name="amount">number of times find</param>
         /// <returns>Indexes of found set occurrences or array with -1 or array with less amount indexes if occurrences less than given amount number</returns>
         public long[] Find(byte[] searchPattern, int amount)
         {
@@ -454,7 +548,7 @@ namespace HexHandler
                 throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             List<long> foundPositions = new List<long>();
-            long firstFoundPosition = Find(searchPattern);
+            long firstFoundPosition = FindFirst(searchPattern);
             foundPositions.Add(firstFoundPosition);
 
             if (firstFoundPosition > 0 || amount > 1)
@@ -490,7 +584,7 @@ namespace HexHandler
                 throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             List<long> foundPositionsList = new List<long>();
-            long foundPosition = Find(searchPattern);
+            long foundPosition = FindFirst(searchPattern);
             foundPositionsList.Add(foundPosition);
 
             if (foundPosition > 0)
@@ -518,30 +612,113 @@ namespace HexHandler
         /// </summary>
         /// <param name="searchPattern">Find</param>
         /// <returns>Indexes of found all occurrences or array with -1</returns>
-        public long[] FindAll_WithWildcards(string searchPattern)
+        public long[] FindAll(string searchPattern)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
             if (searchPattern.Length > bufferSize)
+                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+
+            bool isSearchPatternContainWildcards = testHexStringContainWildcards(searchPattern);
+
+            if (isSearchPatternContainWildcards)
+            {
+                Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+                byte[] searchPatternBytes = dataPair.Item1;
+                bool[] wildcardsMask = dataPair.Item2;
+                return FindAll_WithWildcardsMask(searchPatternBytes, wildcardsMask);
+            }
+            else
+            {
+                byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+
+                List<long> foundPositionsList = new List<long>();
+                long firstFoundPosition = FindFirst(searchPatternBytes);
+                foundPositionsList.Add(firstFoundPosition);
+
+                if (firstFoundPosition > 0)
+                {
+                    long nextFoundPosition = firstFoundPosition;
+
+                    while (nextFoundPosition < stream.Length - searchPatternBytes.Length)
+                    {
+                        nextFoundPosition = FindFromPosition(searchPatternBytes, foundPositionsList[foundPositionsList.Count - 1] + 1);
+
+                        if (nextFoundPosition > 0)
+                        {
+                            foundPositionsList.Add(nextFoundPosition);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                return foundPositionsList.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Find all occurrences of byte array from start a stream
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <returns>Indexes of found all occurrences or array with -1</returns>
+        private long[] FindAll_WithWildcardsMask(byte[] searchPattern, bool[] wildcardsMask)
+        {
+            if (searchPattern == null)
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (wildcardsMask == null)
+                throw new ArgumentNullException("wildcardsMask argument not given");
+            if (searchPattern.Length != wildcardsMask.Length)
+                throw new ArgumentException("wildcardsMask and search pattern must be same length");
+            if (searchPattern.Length > bufferSize)
                 throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
-            List<long> foundPositionsList = new List<long>();
-            long foundPosition = Find_WithWildcards(searchPattern);
-            foundPositionsList.Add(foundPosition);
-            
-            Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
-            byte[] searchPatternBytes = dataPair.Item1;
-            bool[] wildcardsMask = dataPair.Item2;
-
-            if (foundPosition > 0)
+            bool isMaskHasNoWildcards = Array.TrueForAll(wildcardsMask, x => !x);
+            if (isMaskHasNoWildcards)
             {
-                while (foundPosition < stream.Length - searchPatternBytes.Length)
-                {
-                    foundPosition = FindFromPosition_WithWildcards(searchPatternBytes, wildcardsMask, foundPositionsList[foundPositionsList.Count - 1] + 1);
+                return FindAll(searchPattern);
+            }
 
-                    if (foundPosition > 0)
+            List<long> foundPositions = new List<long>();
+
+            bool isMaskFilledWildcards = Array.TrueForAll(wildcardsMask, x => x);
+            if (isMaskFilledWildcards)
+            {
+                long tempPosition = 0;
+                foundPositions.Add(tempPosition);
+
+                while (tempPosition < stream.Length)
+                {
+                    tempPosition += searchPattern.Length;
+                    if (tempPosition < stream.Length)
                     {
-                        foundPositionsList.Add(foundPosition);
+                        foundPositions.Add(tempPosition);
+                    }
+                    else
+                    {
+                        return foundPositions.ToArray();
+                    }
+                }
+
+                return foundPositions.ToArray();
+            }
+
+            long firstFoundPosition = FindFromPosition_WithWildcardsMask(searchPattern, wildcardsMask, 0);
+            foundPositions.Add(firstFoundPosition);
+
+            if (firstFoundPosition > 0)
+            {
+                long nextFoundPosition = firstFoundPosition;
+                
+                while (nextFoundPosition < stream.Length - searchPattern.Length)
+                {
+                    nextFoundPosition = FindFromPosition_WithWildcardsMask(searchPattern, wildcardsMask, foundPositions[foundPositions.Count - 1] + 1);
+
+                    if (nextFoundPosition > 0)
+                    {
+                        foundPositions.Add(nextFoundPosition);
                     }
                     else
                     {
@@ -550,7 +727,7 @@ namespace HexHandler
                 }
             }
 
-            return foundPositionsList.ToArray();
+            return foundPositions.ToArray();
         }
 
         /// <summary>
@@ -626,7 +803,7 @@ namespace HexHandler
                 throw new ArgumentOutOfRangeException("offset must be within the stream");
 
             bool isSequenceHaveWildcards = sequence.IndexOf(wildcard) != -1;
-            
+
             if (isSequenceHaveWildcards)
             {
                 Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(sequence);
