@@ -254,5 +254,193 @@ namespace HexHandler
         {
             stream.Dispose();
         }
+
+
+
+
+        // 
+        // 
+        // LEGACY FUNCTIONS
+        // 
+        // I left these functions in a separate block of code because they seem to me to be faster due to the fact that when they work, an array with all the positions of the bytes found is not created, but simply 1 pass through the bytes of the stream is performed.
+        // I haven't done any speed tests or comparisons, but it seems to me that these functions will be faster compared to functions based first on searching for positions, and then switching to each position found.
+        // 
+        // 
+
+
+
+        /// <summary>
+        /// Find and replace all occurrences binary data in a stream
+        /// </summary>
+        /// <param name="find">Find</param>
+        /// <param name="replace">Replace</param>
+        /// <returns>All indexes of replaced data</returns>
+        public long[] Replace_legacy(byte[] find, byte[] replace, int amount)
+        {
+            if (amount < 1)
+                throw new ArgumentNullException("amount argument must be more than 0");
+            if (find == null)
+                throw new ArgumentNullException("find argument not given");
+            if (replace == null)
+                throw new ArgumentNullException("replace argument not given");
+            if (find.Length > bufferSize)
+                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", find.Length, bufferSize));
+
+            long position = 0;
+            List<long> foundPositions = new List<long>();
+            byte[] buffer = new byte[bufferSize + find.Length - 1];
+            int bytesRead;
+            stream.Position = 0;
+
+            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                for (int i = 0; i <= bytesRead - find.Length; i++)
+                {
+                    bool match = true;
+                    for (int j = 0; j < find.Length; j++)
+                    {
+                        if (buffer[i + j] != find[j])
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+
+                    if (match)
+                    {
+                        stream.Seek(position + i, SeekOrigin.Begin);
+                        stream.Write(replace, 0, replace.Length);
+
+                        if (foundPositions.Count < amount)
+                        {
+                            foundPositions.Add(position + i);
+                        } else {
+                            return foundPositions.ToArray();
+                        }
+                    }
+                }
+
+                position += bytesRead - find.Length + 1;
+                if (position > stream.Length - find.Length)
+                {
+                    break;
+                }
+                stream.Seek(position, SeekOrigin.Begin);
+            }
+
+            return foundPositions.ToArray();
+        }
+
+        /// <summary>
+        /// Find and replace all occurrences binary data in a stream
+        /// </summary>
+        /// <param name="find">Find</param>
+        /// <param name="replace">Replace</param>
+        /// <returns>All indexes of replaced data</returns>
+        public long[] ReplaceAll_legacy(byte[] find, byte[] replace)
+        {
+            if (find == null)
+                throw new ArgumentNullException("find argument not given");
+            if (replace == null)
+                throw new ArgumentNullException("replace argument not given");
+            if (find.Length > bufferSize)
+                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", find.Length, bufferSize));
+
+            long position = 0;
+            List<long> foundPositions = new List<long>();
+            byte[] buffer = new byte[bufferSize + find.Length - 1];
+            int bytesRead;
+            stream.Position = 0;
+
+            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                for (int i = 0; i <= bytesRead - find.Length; i++)
+                {
+                    bool match = true;
+                    for (int j = 0; j < find.Length; j++)
+                    {
+                        if (buffer[i + j] != find[j])
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+
+                    if (match)
+                    {
+                        stream.Seek(position + i, SeekOrigin.Begin);
+                        stream.Write(replace, 0, replace.Length);
+                        foundPositions.Add(position + i);
+                    }
+                }
+
+                position += bytesRead - find.Length + 1;
+                if (position > stream.Length - find.Length)
+                {
+                    break;
+                }
+                stream.Seek(position, SeekOrigin.Begin);
+            }
+
+            return foundPositions.ToArray();
+        }
+
+        /// <summary>
+        /// Find and replace once binary data in a stream
+        /// </summary>
+        /// <param name="find">Find</param>
+        /// <param name="replace">Replace</param>
+        /// <returns>First index of replaced data, or -1 if find is not found</returns>
+        public long ReplaceOnce_legacy(byte[] find, byte[] replace)
+        {
+            if (find == null)
+                throw new ArgumentNullException("find argument not given");
+            if (replace == null)
+                throw new ArgumentNullException("replace argument not given");
+            if (find.Length > bufferSize)
+                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", find.Length, bufferSize));
+
+            long position = 0;
+            long foundPosition = -1;
+            byte[] buffer = new byte[bufferSize + find.Length - 1];
+            int bytesRead;
+            stream.Position = 0;
+
+            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                for (int i = 0; i <= bytesRead - find.Length; i++)
+                {
+                    bool match = true;
+                    for (int j = 0; j < find.Length; j++)
+                    {
+                        if (buffer[i + j] != find[j])
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+
+                    if (match)
+                    {
+                        stream.Seek(position + i, SeekOrigin.Begin);
+                        stream.Write(replace, 0, replace.Length);
+                        if (foundPosition == -1)
+                        {
+                            foundPosition = position + i;
+                            return foundPosition;
+                        }
+                    }
+                }
+
+                position += bytesRead - find.Length + 1;
+                if (position > stream.Length - find.Length)
+                {
+                    break;
+                }
+                stream.Seek(position, SeekOrigin.Begin);
+            }
+
+            return foundPosition;
+        }
     }
 }
