@@ -320,7 +320,7 @@ The text from this section is also analyzed and variables are replaced with thei
 
 ## Testing
 
-About this in the [additional file](./testing_EN.md )
+About this in the [additional file](../tests/testing_EN.md )
 
 
 ## Utilities
