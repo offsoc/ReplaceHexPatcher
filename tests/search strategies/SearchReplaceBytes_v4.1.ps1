@@ -294,7 +294,7 @@ function SearchAndReplace-HexPatternInBinaryFile {
             while ($index -le ($bytesRead - $searchLength)) {
                 [int]$foundIndex = [Array]::IndexOf($buffer, $searchBytes[$p][$indexFirstTrueByte], $index)
                 
-                if ($foundIndex -eq -1) {
+                if (($foundIndex -eq -1) -OR (($foundIndex + $searchLength) -gt $buffer.Length)) {
                     break
                 }
                 
