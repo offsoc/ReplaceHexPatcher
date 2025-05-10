@@ -12,6 +12,7 @@ namespace HexHandler
     {
         private readonly Stream stream;
         private readonly int bufferSize;
+        private static readonly string wildcard = "??";
 
         /// <summary>
         /// Constructor
@@ -520,6 +521,95 @@ namespace HexHandler
             }
 
             return foundPositionsList.ToArray();
+        }
+
+        /// <summary>
+        /// Paste bytes sequence start from given offset (replace bytes sequence start from offset)
+        /// </summary>
+        /// <param name="sequence">Bytes sequence</param>
+        /// <param name="offset">Position in decimal</param>
+        public void PasteBytesSequenceAtOffset(byte[] sequence, long offset)
+        {
+            if (sequence == null)
+                throw new ArgumentNullException("sequence argument not given");
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException("offset should more than zero");
+            if (offset > stream.Length)
+                throw new ArgumentOutOfRangeException("offset must be within the stream");
+            if (offset + sequence.Length > stream.Length)
+                throw new ArgumentOutOfRangeException("sequence must not extend beyond the file");
+
+            stream.Seek(offset, SeekOrigin.Begin);
+            stream.Write(sequence, 0, sequence.Length);
+            stream.Seek(0, SeekOrigin.Begin);
+        }
+
+        /// <summary>
+        /// Paste bytes sequence start from given offset (replace bytes sequence start from offset) with wildcards
+        /// </summary>
+        /// <param name="sequence">Bytes sequence</param>
+        /// <param name="wildcardsMask">wildcardsMask</param>
+        /// <param name="offset">Position in decimal</param>
+        private void PasteBytesSequenceAtOffset_WithWildcardsMask(byte[] sequence, bool[] wildcardsMask, long offset)
+        {
+            if (sequence == null)
+                throw new ArgumentNullException("sequence argument not given");
+            if (wildcardsMask == null)
+                throw new ArgumentNullException("wildcardsMask argument not given");
+            if (sequence.Length != wildcardsMask.Length)
+                throw new ArgumentException("wildcardsMask and sequence bytes must be same length");
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException("offset should more than zero");
+            if (offset > stream.Length)
+                throw new ArgumentOutOfRangeException("offset must be within the stream");
+            if (offset + sequence.Length > stream.Length)
+                throw new ArgumentOutOfRangeException("sequence must not extend beyond the file");
+
+            stream.Seek(offset, SeekOrigin.Begin);
+
+            for (int i = 0; i < sequence.Length; i++)
+            {
+                if (wildcardsMask[i])
+                {
+                    stream.Position += 1;
+                    continue;
+                }
+
+                stream.WriteByte(sequence[i]);
+            }
+
+            stream.Seek(0, SeekOrigin.Begin);
+        }
+
+        /// <summary>
+        /// Paste bytes sequence start from given offset (replace bytes sequence start from offset)
+        /// </summary>
+        /// <param name="sequence">Bytes sequence</param>
+        /// <param name="offset">Position in decimal</param>
+        public void PasteBytesSequenceAtOffset(string sequence, long offset)
+        {
+            if (string.IsNullOrEmpty(sequence))
+                throw new ArgumentNullException("sequence argument not given");
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException("offset should more than zero");
+            if (offset > stream.Length)
+                throw new ArgumentOutOfRangeException("offset must be within the stream");
+
+            bool isSequenceHaveWildcards = sequence.IndexOf(wildcard) != -1;
+            
+            if (isSequenceHaveWildcards)
+            {
+                Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(sequence);
+                byte[] searchPatternBytes = dataPair.Item1;
+                bool[] wildcardsMask = dataPair.Item2;
+
+                PasteBytesSequenceAtOffset_WithWildcardsMask(searchPatternBytes, wildcardsMask, offset);
+            }
+            else
+            {
+                byte[] sequenceArr = ConvertHexStringToByteArray(sequence);
+                PasteBytesSequenceAtOffset(sequenceArr, offset);
+            }
         }
 
         /// <summary>
