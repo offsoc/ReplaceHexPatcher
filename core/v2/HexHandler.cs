@@ -45,10 +45,13 @@ namespace HexHandler
 
             long[] foundPositions = Find(searchPattern, amount);
 
-            for (int i = 0; i < foundPositions.Length; i++)
+            if (foundPositions.Length > 1 && foundPositions[0] != -1)
             {
-                stream.Seek(foundPositions[i], SeekOrigin.Begin);
-                stream.Write(replacePattern, 0, replacePattern.Length);
+                for (int i = 0; i < foundPositions.Length; i++)
+                {
+                    stream.Seek(foundPositions[i], SeekOrigin.Begin);
+                    stream.Write(replacePattern, 0, replacePattern.Length);
+                }
             }
 
             stream.Seek(0, SeekOrigin.Begin);
@@ -72,10 +75,13 @@ namespace HexHandler
 
             long[] foundPositions = FindAll(searchPattern);
 
-            for (int i = 0; i < foundPositions.Length; i++)
+            if (foundPositions.Length > 1 && foundPositions[0] != -1)
             {
-                stream.Seek(foundPositions[i], SeekOrigin.Begin);
-                stream.Write(replacePattern, 0, replacePattern.Length);
+                for (int i = 0; i < foundPositions.Length; i++)
+                {
+                    stream.Seek(foundPositions[i], SeekOrigin.Begin);
+                    stream.Write(replacePattern, 0, replacePattern.Length);
+                }
             }
 
             stream.Seek(0, SeekOrigin.Begin);
@@ -98,8 +104,13 @@ namespace HexHandler
                 throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             long foundPosition = Find(searchPattern);
-            stream.Seek(foundPosition, SeekOrigin.Begin);
-            stream.Write(replacePattern, 0, replacePattern.Length);
+
+            if (foundPosition != -1)
+            {
+                stream.Seek(foundPosition, SeekOrigin.Begin);
+                stream.Write(replacePattern, 0, replacePattern.Length);
+            }
+
             stream.Seek(0, SeekOrigin.Begin);
             return foundPosition;
         }
