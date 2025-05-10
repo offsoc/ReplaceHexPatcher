@@ -73,7 +73,7 @@ namespace HexHandler
             for (int index = 0; index < data.Length; index++)
             {
                 string byteValue = hexStringCleaned.Substring(index * 2, 2);
-                if (byteValue == "??")
+                if (byteValue == wildcard)
                 {
                     data[index] = byte.Parse("00", NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                     mask[index] = true;
@@ -101,9 +101,9 @@ namespace HexHandler
             if (replacePattern == null)
                 throw new ArgumentNullException("replacePattern argument not given");
             if (amount > stream.Length)
-                throw new ArgumentException("amount replace occurrences should be less than count bytes in stream");
+                throw new ArgumentOutOfRangeException("amount replace occurrences should be less than count bytes in stream");
             if (searchPattern.Length > bufferSize)
-                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             long[] foundPositions = Find(searchPattern, amount);
 
@@ -133,7 +133,7 @@ namespace HexHandler
             if (replacePattern == null)
                 throw new ArgumentNullException("replacePattern argument not given");
             if (searchPattern.Length > bufferSize)
-                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             long[] foundPositions = FindAll(searchPattern);
 
@@ -163,7 +163,7 @@ namespace HexHandler
             if (replacePattern == null)
                 throw new ArgumentNullException("replacePattern argument not given");
             if (searchPattern.Length > bufferSize)
-                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             long foundPosition = Find(searchPattern);
 
@@ -188,9 +188,9 @@ namespace HexHandler
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
             if (position < 0)
-                throw new ArgumentNullException("position should more than zero");
+                throw new ArgumentOutOfRangeException("position should more than zero");
             if (position > stream.Length)
-                throw new ArgumentNullException("position must be within the stream");
+                throw new ArgumentOutOfRangeException("position must be within the stream body");
             if (searchPattern.Length > bufferSize)
                 throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
@@ -257,13 +257,13 @@ namespace HexHandler
             if (wildcardsMask == null)
                 throw new ArgumentNullException("wildcardsMask argument not given");
             if (searchPattern.Length != wildcardsMask.Length)
-                throw new ArgumentNullException("wildcardsMask and search pattern must be same length");
+                throw new ArgumentException("wildcardsMask and search pattern must be same length");
             if (position < 0)
-                throw new ArgumentNullException("position should more than zero");
+                throw new ArgumentOutOfRangeException("position should more than zero");
             if (position > stream.Length)
-                throw new ArgumentNullException("position must be within the stream");
+                throw new ArgumentOutOfRangeException("position must be within the stream body");
             if (searchPattern.Length > bufferSize)
-                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             bool isMaskFilledWildcards = Array.TrueForAll(wildcardsMask, x => x);
             if (isMaskFilledWildcards)
@@ -336,9 +336,9 @@ namespace HexHandler
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
             if (position < 0)
-                throw new ArgumentNullException("position should more than zero");
+                throw new ArgumentOutOfRangeException("position should more than zero");
             if (position > stream.Length)
-                throw new ArgumentNullException("position must be within the stream");
+                throw new ArgumentOutOfRangeException("position must be within the stream body");
 
             byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
             return FindFromPosition(searchPatternBytes, position);
@@ -384,7 +384,7 @@ namespace HexHandler
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
             if (searchPattern.Length > bufferSize)
-                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             return FindFromPosition(searchPattern, 0);
         }
@@ -399,7 +399,7 @@ namespace HexHandler
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
             if (amount > stream.Length)
-                throw new ArgumentException("amount replace occurrences should be less than count bytes in stream");
+                throw new ArgumentOutOfRangeException("amount replace occurrences should be less than count bytes in stream");
 
             byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
 
@@ -418,9 +418,9 @@ namespace HexHandler
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
             if (amount > stream.Length)
-                throw new ArgumentException("amount replace occurrences should be less than count bytes in stream");
+                throw new ArgumentOutOfRangeException("amount replace occurrences should be less than count bytes in stream");
             if (searchPattern.Length > bufferSize)
-                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             List<long> foundPositions = new List<long>();
             long firstFoundPosition = Find(searchPattern);
@@ -492,7 +492,7 @@ namespace HexHandler
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
             if (searchPattern.Length > bufferSize)
-                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             List<long> foundPositionsList = new List<long>();
             long foundPosition = Find_WithWildcards(searchPattern);
@@ -559,7 +559,7 @@ namespace HexHandler
             if (position < 0)
                 throw new ArgumentNullException("position should more than zero");
             if (position > stream.Length)
-                throw new ArgumentNullException("position must be within the stream");
+                throw new ArgumentNullException("position must be within the stream body");
             if (searchPattern.Length > bufferSize)
                 throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
