@@ -7,7 +7,7 @@ namespace HexHandler
     /// <summary>
     /// Find/replace binary data in a seekable stream
     /// </summary>
-    public sealed class BytesReplacer : IDisposable
+    public sealed class BytesHandler : IDisposable
     {
         private readonly Stream stream;
         private readonly int bufferSize;
@@ -17,7 +17,7 @@ namespace HexHandler
         /// </summary>
         /// <param name="stream">Stream</param>
         /// <param name="bufferSize">Buffer size</param>
-        public BytesReplacer(Stream stream, int bufferSize = ushort.MaxValue)
+        public BytesHandler(Stream stream, int bufferSize = ushort.MaxValue)
         {
             if (bufferSize < 2)
                 throw new ArgumentOutOfRangeException("bufferSize less than 2 bytes");

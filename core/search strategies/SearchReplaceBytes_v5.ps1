@@ -386,13 +386,13 @@ try {
     $BytesReplacer = [HexHandler.BytesReplacer]::new($stream)
     $positions = $BytesReplacer.ReplaceAll($searchBytes, $replaceBytes)
 
-    if ($positions.Length -gt 0) {
-        Write-Host "Found occurrences at positions: " ($positions -join ', ')
+    if (($positions.Length -gt 0) -and ($positions[0] -gt 0)) {
+        Write-Host "Found occurrences at positions:" ($positions -join ', ')
     } else {
         Write-Host "Given pattern not found in file"
     }
 } catch {
-    if ($stream.Disposed) {
+    if ($stream.CanWrite) {
         $stream.Close()
     }
     Write-Error $_.Exception.Message

@@ -32,7 +32,7 @@ namespace HexHandler
             byte[] find = ConvertHexStringToByteArray(args[1]);
             byte[] replace = ConvertHexStringToByteArray(args[2]);
             
-            using (BytesReplacer replacer = new BytesReplacer(File.Open(args[0], FileMode.Open)))
+            using (BytesHandler replacer = new BytesHandler(File.Open(args[0], FileMode.Open)))
             {
                 long pos = replacer.ReplaceOnce(find, replace);
 
@@ -98,7 +98,7 @@ namespace HexHandler
                 ms.Write(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x03, 0x04, 0x07, 0x08 }, 0, 10);
                 ms.Seek(0, SeekOrigin.Begin);
                 
-                using (BytesReplacer replacer = new BytesReplacer(ms, bufferSize))
+                using (BytesHandler replacer = new BytesHandler(ms, bufferSize))
                 {
                     long pos = replacer.ReplaceOnce(new byte[] { 0x03, 0x04 }, new byte[] { 0x0A, 0x0B });
                     if (pos != 2)
