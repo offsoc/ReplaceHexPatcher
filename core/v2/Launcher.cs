@@ -34,14 +34,14 @@ namespace HexHandler
             
             using (BytesHandler replacer = new BytesHandler(File.Open(args[0], FileMode.Open)))
             {
-                long pos = replacer.ReplaceOnce(find, replace);
+                long pos = replacer.OverwriteBytesAtFirstPatternPosition(find, replace);
 
                 if (pos >= 0)
                 {
                     Console.WriteLine(string.Format("Pattern found and replaced at position {0}", pos));
                 }
 
-                long[] positions = replacer.ReplaceAll(find, replace);
+                long[] positions = replacer.OverwriteBytesAtPatternAllPositions(find, replace);
 
                 if (positions.Length >= 0)
                 {
@@ -100,25 +100,25 @@ namespace HexHandler
                 
                 using (BytesHandler replacer = new BytesHandler(ms, bufferSize))
                 {
-                    long pos = replacer.ReplaceOnce(new byte[] { 0x03, 0x04 }, new byte[] { 0x0A, 0x0B });
+                    long pos = replacer.OverwriteBytesAtFirstPatternPosition(new byte[] { 0x03, 0x04 }, new byte[] { 0x0A, 0x0B });
                     if (pos != 2)
                     {
                         throw new ApplicationException("Test failed");
                     }
 
-                    pos = replacer.ReplaceOnce(new byte[] { 0x03, 0x04 }, new byte[] { 0x0A, 0x0B });
+                    pos = replacer.OverwriteBytesAtFirstPatternPosition(new byte[] { 0x03, 0x04 }, new byte[] { 0x0A, 0x0B });
                     if (pos != -1)
                     {
                         throw new ApplicationException("Test failed");
                     }
 
-                    pos = replacer.ReplaceOnce(new byte[] { 0x07, 0x08 }, new byte[] { 0x0C, 0x0D });
+                    pos = replacer.OverwriteBytesAtFirstPatternPosition(new byte[] { 0x07, 0x08 }, new byte[] { 0x0C, 0x0D });
                     if (pos != 8)
                     {
                         throw new ApplicationException("Test failed");
                     }
 
-                    pos = replacer.ReplaceOnce(new byte[] { 0x07, 0x08 }, new byte[] { 0x0C, 0x0D });
+                    pos = replacer.OverwriteBytesAtFirstPatternPosition(new byte[] { 0x07, 0x08 }, new byte[] { 0x0C, 0x0D });
                     if (pos != -1)
                     {
                         throw new ApplicationException("Test failed");

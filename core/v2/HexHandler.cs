@@ -13,6 +13,7 @@ namespace HexHandler
         private readonly Stream stream;
         private readonly int bufferSize;
         private const string wildcard = "??";
+        private const string wildcardInRegExp = "[\\x00-\\xFF]";
 
         /// <summary>
         /// Constructor
@@ -60,10 +61,16 @@ namespace HexHandler
             return data;
         }
 
+        /// <summary>
+        /// Convert string with any type of hex symbols or wildcards to byte array and wildcards mask array
+        /// </summary>
+        /// <param name="hexString">hexString with wildcards</param>
+        /// <param name="wildcardExample">example of wildcard symbol what will match like 1 byte</param>
+        /// <returns>Tuple with byte array and array of wildcards mask. true in mask array mean that symbol on same index in byte array is wildcard.</returns>
         private static Tuple<byte[], bool[]> ConvertHexStringWithWildcardsToByteArrayAndMask(string hexString, string wildcardExample = wildcard)
         {
             string hexStringCleaned = hexString.Replace(" ", string.Empty)
-                                                .Replace("[\\x00-\\xFF]", wildcardExample)
+                                                .Replace(wildcardInRegExp, wildcardExample)
                                                 .Replace("\\x", string.Empty)
                                                 .Replace("0x", string.Empty)
                                                 .Replace(",", string.Empty)
@@ -78,7 +85,7 @@ namespace HexHandler
 
             byte[] data = new byte[hexStringCleaned.Length / 2];
             bool[] mask = new bool[data.Length];
-            
+
             try
             {
                 for (int index = 0; index < data.Length; index++)
@@ -102,6 +109,14 @@ namespace HexHandler
             }
 
             return Tuple.Create(data, mask);
+        }
+
+        private bool testHexStringContainWildcards(string hexString, string wildcardExample = wildcard)
+        {
+            string hexStringCleaned = hexString.Replace(" ", string.Empty)
+                                                .Replace(wildcardInRegExp, wildcardExample);
+
+            return hexStringCleaned.IndexOf(wildcardExample) != -1 || hexStringCleaned.IndexOf(wildcardInRegExp) != -1;
         }
 
         /// <summary>
