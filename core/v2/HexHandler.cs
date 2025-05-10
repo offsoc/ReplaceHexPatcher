@@ -38,7 +38,7 @@ namespace HexHandler
 
             if (hexStringCleaned.Length % 2 != 0)
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, 
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
                     "The binary key cannot have an odd number of digits: {0}", hexStringCleaned));
             }
 
@@ -50,6 +50,42 @@ namespace HexHandler
             }
 
             return data;
+        }
+
+        private static Tuple<byte[], bool[]> ConvertHexStringWithWildcardsToByteArrayAndMask(string hexString)
+        {
+            string hexStringCleaned = hexString.Replace(" ", string.Empty)
+                                                .Replace("\\x", string.Empty)
+                                                .Replace("0x", string.Empty)
+                                                .Replace(",", string.Empty)
+                                                .Normalize()
+                                                .Trim();
+
+            if (hexStringCleaned.Length % 2 != 0)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                    "The binary key cannot have an odd number of digits: {0}", hexStringCleaned));
+            }
+
+            byte[] data = new byte[hexStringCleaned.Length / 2];
+            bool[] mask = new bool[data.Length];
+
+            for (int index = 0; index < data.Length; index++)
+            {
+                string byteValue = hexStringCleaned.Substring(index * 2, 2);
+                if (byteValue == "??")
+                {
+                    data[index] = byte.Parse("00", NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    mask[index] = true;
+                }
+                else
+                {
+                    data[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    mask[index] = false;
+                }
+            }
+
+            return Tuple.Create(data, mask);
         }
 
         /// <summary>
@@ -173,11 +209,94 @@ namespace HexHandler
 
                     if (foundIndex == -1 || foundIndex + searchPattern.Length > buffer.Length)
                         break;
-                    
+
                     bool match = true;
                     for (int j = 1; j < searchPattern.Length; j++)
                     {
                         if (buffer[foundIndex + j] != searchPattern[j])
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+
+                    if (match)
+                    {
+                        foundPosition = position + foundIndex;
+                        return foundPosition;
+                    }
+                    else
+                    {
+                        index = foundIndex + 1;
+                    }
+                }
+
+                position += bytesRead - searchPattern.Length + 1;
+                if (position > stream.Length - searchPattern.Length)
+                {
+                    break;
+                }
+                stream.Seek(position, SeekOrigin.Begin);
+            }
+
+            return foundPosition;
+        }
+
+
+        /// <summary>
+        /// Find byte array in a stream start from given decimal position
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <param name="wildcardsMask">Mask if symbol is wildcards</param>
+        /// <param name="position">Initial position in stream</param>
+        /// <returns>First index of byte array data, or -1 if find is not found</returns>
+        public long FindFromPosition_WithWildcards(byte[] searchPattern, bool[] wildcardsMask, long position = 0)
+        {
+            if (searchPattern == null)
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (wildcardsMask == null)
+                throw new ArgumentNullException("wildcardsMask argument not given");
+            if (searchPattern.Length != wildcardsMask.Length)
+                throw new ArgumentNullException("wildcardsMask and search pattern must be same length");
+            if (position < 0)
+                throw new ArgumentNullException("position should more than zero");
+            if (position > stream.Length)
+                throw new ArgumentNullException("position must be within the stream");
+            if (searchPattern.Length > bufferSize)
+                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+
+            bool isMaskFilledWildcards = Array.TrueForAll(wildcardsMask, x => x);
+            if (isMaskFilledWildcards)
+            {
+                return position;
+            }
+
+            bool isMaskHasNoWildcards = Array.TrueForAll(wildcardsMask, x => !x);
+            if (isMaskHasNoWildcards)
+            {
+                return FindFromPosition(searchPattern, position);
+            }
+
+            long foundPosition = -1;
+            byte[] buffer = new byte[bufferSize + searchPattern.Length - 1];
+            int bytesRead;
+            stream.Position = position;
+
+            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                int index = 0;
+
+                while (index <= (bytesRead - searchPattern.Length))
+                {
+                    int foundIndex = Array.IndexOf(buffer, searchPattern[0], index);
+
+                    if (foundIndex == -1 || foundIndex + searchPattern.Length > buffer.Length)
+                        break;
+
+                    bool match = true;
+                    for (int j = 1; j < searchPattern.Length; j++)
+                    {
+                        if (!wildcardsMask[j] && buffer[foundIndex + j] != searchPattern[j])
                         {
                             match = false;
                             break;
@@ -230,6 +349,22 @@ namespace HexHandler
         /// </summary>
         /// <param name="searchPattern">Find</param>
         /// <returns>First index of byte array data, or -1 if find is not found</returns>
+        public long Find_WithWildcards(string searchPattern)
+        {
+            if (searchPattern == null)
+                throw new ArgumentNullException("searchPattern argument not given");
+
+            Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+            byte[] searchPatternBytes = dataPair.Item1;
+            bool[] wildcardsMask = dataPair.Item2;
+            return FindFromPosition_WithWildcards(searchPatternBytes, wildcardsMask, 0);
+        }
+
+        /// <summary>
+        /// Find byte array from start a stream
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <returns>First index of byte array data, or -1 if find is not found</returns>
         public long Find(string searchPattern)
         {
             if (searchPattern == null)
@@ -265,7 +400,7 @@ namespace HexHandler
                 throw new ArgumentNullException("searchPattern argument not given");
             if (amount > stream.Length)
                 throw new ArgumentException("amount replace occurrences should be less than count bytes in stream");
-                
+
             byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
 
             List<long> foundPositions = new List<long>();
@@ -332,6 +467,46 @@ namespace HexHandler
                 while (foundPosition < stream.Length - searchPattern.Length)
                 {
                     foundPosition = FindFromPosition(searchPattern, foundPositionsList[foundPositionsList.Count - 1] + 1);
+
+                    if (foundPosition > 0)
+                    {
+                        foundPositionsList.Add(foundPosition);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return foundPositionsList.ToArray();
+        }
+
+        /// <summary>
+        /// Find all occurrences of byte array from start a stream
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <returns>Indexes of found all occurrences or array with -1</returns>
+        public long[] FindAll_WithWildcards(string searchPattern)
+        {
+            if (searchPattern == null)
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (searchPattern.Length > bufferSize)
+                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+
+            List<long> foundPositionsList = new List<long>();
+            long foundPosition = Find_WithWildcards(searchPattern);
+            foundPositionsList.Add(foundPosition);
+            
+            Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+            byte[] searchPatternBytes = dataPair.Item1;
+            bool[] wildcardsMask = dataPair.Item2;
+
+            if (foundPosition > 0)
+            {
+                while (foundPosition < stream.Length - searchPatternBytes.Length)
+                {
+                    foundPosition = FindFromPosition_WithWildcards(searchPatternBytes, wildcardsMask, foundPositionsList[foundPositionsList.Count - 1] + 1);
 
                     if (foundPosition > 0)
                     {
@@ -470,7 +645,9 @@ namespace HexHandler
                         if (foundPositions.Count < amount)
                         {
                             foundPositions.Add(position + i);
-                        } else {
+                        }
+                        else
+                        {
                             return foundPositions.ToArray();
                         }
                     }
