@@ -44,10 +44,17 @@ namespace HexHandler
             }
 
             byte[] data = new byte[hexStringCleaned.Length / 2];
-            for (int index = 0; index < data.Length; index++)
+            try
             {
-                string byteValue = hexStringCleaned.Substring(index * 2, 2);
-                data[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                for (int index = 0; index < data.Length; index++)
+                {
+                    string byteValue = hexStringCleaned.Substring(index * 2, 2);
+                    data[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                }
+            }
+            catch (FormatException)
+            {
+                throw new FormatException("Hex string " + hexString + " or it cleaned version " + hexStringCleaned + " contain not HEX symbols and cannot be converted to bytes array");
             }
 
             return data;
@@ -70,20 +77,27 @@ namespace HexHandler
 
             byte[] data = new byte[hexStringCleaned.Length / 2];
             bool[] mask = new bool[data.Length];
-
-            for (int index = 0; index < data.Length; index++)
+            
+            try
             {
-                string byteValue = hexStringCleaned.Substring(index * 2, 2);
-                if (byteValue == wildcard)
+                for (int index = 0; index < data.Length; index++)
                 {
-                    data[index] = byte.Parse("00", NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                    mask[index] = true;
+                    string byteValue = hexStringCleaned.Substring(index * 2, 2);
+                    if (byteValue == wildcard)
+                    {
+                        data[index] = byte.Parse("00", NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                        mask[index] = true;
+                    }
+                    else
+                    {
+                        data[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                        mask[index] = false;
+                    }
                 }
-                else
-                {
-                    data[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                    mask[index] = false;
-                }
+            }
+            catch (FormatException)
+            {
+                throw new FormatException("Hex string " + hexString + " or it cleaned version " + hexStringCleaned + " contain not HEX symbols and cannot be converted to bytes array");
             }
 
             return Tuple.Create(data, mask);
