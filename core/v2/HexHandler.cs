@@ -105,19 +105,19 @@ namespace HexHandler
         }
 
         /// <summary>
-        /// Find and replace all occurrences binary data in a stream
+        /// Find and insert (with overwrite) the specified number of times occurrences binary data in a stream
         /// </summary>
         /// <param name="searchPattern">Find</param>
-        /// <param name="replacePattern">Replace</param>
-        /// <returns>All indexes of replaced data</returns>
-        public long[] Replace(byte[] searchPattern, byte[] replacePattern, int amount)
+        /// <param name="insertPattern">Insert with overwrite</param>
+        /// <returns>All indexes of overwritten data</returns>
+        public long[] OverwriteBytesAtPatternPositions(byte[] searchPattern, byte[] insertPattern, int amount)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
-            if (replacePattern == null)
-                throw new ArgumentNullException("replacePattern argument not given");
+            if (insertPattern == null)
+                throw new ArgumentNullException("insertPattern argument not given");
             if (amount > stream.Length)
-                throw new ArgumentOutOfRangeException("amount replace occurrences should be less than count bytes in stream");
+                throw new ArgumentOutOfRangeException("amount overwrite occurrences should be less than count bytes in stream");
             if (searchPattern.Length > bufferSize)
                 throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
@@ -128,7 +128,7 @@ namespace HexHandler
                 for (int i = 0; i < foundPositions.Length; i++)
                 {
                     stream.Seek(foundPositions[i], SeekOrigin.Begin);
-                    stream.Write(replacePattern, 0, replacePattern.Length);
+                    stream.Write(insertPattern, 0, insertPattern.Length);
                 }
             }
 
@@ -137,17 +137,17 @@ namespace HexHandler
         }
 
         /// <summary>
-        /// Find and replace all occurrences binary data in a stream
+        /// Find and insert (with overwrite) all occurrences binary data in a stream
         /// </summary>
         /// <param name="searchPattern">Find</param>
-        /// <param name="replacePattern">Replace</param>
-        /// <returns>All indexes of replaced data</returns>
-        public long[] ReplaceAll(byte[] searchPattern, byte[] replacePattern)
+        /// <param name="insertPattern">Insert with overwrite</param>
+        /// <returns>All indexes of overwritten data</returns>
+        public long[] OverwriteBytesAtPatternAllPositions(byte[] searchPattern, byte[] insertPattern)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
-            if (replacePattern == null)
-                throw new ArgumentNullException("replacePattern argument not given");
+            if (insertPattern == null)
+                throw new ArgumentNullException("insertPattern argument not given");
             if (searchPattern.Length > bufferSize)
                 throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
@@ -158,7 +158,7 @@ namespace HexHandler
                 for (int i = 0; i < foundPositions.Length; i++)
                 {
                     stream.Seek(foundPositions[i], SeekOrigin.Begin);
-                    stream.Write(replacePattern, 0, replacePattern.Length);
+                    stream.Write(insertPattern, 0, insertPattern.Length);
                 }
             }
 
@@ -167,17 +167,17 @@ namespace HexHandler
         }
 
         /// <summary>
-        /// Find and replace once binary data in a stream
+        /// Find and insert (with overwrite) first occurrence binary data in a stream
         /// </summary>
         /// <param name="searchPattern">Find</param>
-        /// <param name="replacePattern">Replace</param>
-        /// <returns>First index of replaced data, or -1 if find is not found</returns>
-        public long ReplaceOnce(byte[] searchPattern, byte[] replacePattern)
+        /// <param name="insertPattern">Insert with overwrite</param>
+        /// <returns>First index of overwritten data, or -1 if find is not found</returns>
+        public long OverwriteBytesAtFirstPatternPosition(byte[] searchPattern, byte[] insertPattern)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
-            if (replacePattern == null)
-                throw new ArgumentNullException("replacePattern argument not given");
+            if (insertPattern == null)
+                throw new ArgumentNullException("insertPattern argument not given");
             if (searchPattern.Length > bufferSize)
                 throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
@@ -186,7 +186,7 @@ namespace HexHandler
             if (foundPosition != -1)
             {
                 stream.Seek(foundPosition, SeekOrigin.Begin);
-                stream.Write(replacePattern, 0, replacePattern.Length);
+                stream.Write(insertPattern, 0, insertPattern.Length);
             }
 
             stream.Seek(0, SeekOrigin.Begin);
@@ -415,7 +415,7 @@ namespace HexHandler
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
             if (amount > stream.Length)
-                throw new ArgumentOutOfRangeException("amount replace occurrences should be less than count bytes in stream");
+                throw new ArgumentOutOfRangeException("amount search occurrences should be less than count bytes in stream");
 
             byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
 
