@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Globalization;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HexHandler
 {
@@ -117,6 +118,89 @@ namespace HexHandler
                                                 .Replace(wildcardInRegExp, wildcardExample);
 
             return hexStringCleaned.IndexOf(wildcardExample) != -1 || hexStringCleaned.IndexOf(wildcardInRegExp) != -1;
+        }
+
+        private byte[] createArrayFilledIdenticalBytes(int size, byte element)
+        {
+            byte[] result = new byte[size];
+
+            for (int i = 0; i < size; i++)
+            {
+                result[i] = element;
+            }
+
+            return result;
+        }
+
+        private bool DoesStreamHaveSequenceInPosition(byte[] sequence, long position)
+        {
+            byte[] buffer = new byte[sequence.Length];
+            stream.Position = position;
+            stream.Read(buffer, 0, buffer.Length);
+
+            for (int i = 0; i < sequence.Length; i++)
+            {
+                if (buffer[i] != sequence[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Extract array without duplicates at edges give array
+        /// </summary>
+        /// <example>
+        /// For example for array:
+        /// 00 00 00 00 79 00 AE 88 F1 C5 00 90 C3 90 90 90
+        /// will extracted array
+        /// 00 79 00 AE 88 F1 C5 00 90 C3 90
+        /// and
+        /// skipFromStart = 3
+        /// skipFromEnd = 2
+        /// </example>
+        /// <param name="searchPattern"></param>
+        /// <returns>Return array without duplicates at edges and number of skipped elements from start source array and number of skipped elements from end source array</returns>
+        private Tuple<byte[], Tuple<int, int>> extractArrayWithoutDuplicatesAtEdges(byte[] searchPattern)
+        {
+            int skipFromStart = 0;
+            int skipFromEnd = 0;
+
+            // in case when all array elements are identical
+            if (searchPattern.Distinct().Count() == 1)
+            {
+                return Tuple.Create(new byte[] {searchPattern[0]}, Tuple.Create(0, searchPattern.Length - 2));
+            }
+
+            // loop from start array
+            for (int i = 1; i < searchPattern.Length; i++)
+            {
+                if (searchPattern[i] != searchPattern[i - 1])
+                {
+                    break;
+                }
+
+                skipFromStart++;
+            }
+
+            // loop from end array
+            for (int i = searchPattern.Length - 2; i > 0; i--)
+            {
+                if (searchPattern[i] != searchPattern[i + 1])
+                {
+                    break;
+                }
+
+                skipFromEnd++;
+            }
+
+            int newLength = searchPattern.Length - skipFromStart - skipFromEnd;
+            byte[] result = new byte[newLength];
+            Array.Copy(searchPattern, skipFromStart, result, 0, newLength);
+
+            return Tuple.Create(result, Tuple.Create(skipFromStart, skipFromEnd));
         }
 
         /// <summary>
@@ -334,7 +418,7 @@ namespace HexHandler
         /// <param name="searchPattern">Find</param>
         /// <param name="position">Initial position in stream</param>
         /// <returns>First index of byte array data, or -1 if find is not found</returns>
-        public long FindFromPosition(byte[] searchPattern, long position = 0)
+        public long FindFromPosition(byte[] searchPattern, long position = 0, int skippedFromStart = 0, int skippedFromEnd = 0)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
@@ -349,6 +433,8 @@ namespace HexHandler
             byte[] buffer = new byte[bufferSize + searchPattern.Length - 1];
             int bytesRead;
             stream.Position = position;
+
+            bool isPatternHaveDuplicatesAtEdges = skippedFromStart > 0 || skippedFromEnd > 0;
 
             while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
             {
@@ -374,7 +460,45 @@ namespace HexHandler
                     if (match)
                     {
                         foundPosition = position + foundIndex;
-                        return foundPosition;
+
+                        if (isPatternHaveDuplicatesAtEdges)
+                        {
+                            if (skippedFromStart > foundPosition || skippedFromEnd > stream.Length - foundPosition)
+                            {
+                                match = false;
+                                break;
+                            }
+
+                            if (skippedFromStart > 0)
+                            {
+                                byte[] skippedBytes = createArrayFilledIdenticalBytes(skippedFromStart, searchPattern[0]);
+
+                                if (!DoesStreamHaveSequenceInPosition(skippedBytes, foundPosition - skippedFromStart))
+                                {
+                                    match = false;
+                                    index = foundIndex + 1;
+                                    continue;
+                                }
+                            }
+
+                            if (skippedFromEnd > 0)
+                            {
+                                byte[] skippedBytes = createArrayFilledIdenticalBytes(skippedFromEnd, searchPattern[searchPattern.Length - 1]);
+
+                                if (!DoesStreamHaveSequenceInPosition(skippedBytes, foundPosition + searchPattern.Length + 1))
+                                {
+                                    match = false;
+                                    index = foundIndex + searchPattern.Length + 1;
+                                    continue;
+                                }
+                            }
+
+                            return foundPosition - skippedFromStart;
+                        }
+                        else
+                        {
+                            return foundPosition;
+                        }
                     }
                     else
                     {
@@ -392,7 +516,6 @@ namespace HexHandler
 
             return foundPosition;
         }
-
 
         /// <summary>
         /// Find byte array with mask array in a stream start from given decimal position
@@ -529,7 +652,12 @@ namespace HexHandler
             else
             {
                 byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
-                return FindFromPosition(searchPatternBytes, 0);
+                Tuple<byte[], Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges(searchPatternBytes);
+                byte[] genuineArray = extractedData.Item1;
+                int skippedFromStart = extractedData.Item2.Item1;
+                int skippedFromEnd = extractedData.Item2.Item2;
+
+                return FindFromPosition(genuineArray, 0, skippedFromStart, skippedFromEnd);
             }
         }
 
@@ -545,7 +673,12 @@ namespace HexHandler
             if (searchPattern.Length > bufferSize)
                 throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
-            return FindFromPosition(searchPattern, 0);
+            Tuple<byte[], Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges(searchPattern);
+            byte[] genuineArray = extractedData.Item1;
+            int skippedFromStart = extractedData.Item2.Item1;
+            int skippedFromEnd = extractedData.Item2.Item2;
+
+            return FindFromPosition(genuineArray, 0, skippedFromStart, skippedFromEnd);
         }
 
         /// <summary>
