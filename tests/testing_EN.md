@@ -1,5 +1,7 @@
 # Testing functionality
 
+Language: [Русский](testing_RU.md) | English
+
 The utility consists of several parts - the base/core and the "wrappers". It is necessary to test both. There are also 2 types of "wrappers" - CMD code and Powershell code. For the CMD code, there are probably no frameworks and testing tools, so there is probably only output the log of the functions through the `echo` to the terminal window (which I did when testing my code).
 
 There is at least 1 framework for writing tests for Powershell - Pester (https://pester.dev/ | https://github.com/pester/Pester)

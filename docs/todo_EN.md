@@ -1,5 +1,15 @@
 # List of tasks
 
+Language: [Русский](todo_RU.md) | English
+
+- [List of tasks](#list-of-tasks)
+  - [ToDo](#todo)
+    - [Miscellaneous](#miscellaneous)
+    - [Template Parser](#template-parser)
+    - [Search and replace core only](#search-and-replace-core-only)
+    - [Information output](#information-output)
+
+
 Here is a list of functions that are specific and I may forget to implement them.
 
 ## ToDo
