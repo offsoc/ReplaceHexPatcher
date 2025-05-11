@@ -806,6 +806,11 @@ namespace HexHandler
             if (searchPattern.Length > bufferSize)
                 throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
+            Tuple<byte[], Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges(searchPattern);
+            byte[] genuineArray = extractedData.Item1;
+            int skippedFromStart = extractedData.Item2.Item1;
+            int skippedFromEnd = extractedData.Item2.Item2;
+
             List<long> foundPositions = new List<long>();
             long firstFoundPosition = FindFirst(searchPattern);
             foundPositions.Add(firstFoundPosition);
@@ -814,7 +819,7 @@ namespace HexHandler
             {
                 for (int i = 1; i < amount; i++)
                 {
-                    long nextFoundPosition = FindFromPosition(searchPattern, foundPositions[foundPositions.Count - 1] + 1);
+                    long nextFoundPosition = FindFromPosition(searchPattern, foundPositions[foundPositions.Count - 1] + 1, skippedFromStart, skippedFromEnd);
 
                     if (nextFoundPosition > 0)
                     {
@@ -842,6 +847,11 @@ namespace HexHandler
             if (searchPattern.Length > bufferSize)
                 throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
+            Tuple<byte[], Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges(searchPattern);
+            byte[] genuineArray = extractedData.Item1;
+            int skippedFromStart = extractedData.Item2.Item1;
+            int skippedFromEnd = extractedData.Item2.Item2;
+
             List<long> foundPositionsList = new List<long>();
             long foundPosition = FindFirst(searchPattern);
             foundPositionsList.Add(foundPosition);
@@ -850,7 +860,7 @@ namespace HexHandler
             {
                 while (foundPosition < stream.Length - searchPattern.Length)
                 {
-                    foundPosition = FindFromPosition(searchPattern, foundPositionsList[foundPositionsList.Count - 1] + 1);
+                    foundPosition = FindFromPosition(searchPattern, foundPositionsList[foundPositionsList.Count - 1] + 1, skippedFromStart, skippedFromEnd);
 
                     if (foundPosition > 0)
                     {
