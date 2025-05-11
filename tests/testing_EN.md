@@ -60,6 +60,7 @@ At the moment, there are such algorithms/strategies:
 6. v4.1 - the same v3 algorithm, but with some optimizations and using wildcards wildcards in search and replace patterns
 7. v5 - code ported to C# v4.8 [HexAndReplace/BinaryReplacer](https://github.com/jjxtra/HexAndReplace/blob/master/BinaryReplacer.cs) + slightly expanded. It is automatically compiled and used in a Powershell script.
 8. v6 - improved v5 algorithm so that replacement patterns can be used of any length, rather than replacement patterns of the same length as search patterns.
-9. v7 is an improved v6 algorithm so that the search for the first byte of the search pattern is performed through an Array.indexOf()`, rather than manually iterating through the entire array
+9. v7 is an improved v6 algorithm so that the search for the first byte of the search pattern is performed through an Array.indexOf()`, rather than manually iterating through the entire array.
+10. v8 - the search algorithm is the same as in v7, but the search + replace (rewrite) functions have been improved in the core and wildcards support has been added in both search and replacement patterns.
 
 Of course, the patcher script uses the fastest algorithm/strategy to find and replace bytes. At the moment it's v3.
