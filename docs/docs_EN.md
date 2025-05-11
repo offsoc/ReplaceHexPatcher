@@ -347,21 +347,23 @@ I think the file names clearly say what these scripts do. The text/strings/data 
 
 ## Answers to possible questions
 
-1. Why is there no byte replacement functionality indicating the offset?
-    - It is convenient to replace bytes by specific offsets / offsets manually and only if there are not many such addresses to replace. Usually you need to change several sets of bytes and often these sets go in groups. Specifying the offset and which byte should be placed in the offset is a long time even in the template, but if you want to add such an implementation, here is [an example](https://stackoverflow.com/a/20935550)
-    - Byte pattern replacement is more universal because it is more likely that after updating the binary, the pattern for search + replacement will be the same, unlike the fact that addresses/offsets for byte replacement will be the same
-    - I did not have to use byte search+replacement at specific addresses in my practice. Templates are more convenient for me.
-2. Why is there so much code?
+1. Why is there so much code?
     - I don't have much experience in writing code. And this is the first time I'm writing code for Powershell and CMD
     - I tried to make the project monolithic so that only a couple of files could be transferred to the computer on which modifications need to be performed, including the template and just run the "executable file" with a double click
     - I tried to add various checks (for example, for the existence of a file path or something) wherever I thought it was necessary, and this is a lot of places. Probably, these checks are not needed everywhere. Especially if you think over the architecture of the project and bring it back to normal.
     - I had a desire (although, most likely, this is a personal sporting interest) to make the script possible to run and execute without administrator rights and these rights were requested only when they are needed. Because of this, we had to add and process checks to see if administrator rights were needed for this operation and run separate Powershell code (including multi-line) in separate processes requesting administrator rights. If you remove all these checks and check for rights only at the very beginning, the code will probably lose 1/5 of its weight.
-3. Why is the template not in JSON or XML format?
+2. Why is the template not in JSON or XML format?
     - Because these types of file structures have a fairly strict markup format and when filling out a file manually, it would be difficult to write and format text in a JSON or XML structure. I made the template structure such that it forgives errors and is less strict, unlike JSON and XML.
-4. Is it possible to use byte search and replace to delete a sequence of bytes?
+3. Is it possible to use byte search and replace to delete a sequence of bytes?
     - Yes, but it requires a little modification of the code. It in TODO-list in Readme.
     - This project (a byte search and replace patcher) is aimed mainly at patching binary files. In my practice (in my tasks), only byte substitution is used. Deleting bytes from a binary file, in most cases, leads to the file becoming broken (broken, non-working), at least in executable files and library files. Deleting bytes in binary files probably makes sense only if you need to delete some meta information, such as a digital signature, which is usually located at the end of exe files.
-5. How can I help the project?
+4. How can I help the project?
     - Do what is written in TODO (without compromising the functionality and performance of the code)
     - Refactor and improve the performance of the code/ utility
     - Or find someone who will do it
+5. Why are there no `Replace()` functions? What do the `OverWrite()` functions do?
+    - Because the concept and approach to file modification have changed.
+    - The very word "replace" and the procedure for replacing the byte sequence means that when using the pattern `11223344/AABB3344`, we will search for the sequences `11223344` and completely replace these sequences with another sequence - `AABB3344`. What if we need to replace the sequence `11223344` with `AA`?
+    - The `Replace()` functions implemented in the project at the time of writing this text cannot do this (because it will be necessary to split the file into parts and "stitch" it at the break points so that the file length changes. I have never seen the need for such replacements in executable files, because changing the size of the executable file causes it to malfunction). The `Replace()` functions can only change sequences of the same length. That is, the byte sequence replacement function cannot actually perform any sequence replacement.
+    - In fact, such `Replace()` functions find sections that match the search patterns and in these sections, starting from the first byte, insert bytes from the replacement pattern with byte overwriting (that is, not inserting bytes between others, but with overwriting). This is not a byte swap.
+    - Therefore, it is semantically correct to call such functions as "search for addresses of search patterns with insertion of replacement patterns with overwriting." Simply put - `OverwriteBytesAtPatternPositions()`

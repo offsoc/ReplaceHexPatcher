@@ -802,7 +802,7 @@ namespace HexHandler
             if (offset > stream.Length)
                 throw new ArgumentOutOfRangeException("offset must be within the stream");
 
-            bool isSequenceHaveWildcards = sequence.IndexOf(wildcard) != -1;
+            bool isSequenceHaveWildcards = testHexStringContainWildcards(sequence);;
 
             if (isSequenceHaveWildcards)
             {
