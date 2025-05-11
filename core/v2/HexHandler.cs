@@ -401,7 +401,7 @@ namespace HexHandler
             else
             {
                 byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
-                offset = FindFromPosition(searchPatternBytes, 0);
+                offset = FindFirst(searchPatternBytes);
             }
 
             if (offset != -1)
@@ -417,6 +417,8 @@ namespace HexHandler
         /// </summary>
         /// <param name="searchPattern">Find</param>
         /// <param name="position">Initial position in stream</param>
+        /// <param name="skippedFromStart">Number of skipped/removed identical bytes from start/begin of search pattern</param>
+        /// <param name="skippedFromEnd">Number of skipped/removed identical bytes from end of search pattern</param>
         /// <returns>First index of byte array data, or -1 if find is not found</returns>
         public long FindFromPosition(byte[] searchPattern, long position = 0, int skippedFromStart = 0, int skippedFromEnd = 0)
         {
@@ -463,7 +465,7 @@ namespace HexHandler
 
                         if (isPatternHaveDuplicatesAtEdges)
                         {
-                            if (skippedFromStart > foundPosition)
+                            if (skippedFromStart > foundPosition || foundPosition - skippedFromStart < position)
                             {
                                 match = false;
                                 index = foundIndex + 1;
@@ -520,7 +522,7 @@ namespace HexHandler
                 stream.Seek(position, SeekOrigin.Begin);
             }
 
-            return foundPosition;
+            return -1;
         }
 
         /// <summary>
@@ -632,7 +634,12 @@ namespace HexHandler
             else
             {
                 byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
-                return FindFromPosition(searchPatternBytes, position);
+                Tuple<byte[], Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges(searchPatternBytes);
+                byte[] genuineArray = extractedData.Item1;
+                int skippedFromStart = extractedData.Item2.Item1;
+                int skippedFromEnd = extractedData.Item2.Item2;
+
+                return FindFromPosition(genuineArray, position, skippedFromStart, skippedFromEnd);
             }
         }
 
@@ -819,7 +826,7 @@ namespace HexHandler
             {
                 for (int i = 1; i < amount; i++)
                 {
-                    long nextFoundPosition = FindFromPosition(searchPattern, foundPositions[foundPositions.Count - 1] + 1, skippedFromStart, skippedFromEnd);
+                    long nextFoundPosition = FindFromPosition(genuineArray, foundPositions[foundPositions.Count - 1] + 1, skippedFromStart, skippedFromEnd);
 
                     if (nextFoundPosition > 0)
                     {
@@ -860,7 +867,7 @@ namespace HexHandler
             {
                 while (foundPosition < stream.Length - searchPattern.Length)
                 {
-                    foundPosition = FindFromPosition(searchPattern, foundPositionsList[foundPositionsList.Count - 1] + 1, skippedFromStart, skippedFromEnd);
+                    foundPosition = FindFromPosition(genuineArray, foundPositionsList[foundPositionsList.Count - 1] + 1, skippedFromStart, skippedFromEnd);
 
                     if (foundPosition > 0)
                     {
@@ -898,6 +905,10 @@ namespace HexHandler
             else
             {
                 byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+                Tuple<byte[], Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges(searchPatternBytes);
+                byte[] genuineArray = extractedData.Item1;
+                int skippedFromStart = extractedData.Item2.Item1;
+                int skippedFromEnd = extractedData.Item2.Item2;
 
                 List<long> foundPositionsList = new List<long>();
                 long firstFoundPosition = FindFirst(searchPatternBytes);
@@ -909,7 +920,7 @@ namespace HexHandler
 
                     while (nextFoundPosition < stream.Length - searchPatternBytes.Length)
                     {
-                        nextFoundPosition = FindFromPosition(searchPatternBytes, foundPositionsList[foundPositionsList.Count - 1] + 1);
+                        nextFoundPosition = FindFromPosition(genuineArray, foundPositionsList[foundPositionsList.Count - 1] + 1, skippedFromStart, skippedFromEnd);
 
                         if (nextFoundPosition > 0)
                         {
