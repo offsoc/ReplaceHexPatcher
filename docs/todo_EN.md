@@ -31,12 +31,12 @@ Here is a list of functions that are specific and I may forget to implement them
 ### Search and replace core only
 
 - [ ] Rewrite the core in C#
-- [ ] Implement overloads of all functions to which patterns are passed
+- [x] Implement overloads of all functions to which patterns are passed
   - So that patterns can be transmitted both as a string and as an array of bytes, as well as an array of bytes and an array mask for wildcard characters.
-- [ ] Implement search support with wildcard `??` in patterns like in [AutoIt](https://www.autoitscript.com/autoit3/docs/functions/StringRegExp.htm) or in [010 Editor](https://www.sweetscape.com/010editor/manual/Find.htm) or in [Frida Memory scan](https://frida.re/docs/javascript-api/#memory)
-  - [ ] Wildcard in search patterns
-  - [ ] Wildcard in replacement patterns
-  - [ ] The functions should check for wildcard characters in the search and replace patterns. If the patterns do not have wildcard symbols, then functions without wildcard support should be used. Because functions with wildcards support have more conditions and checks at each iteration, and they run slower than functions without wildcards support (but this is just a hypothesis).
+- [x] Implement search support with wildcard `??` in patterns like in [AutoIt](https://www.autoitscript.com/autoit3/docs/functions/StringRegExp.htm) or in [010 Editor](https://www.sweetscape.com/010editor/manual/Find.htm) or in [Frida Memory scan](https://frida.re/docs/javascript-api/#memory)
+  - [x] Wildcard in search patterns
+  - [x] Wildcard in replacement patterns
+  - [x] The functions should check for wildcard characters in the search and replace patterns. If the patterns do not have wildcard symbols, then functions without wildcard support should be used. Because functions with wildcards support have more conditions and checks at each iteration, and they run slower than functions without wildcards support (but this is just a hypothesis).
 - [ ] Implement the StartsWith and EndsWith functions to verify that a file begins or ends with a specified set of bytes
 - [ ] Implement search optimization to speed up your search
   - [ ] Search optimization in the case when the search pattern starts with or ends with wildcard characters
@@ -53,8 +53,8 @@ Here is a list of functions that are specific and I may forget to implement them
 - [ ] Implement the search using the Boyer-Moore-Horspool algorithm
   - [ ] Compare the speed of the current algorithm with the Boyer-Moore-Horspool algorithm
   - Links to examples of implemented search functions by this algorithm are in the [file](./additional_info_EN.md#implementations-of-hex-pattern-search-in-c) with additional information
-- [ ] Implement support for removing hex templates
-- [ ] Implement a hex pattern search function starting from a specific offset in the file or starting from a specific part of the file in %
+- [ ] Implement support for deleting found hex patterns from a file
+- [x] Implement a hex pattern search function starting from a specific offset in the file or starting from a specific part of the file in %
 - [x] Implement support for limiting substitutions of found patterns (if not all found sequences need to be replaced)
 
 ### Information output
