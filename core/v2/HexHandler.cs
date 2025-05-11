@@ -147,7 +147,6 @@ namespace HexHandler
                 }
             }
 
-            stream.Seek(0, SeekOrigin.Begin);
             return foundPositions;
         }
 
@@ -177,7 +176,6 @@ namespace HexHandler
                 }
             }
 
-            stream.Seek(0, SeekOrigin.Begin);
             return foundPositions;
         }
 
@@ -204,7 +202,6 @@ namespace HexHandler
                 stream.Write(insertPattern, 0, insertPattern.Length);
             }
 
-            stream.Seek(0, SeekOrigin.Begin);
             return foundPosition;
         }
 
@@ -748,7 +745,6 @@ namespace HexHandler
 
             stream.Seek(offset, SeekOrigin.Begin);
             stream.Write(sequence, 0, sequence.Length);
-            stream.Seek(0, SeekOrigin.Begin);
         }
 
         /// <summary>
@@ -784,8 +780,6 @@ namespace HexHandler
 
                 stream.WriteByte(sequence[i]);
             }
-
-            stream.Seek(0, SeekOrigin.Begin);
         }
 
         /// <summary>
