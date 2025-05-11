@@ -463,10 +463,16 @@ namespace HexHandler
 
                         if (isPatternHaveDuplicatesAtEdges)
                         {
-                            if (skippedFromStart > foundPosition || skippedFromEnd > stream.Length - foundPosition)
+                            if (skippedFromStart > foundPosition)
                             {
                                 match = false;
-                                break;
+                                index = foundIndex + 1;
+                                continue;
+                            }
+
+                            if (skippedFromEnd > stream.Length - foundPosition)
+                            {
+                                return -1;
                             }
 
                             if (skippedFromStart > 0)
