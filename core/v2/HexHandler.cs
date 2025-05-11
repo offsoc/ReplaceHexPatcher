@@ -151,12 +151,54 @@ namespace HexHandler
         }
 
         /// <summary>
+        /// Find and insert (with overwrite) the specified number of times occurrences binary data in a stream
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <param name="insertPattern">Insert with overwrite</param>
+        /// <returns>All indexes of overwritten data</returns>
+        public long[] OverwriteBytesAtPatternPositions(string searchPattern, string insertPattern, int amount)
+        {
+            if (string.IsNullOrEmpty(searchPattern))
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (string.IsNullOrEmpty(insertPattern))
+                throw new ArgumentNullException("insertPattern argument not given");
+            if (searchPattern.Length > bufferSize)
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+
+            bool isSearchPatternContainWildcards = testHexStringContainWildcards(searchPattern);
+            long[] offsets;
+
+            if (isSearchPatternContainWildcards)
+            {
+                Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+                byte[] searchPatternBytes = dataPair.Item1;
+                bool[] wildcardsMask = dataPair.Item2;
+                offsets = Find_WithWildcardsMask(searchPatternBytes, wildcardsMask, amount);
+            }
+            else
+            {
+                byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+                offsets = Find(searchPatternBytes, amount);
+            }
+
+            if (offsets.Length > 0 && offsets[0] != -1)
+            {
+                for (int i = 0; i < offsets.Length; i++)
+                {
+                    PasteBytesSequenceAtOffset(insertPattern, offsets[i]);
+                }
+            }
+
+            return offsets;
+        }
+
+        /// <summary>
         /// Find and insert (with overwrite) all occurrences binary data in a stream
         /// </summary>
         /// <param name="searchPattern">Find</param>
         /// <param name="insertPattern">Insert with overwrite</param>
         /// <returns>All indexes of overwritten data</returns>
-        public long[] OverwriteBytesAtPatternAllPositions(byte[] searchPattern, byte[] insertPattern)
+        public long[] OverwriteBytesAtAllPatternPositions(byte[] searchPattern, byte[] insertPattern)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
@@ -177,6 +219,48 @@ namespace HexHandler
             }
 
             return foundPositions;
+        }
+
+        /// <summary>
+        /// Find and insert (with overwrite) all occurrences binary data in a stream
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <param name="insertPattern">Insert with overwrite</param>
+        /// <returns>All indexes of overwritten data</returns>
+        public long[] OverwriteBytesAtAllPatternPositions(string searchPattern, string insertPattern)
+        {
+            if (string.IsNullOrEmpty(searchPattern))
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (string.IsNullOrEmpty(insertPattern))
+                throw new ArgumentNullException("insertPattern argument not given");
+            if (searchPattern.Length > bufferSize)
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+
+            bool isSearchPatternContainWildcards = testHexStringContainWildcards(searchPattern);
+            long[] offsets;
+
+            if (isSearchPatternContainWildcards)
+            {
+                Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+                byte[] searchPatternBytes = dataPair.Item1;
+                bool[] wildcardsMask = dataPair.Item2;
+                offsets = FindAll_WithWildcardsMask(searchPatternBytes, wildcardsMask);
+            }
+            else
+            {
+                byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+                offsets = FindAll(searchPatternBytes);
+            }
+
+            if (offsets.Length > 0 && offsets[0] != -1)
+            {
+                for (int i = 0; i < offsets.Length; i++)
+                {
+                    PasteBytesSequenceAtOffset(insertPattern, offsets[i]);
+                }
+            }
+
+            return offsets;
         }
 
         /// <summary>
@@ -203,6 +287,45 @@ namespace HexHandler
             }
 
             return foundPosition;
+        }
+
+        /// <summary>
+        /// Find and insert (with overwrite) first occurrence binary data in a stream
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <param name="insertPattern">Insert with overwrite</param>
+        /// <returns>First index of overwritten data, or -1 if find is not found</returns>
+        public long OverwriteBytesAtFirstPatternPosition(string searchPattern, string insertPattern)
+        {
+            if (string.IsNullOrEmpty(searchPattern))
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (string.IsNullOrEmpty(insertPattern))
+                throw new ArgumentNullException("insertPattern argument not given");
+            if (searchPattern.Length > bufferSize)
+                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+
+            bool isSearchPatternContainWildcards = testHexStringContainWildcards(searchPattern);
+            long offset;
+
+            if (isSearchPatternContainWildcards)
+            {
+                Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+                byte[] searchPatternBytes = dataPair.Item1;
+                bool[] wildcardsMask = dataPair.Item2;
+                offset = FindFromPosition_WithWildcardsMask(searchPatternBytes, wildcardsMask, 0);
+            }
+            else
+            {
+                byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+                offset = FindFromPosition(searchPatternBytes, 0);
+            }
+
+            if (offset != -1)
+            {
+                PasteBytesSequenceAtOffset(insertPattern, offset);
+            }
+
+            return offset;
         }
 
         /// <summary>

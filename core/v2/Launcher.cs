@@ -41,7 +41,7 @@ namespace HexHandler
                     Console.WriteLine(string.Format("Pattern found and replaced at position {0}", pos));
                 }
 
-                long[] positions = replacer.OverwriteBytesAtPatternAllPositions(find, replace);
+                long[] positions = replacer.OverwriteBytesAtAllPatternPositions(find, replace);
 
                 if (positions.Length >= 0)
                 {
