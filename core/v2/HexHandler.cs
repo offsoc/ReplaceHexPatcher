@@ -361,7 +361,7 @@ namespace HexHandler
         /// <returns>First index of byte array data, or -1 if find is not found</returns>
         public long FindFromPosition(string searchPattern, long position = 0)
         {
-            if (searchPattern == null)
+            if (string.IsNullOrEmpty(searchPattern))
                 throw new ArgumentNullException("searchPattern argument not given");
             if (position < 0)
                 throw new ArgumentOutOfRangeException("position should more than zero");
@@ -391,7 +391,7 @@ namespace HexHandler
         /// <returns>First index of byte array data, or -1 if find is not found</returns>
         public long FindFirst(string searchPattern)
         {
-            if (searchPattern == null)
+            if (string.IsNullOrEmpty(searchPattern))
                 throw new ArgumentNullException("searchPattern argument not given");
 
             bool isSearchPatternContainWildcards = testHexStringContainWildcards(searchPattern);
@@ -433,7 +433,7 @@ namespace HexHandler
         /// <returns>Indexes of found set occurrences or array with -1 or array with less amount indexes if occurrences less than given amount number</returns>
         public long[] Find(string searchPattern, int amount)
         {
-            if (searchPattern == null)
+            if (string.IsNullOrEmpty(searchPattern))
                 throw new ArgumentNullException("searchPattern argument not given");
             if (amount > stream.Length)
                 throw new ArgumentOutOfRangeException("amount search occurrences should be less than count bytes in stream");
@@ -611,10 +611,8 @@ namespace HexHandler
         /// <returns>Indexes of found all occurrences or array with -1</returns>
         public long[] FindAll(string searchPattern)
         {
-            if (searchPattern == null)
+            if (string.IsNullOrEmpty(searchPattern))
                 throw new ArgumentNullException("searchPattern argument not given");
-            if (searchPattern.Length > bufferSize)
-                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             bool isSearchPatternContainWildcards = testHexStringContainWildcards(searchPattern);
 
