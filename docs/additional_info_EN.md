@@ -75,6 +75,7 @@ But it was not without drawbacks. And here they are:
   - Therefore, it is better to write the business logic of byte search and replacement in C# and automatically compile this C# code in a Powershell script and import it into a script and process it using a compiled component, rather than using Powershell forces. This will significantly improve the speed of the utility.
   - Perhaps the situation is better in Powershell Core, but in Powershell 5.1, which comes out of the box in Windows 10, the speed of the script is very different from the same when compiled in C#.
 - Probably due to non-strict typing (or lack thereof), errors do not occur where they should be, for example, when trying to get an array element by an index that points outside the array. If you don't notice this (and don't write additional index verification conditions), then you get used to it, and then when porting code to languages with normal typing (for example, C#), errors occur and you can search for an error in the code for a long time. Although the direct porting from Powershell to C# was done correctly.
+- In Powershell, if a function returns an array with 1 element (for example, the number -1), then Powershell automatically "unpacks" this array and returns this single element from the array, rather than an array with 1 element.
 
 ## Usefulness
 
