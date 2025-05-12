@@ -48,11 +48,11 @@ Here is a list of functions that are specific and I may forget to implement them
   - [x] Wildcard in replacement patterns
   - [x] The functions should check for wildcard characters in the search and replace patterns. If the patterns do not have wildcard symbols, then functions without wildcard support should be used. Because functions with wildcards support have more conditions and checks at each iteration, and they run slower than functions without wildcards support (but this is just a hypothesis).
 - [ ] Implement the StartsWith and EndsWith functions to verify that a file begins or ends with a specified set of bytes
-- [ ] Implement search optimization to speed up your search
-  - [ ] Search optimization in the case when the search pattern starts with or ends with wildcard characters
+- [x] Implement search optimization to speed up your search
+  - [x] Search optimization in the case when the search pattern starts with or ends with wildcard characters
     - In the case when the search pattern starts with wildcard characters - you need to find the first regular (non-wildcard) byte and search for it, and when searching, indent from the beginning of the file in length between the beginning of the search pattern and the first regular a byte. Otherwise, the search for the wildcard character will turn into a sequential search of all the bytes of the file.
     - If the search pattern ends with wildcard characters, then you do not need to search for them, it will be enough to check that there are more bytes from the current index of the last regular byte in the pattern to the end of the file than there are wildcard characters to the end of the pattern.
-  - [ ] Search optimization, when the search pattern starts with a sequence of identical characters
+  - [x] Search optimization, when the search pattern starts with a sequence of identical characters
     - In the case when the search pattern starts with a sequence of identical characters (for example, in the search pattern, the first 10 bytes are zero bytes), then it is necessary to "virtually delete" all duplicate bytes at the beginning (that is, delete 9 zero bytes), leaving only 1 byte from the sequence of identical ones. When this byte is found, you will need to check that there are 9 bytes in front of it that are the same as itself.
     - I am not sure that this will speed up the work when using patterns with a sequence of identical bytes at the beginning, so it is necessary to conduct competent tests and performance checks with such optimization.
 - [ ] Implement a check for the rights to modify/overwrite the file immediately after the first found pattern, rather than after going through all the patterns in the main script
