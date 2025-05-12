@@ -47,7 +47,7 @@ Here is a list of functions that are specific and I may forget to implement them
   - [x] Wildcard in search patterns
   - [x] Wildcard in replacement patterns
   - [x] The functions should check for wildcard characters in the search and replace patterns. If the patterns do not have wildcard symbols, then functions without wildcard support should be used. Because functions with wildcards support have more conditions and checks at each iteration, and they run slower than functions without wildcards support (but this is just a hypothesis).
-- [ ] Implement the StartsWith and EndsWith functions to verify that a file begins or ends with a specified set of bytes
+- [x] Implement the StartsWith and EndsWith functions to verify that a file begins or ends with a specified set of bytes
 - [x] Implement search optimization to speed up your search
   - [x] Search optimization in the case when the search pattern starts with or ends with wildcard characters
     - In the case when the search pattern starts with wildcard characters - you need to find the first regular (non-wildcard) byte and search for it, and when searching, indent from the beginning of the file in length between the beginning of the search pattern and the first regular a byte. Otherwise, the search for the wildcard character will turn into a sequential search of all the bytes of the file.

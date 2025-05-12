@@ -132,6 +132,12 @@ namespace HexHandler
             return result;
         }
 
+        /// <summary>
+        /// Test if stream has same bytes array as given in given position
+        /// </summary>
+        /// <param name="sequence">Bytes sequence</param>
+        /// <param name="position">Stream position</param>
+        /// <returns>True if stream in given position has same bytes sequence</returns>
         private bool DoesStreamHaveSequenceInPosition(byte[] sequence, long position)
         {
             byte[] buffer = new byte[sequence.Length];
@@ -141,6 +147,30 @@ namespace HexHandler
             for (int i = 0; i < sequence.Length; i++)
             {
                 if (buffer[i] != sequence[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Test if stream has same bytes array (with wildcardsMask) as given in given position
+        /// </summary>
+        /// <param name="sequence">Bytes sequence</param>
+        /// <param name="wildcardsMask">wildcardsMask</param>
+        /// <param name="position">Stream position</param>
+        /// <returns>True if stream in given position has same bytes sequence (with wildcardsMask)</returns>
+        private bool DoesStreamHaveSequenceInPosition_WithWildcardsMask(byte[] sequence, bool[] wildcardsMask, long position)
+        {
+            byte[] buffer = new byte[sequence.Length];
+            stream.Position = position;
+            stream.Read(buffer, 0, buffer.Length);
+
+            for (int i = 0; i < sequence.Length; i++)
+            {
+                if (!wildcardsMask[i] && buffer[i] != sequence[i])
                 {
                     return false;
                 }
@@ -258,6 +288,92 @@ namespace HexHandler
             Array.Copy(wildcardsMask, skipFromStart, resultWildCards, 0, newLength);
 
             return Tuple.Create(Tuple.Create(resultBytes, resultWildCards), Tuple.Create(skipFromStart, skipFromEnd));
+        }
+
+        /// <summary>
+        /// Test if stream starts from given bytes array
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <returns>True if stream start from given byte array</returns>
+        public bool StartsWith(byte[] searchPattern)
+        {
+            if (searchPattern == null)
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (searchPattern.Length > bufferSize)
+                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+            
+            return DoesStreamHaveSequenceInPosition(searchPattern, 0);
+        }
+
+        /// <summary>
+        /// Test if stream starts from given hexString
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <returns>True if stream start from given hexString</returns>
+        public bool StartsWith(string searchPattern)
+        {
+            if (string.IsNullOrEmpty(searchPattern))
+                throw new ArgumentNullException("searchPattern argument not given");
+            
+            bool isSearchPatternContainWildcards = TestHexStringContainWildcards(searchPattern);
+
+            if (isSearchPatternContainWildcards)
+            {
+                Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+                byte[] searchPatternBytes = dataPair.Item1;
+                bool[] wildcardsMask = dataPair.Item2;
+
+                return DoesStreamHaveSequenceInPosition_WithWildcardsMask(searchPatternBytes, wildcardsMask, 0);
+            }
+            else
+            {
+                byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+
+                return StartsWith(searchPatternBytes);
+            }
+        }
+
+        /// <summary>
+        /// Test if stream ends with given bytes array
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <returns>True if stream ends with given byte array</returns>
+        public bool EndsWith(byte[] searchPattern)
+        {
+            if (searchPattern == null)
+                throw new ArgumentNullException("searchPattern argument not given");
+            if (searchPattern.Length > bufferSize)
+                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
+            
+            return DoesStreamHaveSequenceInPosition(searchPattern, stream.Length - searchPattern.Length);
+        }
+
+        /// <summary>
+        /// Test if stream ends with given hexString
+        /// </summary>
+        /// <param name="searchPattern">Find</param>
+        /// <returns>True if stream ends with given hexString</returns>
+        public bool EndsWith(string searchPattern)
+        {
+            if (string.IsNullOrEmpty(searchPattern))
+                throw new ArgumentNullException("searchPattern argument not given");
+            
+            bool isSearchPatternContainWildcards = TestHexStringContainWildcards(searchPattern);
+
+            if (isSearchPatternContainWildcards)
+            {
+                Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
+                byte[] searchPatternBytes = dataPair.Item1;
+                bool[] wildcardsMask = dataPair.Item2;
+
+                return DoesStreamHaveSequenceInPosition_WithWildcardsMask(searchPatternBytes, wildcardsMask, stream.Length - searchPatternBytes.Length);
+            }
+            else
+            {
+                byte[] searchPatternBytes = ConvertHexStringToByteArray(searchPattern);
+
+                return EndsWith(searchPatternBytes);
+            }
         }
 
         /// <summary>
