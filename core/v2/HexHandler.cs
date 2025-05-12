@@ -150,7 +150,7 @@ namespace HexHandler
         }
 
         /// <summary>
-        /// Extract array without duplicates at edges give array
+        /// Extract array without duplicates at edges given array
         /// </summary>
         /// <example>
         /// For example for array:
@@ -161,7 +161,7 @@ namespace HexHandler
         /// skipFromStart = 3
         /// skipFromEnd = 2
         /// </example>
-        /// <param name="searchPattern"></param>
+        /// <param name="searchPattern">Bytes array mean search pattern</param>
         /// <returns>Return array without duplicates at edges and number of skipped elements from start source array and number of skipped elements from end source array</returns>
         private Tuple<byte[], Tuple<int, int>> extractArrayWithoutDuplicatesAtEdges(byte[] searchPattern)
         {
@@ -201,6 +201,63 @@ namespace HexHandler
             Array.Copy(searchPattern, skipFromStart, result, 0, newLength);
 
             return Tuple.Create(result, Tuple.Create(skipFromStart, skipFromEnd));
+        }
+
+        /// <summary>
+        /// Extract array without duplicates wildcards at edges given array
+        /// </summary>
+        /// <example>
+        /// For example for pattern:
+        /// ?? ?? ?? ?? 79 00 AE ?? F1 ?? 00 90 C3 ?? ?? ??
+        /// we will have bytes array
+        /// 00 00 00 00 79 00 AE 00 F1 00 00 90 C3 00 00 00
+        /// and wildcardsMask (in this example "11" - true, "00" - false)
+        /// 11 11 11 11 00 00 00 11 00 11 00 00 00 11 11 11
+        /// will extracted array
+        /// 79 00 AE 00 F1 00 00 90 C3
+        /// and wildcardsMask
+        /// 00 00 00 11 00 11 00 00 00
+        /// and
+        /// skipFromStart = 4
+        /// skipFromEnd = 3
+        /// </example>
+        /// <param name="searchPattern">Bytes array mean search pattern</param>
+        /// <param name="wildcardsMask">Bool array mean position wildcards in bytes array</param>
+        /// <returns>Return array without duplicates at edges and number of skipped elements from start source array and number of skipped elements from end source array</returns>
+        private Tuple<Tuple<byte[], bool[]>, Tuple<int, int>> extractArrayWithoutDuplicatesAtEdges_WithWildcardsMask(byte[] searchPattern, bool[] wildcardsMask)
+        {
+            int skipFromStart = 0;
+            int skipFromEnd = 0;
+
+            // loop from start array
+            for (int i = 0; i < wildcardsMask.Length; i++)
+            {
+                if (!wildcardsMask[i])
+                {
+                    break;
+                }
+
+                skipFromStart++;
+            }
+
+            // loop from end array
+            for (int i = wildcardsMask.Length - 1; i > 0; i--)
+            {
+                if (!wildcardsMask[i])
+                {
+                    break;
+                }
+
+                skipFromEnd++;
+            }
+
+            int newLength = wildcardsMask.Length - skipFromStart - skipFromEnd;
+            byte[] resultBytes = new byte[newLength];
+            bool[] resultWildCards = new bool[newLength];
+            Array.Copy(searchPattern, skipFromStart, resultBytes, 0, newLength);
+            Array.Copy(wildcardsMask, skipFromStart, resultWildCards, 0, newLength);
+
+            return Tuple.Create(Tuple.Create(resultBytes, resultWildCards), Tuple.Create(skipFromStart, skipFromEnd));
         }
 
         /// <summary>
@@ -419,8 +476,9 @@ namespace HexHandler
         /// <param name="position">Initial position in stream</param>
         /// <param name="skippedFromStart">Number of skipped/removed identical bytes from start/begin of search pattern</param>
         /// <param name="skippedFromEnd">Number of skipped/removed identical bytes from end of search pattern</param>
+        /// <param name="stepBackFromEnd">Number of bytes to be indented before the end of the file</param>
         /// <returns>First index of byte array data, or -1 if find is not found</returns>
-        public long FindFromPosition(byte[] searchPattern, long position = 0, int skippedFromStart = 0, int skippedFromEnd = 0)
+        public long FindFromPosition(byte[] searchPattern, long position = 0, int skippedFromStart = 0, int skippedFromEnd = 0, long stepBackFromEnd = 0)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
@@ -472,7 +530,7 @@ namespace HexHandler
                                 continue;
                             }
 
-                            if (skippedFromEnd > stream.Length - foundPosition)
+                            if (skippedFromEnd > stream.Length - foundPosition - stepBackFromEnd)
                             {
                                 return -1;
                             }
@@ -531,8 +589,10 @@ namespace HexHandler
         /// <param name="searchPattern">Find</param>
         /// <param name="wildcardsMask">Mask if symbol is wildcards</param>
         /// <param name="position">Initial position in stream</param>
+        /// <param name="skippedFromStart">Number of skipped/removed wildcard bytes from start/begin of wildcardsMask</param>
+        /// <param name="skippedFromEnd">Number of skipped/removed wildcard bytes from end of wildcardsMask</param>
         /// <returns>First index of byte array data, or -1 if find is not found</returns>
-        private long FindFromPosition_WithWildcardsMask(byte[] searchPattern, bool[] wildcardsMask, long position = 0)
+        private long FindFromPosition_WithWildcardsMask(byte[] searchPattern, bool[] wildcardsMask, long position = 0, int skippedFromStart = 0, int skippedFromEnd = 0)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException("searchPattern argument not given");
@@ -556,13 +616,20 @@ namespace HexHandler
             bool isMaskHasNoWildcards = Array.TrueForAll(wildcardsMask, x => !x);
             if (isMaskHasNoWildcards)
             {
-                return FindFromPosition(searchPattern, position);
+                Tuple<byte[], Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges(searchPattern);
+                byte[] genuineArray = extractedData.Item1;
+                int skippedFromStartGenuine = extractedData.Item2.Item1;
+                int skippedFromEndGenuine = extractedData.Item2.Item2;
+
+                return FindFromPosition(genuineArray, position + skippedFromStart, skippedFromStartGenuine, skippedFromEndGenuine, skippedFromEnd) - skippedFromStart;
             }
 
             long foundPosition = -1;
             byte[] buffer = new byte[bufferSize + searchPattern.Length - 1];
             int bytesRead;
             stream.Position = position;
+
+            bool isPatternHaveDuplicatesAtEdges = skippedFromStart > 0 || skippedFromEnd > 0;
 
             while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
             {
@@ -588,7 +655,27 @@ namespace HexHandler
                     if (match)
                     {
                         foundPosition = position + foundIndex;
-                        return foundPosition;
+
+                        if (isPatternHaveDuplicatesAtEdges)
+                        {
+                            if (skippedFromStart > foundPosition || foundPosition - skippedFromStart < position)
+                            {
+                                match = false;
+                                index = foundIndex + 1;
+                                continue;
+                            }
+
+                            if (skippedFromEnd > stream.Length - foundPosition)
+                            {
+                                return -1;
+                            }
+
+                            return foundPosition - skippedFromStart;
+                        }
+                        else
+                        {
+                            return foundPosition;
+                        }
                     }
                     else
                     {
@@ -660,7 +747,14 @@ namespace HexHandler
                 Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
                 byte[] searchPatternBytes = dataPair.Item1;
                 bool[] wildcardsMask = dataPair.Item2;
-                return FindFromPosition_WithWildcardsMask(searchPatternBytes, wildcardsMask, 0);
+                
+                Tuple<Tuple<byte[], bool[]>, Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges_WithWildcardsMask(searchPatternBytes, wildcardsMask);
+                byte[] genuineArray = extractedData.Item1.Item1;
+                bool[] genuineMask = extractedData.Item1.Item2;
+                int skippedFromStart = extractedData.Item2.Item1;
+                int skippedFromEnd = extractedData.Item2.Item2;
+
+                return FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, 0, skippedFromStart, skippedFromEnd);
             }
             else
             {
