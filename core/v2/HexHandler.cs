@@ -896,7 +896,7 @@ namespace HexHandler
             {
                 for (int i = 1; i < amount; i++)
                 {
-                    long nextFoundPosition = FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, foundPositions[foundPositions.Count - 1] + 1, skippedFromStart, skippedFromEnd);
+                    long nextFoundPosition = FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, foundPositions[foundPositions.Count - 1] + searchPattern.Length, skippedFromStart, skippedFromEnd);
 
                     if (nextFoundPosition > 0)
                     {
@@ -940,7 +940,7 @@ namespace HexHandler
             {
                 for (int i = 1; i < amount; i++)
                 {
-                    long nextFoundPosition = FindFromPosition(genuineArray, foundPositions[foundPositions.Count - 1] + 1, skippedFromStart, skippedFromEnd);
+                    long nextFoundPosition = FindFromPosition(genuineArray, foundPositions[foundPositions.Count - 1] + searchPattern.Length, skippedFromStart, skippedFromEnd);
 
                     if (nextFoundPosition > 0)
                     {
@@ -981,7 +981,7 @@ namespace HexHandler
             {
                 while (foundPosition < stream.Length - searchPattern.Length)
                 {
-                    foundPosition = FindFromPosition(genuineArray, foundPositionsList[foundPositionsList.Count - 1] + 1, skippedFromStart, skippedFromEnd);
+                    foundPosition = FindFromPosition(genuineArray, foundPositionsList[foundPositionsList.Count - 1] + searchPattern.Length, skippedFromStart, skippedFromEnd);
 
                     if (foundPosition > 0)
                     {
@@ -1034,7 +1034,7 @@ namespace HexHandler
 
                     while (nextFoundPosition < stream.Length - searchPatternBytes.Length)
                     {
-                        nextFoundPosition = FindFromPosition(genuineArray, foundPositionsList[foundPositionsList.Count - 1] + 1, skippedFromStart, skippedFromEnd);
+                        nextFoundPosition = FindFromPosition(genuineArray, foundPositionsList[foundPositionsList.Count - 1] + searchPatternBytes.Length, skippedFromStart, skippedFromEnd);
 
                         if (nextFoundPosition > 0)
                         {
@@ -1112,7 +1112,7 @@ namespace HexHandler
                 
                 while (nextFoundPosition < stream.Length - searchPattern.Length)
                 {
-                    nextFoundPosition = FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, foundPositions[foundPositions.Count - 1] + 1, skippedFromStart, skippedFromEnd);
+                    nextFoundPosition = FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, foundPositions[foundPositions.Count - 1] + searchPattern.Length, skippedFromStart, skippedFromEnd);
 
                     if (nextFoundPosition > 0)
                     {
