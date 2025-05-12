@@ -493,7 +493,7 @@ namespace HexHandler
                 throw new ArgumentOutOfRangeException("position should more than zero");
             if (position > stream.Length)
                 throw new ArgumentOutOfRangeException("position must be within the stream body");
-            if (searchPattern.Length > bufferSize)
+            if (searchPattern.Length + skippedFromStart + skippedFromEnd > bufferSize)
                 throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             long foundPosition = -1;
@@ -611,7 +611,7 @@ namespace HexHandler
                 throw new ArgumentOutOfRangeException("position should more than zero");
             if (position > stream.Length)
                 throw new ArgumentOutOfRangeException("position must be within the stream body");
-            if (searchPattern.Length > bufferSize)
+            if (searchPattern.Length + skippedFromStart + skippedFromEnd > bufferSize)
                 throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             bool isMaskFilledWildcards = Array.TrueForAll(wildcardsMask, x => x);
