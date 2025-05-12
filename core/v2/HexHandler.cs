@@ -140,6 +140,13 @@ namespace HexHandler
         /// <returns>True if stream in given position has same bytes sequence</returns>
         private bool DoesStreamHaveSequenceInPosition(byte[] sequence, long position)
         {
+            if (sequence.Length > bufferSize)
+                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", sequence.Length, bufferSize));
+            if (position < 0)
+                throw new ArgumentOutOfRangeException("position should more than zero");
+            if (position > stream.Length)
+                throw new ArgumentOutOfRangeException("position must be within the stream body");
+
             byte[] buffer = new byte[sequence.Length];
             stream.Position = position;
             stream.Read(buffer, 0, buffer.Length);
@@ -164,6 +171,13 @@ namespace HexHandler
         /// <returns>True if stream in given position has same bytes sequence (with wildcardsMask)</returns>
         private bool DoesStreamHaveSequenceInPosition_WithWildcardsMask(byte[] sequence, bool[] wildcardsMask, long position)
         {
+            if (sequence.Length > bufferSize)
+                throw new ArgumentException(string.Format("Find size {0} is too large for buffer size {1}", sequence.Length, bufferSize));
+            if (position < 0)
+                throw new ArgumentOutOfRangeException("position should more than zero");
+            if (position > stream.Length)
+                throw new ArgumentOutOfRangeException("position must be within the stream body");
+
             byte[] buffer = new byte[sequence.Length];
             stream.Position = position;
             stream.Read(buffer, 0, buffer.Length);
@@ -419,8 +433,6 @@ namespace HexHandler
                 throw new ArgumentNullException("searchPattern argument not given");
             if (string.IsNullOrEmpty(insertPattern))
                 throw new ArgumentNullException("insertPattern argument not given");
-            if (searchPattern.Length > bufferSize)
-                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             bool isSearchPatternContainWildcards = TestHexStringContainWildcards(searchPattern);
             long[] offsets;
@@ -490,8 +502,6 @@ namespace HexHandler
                 throw new ArgumentNullException("searchPattern argument not given");
             if (string.IsNullOrEmpty(insertPattern))
                 throw new ArgumentNullException("insertPattern argument not given");
-            if (searchPattern.Length > bufferSize)
-                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             bool isSearchPatternContainWildcards = TestHexStringContainWildcards(searchPattern);
             long[] offsets;
@@ -558,8 +568,6 @@ namespace HexHandler
                 throw new ArgumentNullException("searchPattern argument not given");
             if (string.IsNullOrEmpty(insertPattern))
                 throw new ArgumentNullException("insertPattern argument not given");
-            if (searchPattern.Length > bufferSize)
-                throw new ArgumentOutOfRangeException(string.Format("Find size {0} is too large for buffer size {1}", searchPattern.Length, bufferSize));
 
             bool isSearchPatternContainWildcards = TestHexStringContainWildcards(searchPattern);
             long offset;
