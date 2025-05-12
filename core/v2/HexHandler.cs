@@ -453,7 +453,14 @@ namespace HexHandler
                 Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
                 byte[] searchPatternBytes = dataPair.Item1;
                 bool[] wildcardsMask = dataPair.Item2;
-                offset = FindFromPosition_WithWildcardsMask(searchPatternBytes, wildcardsMask, 0);
+                
+                Tuple<Tuple<byte[], bool[]>, Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges_WithWildcardsMask(searchPatternBytes, wildcardsMask);
+                byte[] genuineArray = extractedData.Item1.Item1;
+                bool[] genuineMask = extractedData.Item1.Item2;
+                int skippedFromStart = extractedData.Item2.Item1;
+                int skippedFromEnd = extractedData.Item2.Item2;
+
+                offset = FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, 0, skippedFromStart, skippedFromEnd);
             }
             else
             {
@@ -716,7 +723,14 @@ namespace HexHandler
                 Tuple<byte[], bool[]> dataPair = ConvertHexStringWithWildcardsToByteArrayAndMask(searchPattern);
                 byte[] searchPatternBytes = dataPair.Item1;
                 bool[] wildcardsMask = dataPair.Item2;
-                return FindFromPosition_WithWildcardsMask(searchPatternBytes, wildcardsMask, position);
+                
+                Tuple<Tuple<byte[], bool[]>, Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges_WithWildcardsMask(searchPatternBytes, wildcardsMask);
+                byte[] genuineArray = extractedData.Item1.Item1;
+                bool[] genuineMask = extractedData.Item1.Item2;
+                int skippedFromStart = extractedData.Item2.Item1;
+                int skippedFromEnd = extractedData.Item2.Item2;
+
+                return FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, position, skippedFromStart, skippedFromEnd);
             }
             else
             {
@@ -868,15 +882,21 @@ namespace HexHandler
 
                 return foundPositions.ToArray();
             }
+                
+            Tuple<Tuple<byte[], bool[]>, Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges_WithWildcardsMask(searchPattern, wildcardsMask);
+            byte[] genuineArray = extractedData.Item1.Item1;
+            bool[] genuineMask = extractedData.Item1.Item2;
+            int skippedFromStart = extractedData.Item2.Item1;
+            int skippedFromEnd = extractedData.Item2.Item2;
 
-            long firstFoundPosition = FindFromPosition_WithWildcardsMask(searchPattern, wildcardsMask, 0);
+            long firstFoundPosition = FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, 0, skippedFromStart, skippedFromEnd);
             foundPositions.Add(firstFoundPosition);
 
             if (firstFoundPosition > 0 || amount > 1)
             {
                 for (int i = 1; i < amount; i++)
                 {
-                    long nextFoundPosition = FindFromPosition_WithWildcardsMask(searchPattern, wildcardsMask, foundPositions[foundPositions.Count - 1] + 1);
+                    long nextFoundPosition = FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, foundPositions[foundPositions.Count - 1] + 1, skippedFromStart, skippedFromEnd);
 
                     if (nextFoundPosition > 0)
                     {
@@ -1076,8 +1096,14 @@ namespace HexHandler
 
                 return foundPositions.ToArray();
             }
+                
+            Tuple<Tuple<byte[], bool[]>, Tuple<int, int>> extractedData = extractArrayWithoutDuplicatesAtEdges_WithWildcardsMask(searchPattern, wildcardsMask);
+            byte[] genuineArray = extractedData.Item1.Item1;
+            bool[] genuineMask = extractedData.Item1.Item2;
+            int skippedFromStart = extractedData.Item2.Item1;
+            int skippedFromEnd = extractedData.Item2.Item2;
 
-            long firstFoundPosition = FindFromPosition_WithWildcardsMask(searchPattern, wildcardsMask, 0);
+            long firstFoundPosition = FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, 0, skippedFromStart, skippedFromEnd);
             foundPositions.Add(firstFoundPosition);
 
             if (firstFoundPosition > 0)
@@ -1086,7 +1112,7 @@ namespace HexHandler
                 
                 while (nextFoundPosition < stream.Length - searchPattern.Length)
                 {
-                    nextFoundPosition = FindFromPosition_WithWildcardsMask(searchPattern, wildcardsMask, foundPositions[foundPositions.Count - 1] + 1);
+                    nextFoundPosition = FindFromPosition_WithWildcardsMask(genuineArray, genuineMask, foundPositions[foundPositions.Count - 1] + 1, skippedFromStart, skippedFromEnd);
 
                     if (nextFoundPosition > 0)
                     {
