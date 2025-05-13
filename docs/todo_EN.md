@@ -64,8 +64,11 @@ Here is a list of functions that are specific and I may forget to implement them
   - [ ] Compare the speed of the current algorithm with the Boyer-Moore-Horspool algorithm
   - Links to examples of implemented search functions by this algorithm are in the [file](./additional_info_EN.md#implementations-of-hex-pattern-search-in-c) with additional information
 - [ ] Implement support for deleting found hex patterns from a file
-- [x] Implement a hex pattern search function starting from a specific offset in the file or starting from a specific part of the file in %
-- [x] Implement support for limiting substitutions of found patterns (if not all found sequences need to be replaced)
+- [ ] Implement a hex pattern search function starting from a specific offset in the file or starting from a specific part of the file in %
+- [ ] Implement support specifying indexes of found patterns (if not all found sequences need to be replaced)
+- [ ] Figure out whether it's worth storing the C# code inside a Powershell script as a zip archive in base64 or a cab archive.
+  - This will help reduce the size of the Powershell script by 10-20 kilobytes, but it will probably increase the duration of its operation, because in order to compile the C# code, you will first need to decode the base64 string, and then unpack the resulting zip archive or cab archive.
+  - Most likely it is not necessary
 
 ### Information output
 
