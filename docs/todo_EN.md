@@ -56,6 +56,8 @@ Here is a list of functions that are specific and I may forget to implement them
     - In the case when the search pattern starts with a sequence of identical characters (for example, in the search pattern, the first 10 bytes are zero bytes), then it is necessary to "virtually delete" all duplicate bytes at the beginning (that is, delete 9 zero bytes), leaving only 1 byte from the sequence of identical ones. When this byte is found, you will need to check that there are 9 bytes in front of it that are the same as itself.
     - I am not sure that this will speed up the work when using patterns with a sequence of identical bytes at the beginning, so it is necessary to conduct competent tests and performance checks with such optimization.
 - [ ] Implement a check for the rights to modify/overwrite the file immediately after the first found pattern, rather than after going through all the patterns in the main script
+- [ ] To transfer part of the functionality from `ReplaceHexBytesAll` to the C# code
+  - Consider the possibility of transferring both to separate classes and to the `BytesHandler` class
 - [ ] Reorganize/rewrite/split the kernel code into different files in an OOP-style
   - For example, how [тут](https://github.com/Invertex/BinaryFilePatcher/blob/master/BinaryFilePatcher/BinaryFilePatcher.cs )
 - [ ] Implement regular expression support in hex templates as in `sed` or `perl`
