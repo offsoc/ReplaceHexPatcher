@@ -491,7 +491,20 @@ function ShowInfoAboutReplacedPatterns {
         Write-Host "No patterns was found in $filePathFull"
     }
     elseif ($isAllPatternsFound) {
-        Write-Host "All hex patterns found and replaced successfully in $filePathFull"
+        if ($needMoreInfo) {
+            Write-Host "All hex patterns found and replaced successfully"
+            Write-Host ""
+            Write-Host "Here details - <Pattern>: <occurrences>"
+            
+            for ($i = 0; $i -lt $numbersFoundOccurrences.Count; $i++) {
+                Write-Host "$($patternsArray[$i]) : $($numbersFoundOccurrences[$i])"
+            }
+            Write-Host ""
+            Write-Host "In file `"$filePathFull`""
+        }
+        else {
+            Write-Host "All hex patterns found and replaced successfully in $filePathFull"
+        }
     }
     else {
         if ($needMoreInfo) {
