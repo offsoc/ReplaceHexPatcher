@@ -503,7 +503,7 @@ function CalculateNumbersFoundOccurrences {
             [void]($numbersFoundOccurrences.Add(0))
         }
         else {
-            [void]($numbersFoundOccurrences.Add($foundPositions.Count))
+            [void]($numbersFoundOccurrences.Add($foundPositions[$i].Count))
         }
     }
 
