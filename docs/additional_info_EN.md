@@ -76,6 +76,11 @@ But it was not without drawbacks. And here they are:
   - Perhaps the situation is better in Powershell Core, but in Powershell 5.1, which comes out of the box in Windows 10, the speed of the script is very different from the same when compiled in C#.
 - Probably due to non-strict typing (or lack thereof), errors do not occur where they should be, for example, when trying to get an array element by an index that points outside the array. If you don't notice this (and don't write additional index verification conditions), then you get used to it, and then when porting code to languages with normal typing (for example, C#), errors occur and you can search for an error in the code for a long time. Although the direct porting from Powershell to C# was done correctly.
 - In Powershell, if a function returns an array with 1 element (for example, the number -1), then Powershell automatically "unpacks" this array and returns this single element from the array, rather than an array with 1 element.
+- Examples from the Internet and seemingly logical code may not work. For example, such code examples:
+  - `irm https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/core/v2/ReplaceHexBytesAll.ps1 | iex`
+  - `& ([scriptblock]::Create((Invoke-RestMethod -Uri "https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/core/v2/ReplaceHexBytesAll.ps1")))`
+  - `$url="https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/core/v2/ReplaceHexBytesAll.ps1"; $f=[System.IO.Path]::GetTempFileName()+".ps1"; (irm $url)>$f; & $f`
+  - As a result, as it turned out, Powershell for some reason automatically converted the encoding to `UTF-16 LE` and saved the file with this encoding (and the size of the saved file increased by 2 times), although the encoding in the original file was `UTF-8 with BOM`
 
 ## Usefulness
 
