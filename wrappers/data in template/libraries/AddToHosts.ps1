@@ -1,23 +1,3 @@
-param (
-    [string]$templateContent,
-    [System.Collections.Hashtable]$vars
-)
-
-
-# =====
-# REQUIREMENTS
-# =====
-
-# Function "DoWeHaveAdministratorPrivileges" wrote in external script where this script importing.
-# If need use this script not like library but like full separated script - write the function in this file or import it  
-
-
-
-# =====
-# GLOBAL VARIABLES
-# =====
-
-$PSHost = If ($PSVersionTable.PSVersion.Major -le 5) {'PowerShell'} Else {'PwSh'}
 
 # Text - flags in parse sections
 [string]$notModifyFlag = 'NOT MODIFY IT'
@@ -26,11 +6,6 @@ $PSHost = If ($PSVersionTable.PSVersion.Major -le 5) {'PowerShell'} Else {'PwSh'
 [string]$localhostIP = '127.0.0.1'
 [string]$zeroIP = '0.0.0.0'
 
-
-
-# =====
-# FUNCTIONS
-# =====
 
 
 <#
@@ -188,20 +163,4 @@ Clear-DnsClientCache
 "@
         Start-Process $PSHost -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command `"$command`""
     }
-}
-
-
-# =====
-# MAIN
-# =====
-
-try {
-    if ($templateContent -and $vars) {
-        $variables = $vars
-        AddToHosts -content $templateContent
-    }
-}
-catch {
-    Write-Error $_.Exception.Message
-    exit 1
 }

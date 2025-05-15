@@ -1,31 +1,6 @@
-param (
-    [string]$templateContent,
-    [System.Collections.Hashtable]$vars
-)
-
-
-# =====
-# REQUIREMENTS
-# =====
-
-# Function "DoWeHaveAdministratorPrivileges" wrote in external script where this script importing.
-# If need use this script not like library but like full separated script - write the function in this file or import it  
-
-
-# =====
-# GLOBAL VARIABLES
-# =====
-
-$PSHost = If ($PSVersionTable.PSVersion.Major -le 5) {'PowerShell'} Else {'PwSh'}
 
 # Text - flags in parse sections
 [string]$moveToBinFlag = 'MOVE TO BIN'
-
-
-# =====
-# FUNCTIONS
-# =====
-
 
 <#
 .SYNOPSIS
@@ -273,20 +248,4 @@ Remove-Item -Path '$item' -Recurse -Force
             throw "Something happened wrong when process remove files or folders with admins privileges"
         }
     }
-}
-
-
-# =====
-# MAIN
-# =====
-
-try {
-    if ($templateContent -and $vars) {
-        $variables = $vars
-        DeleteFilesOrFolders -content $templateContent
-    }
-}
-catch {
-    Write-Error $_.Exception.Message
-    exit 1
 }

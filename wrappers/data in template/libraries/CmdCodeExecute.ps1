@@ -1,22 +1,3 @@
-param (
-    [string]$templateContent,
-    [System.Collections.Hashtable]$vars
-)
-
-
-# =====
-# REQUIREMENTS
-# =====
-
-# Function "DoWeHaveAdministratorPrivileges" wrote in external script where this script importing.
-# If need use this script not like library but like full separated script - write the function in this file or import it  
-
-
-
-# =====
-# FUNCTIONS
-# =====
-
 
 <#
 .DESCRIPTION
@@ -89,20 +70,4 @@ function CmdCodeExecute {
     catch {
         Write-Error "Error while execute CMD-code from template - " $_.Exception.Message
     }
-}
-
-
-# =====
-# MAIN
-# =====
-
-try {
-    if ($templateContent -and $vars) {
-        $variables = $vars
-        CmdCodeExecute -content $templateContent
-    }
-}
-catch {
-    Write-Error $_.Exception.Message
-    exit 1
 }

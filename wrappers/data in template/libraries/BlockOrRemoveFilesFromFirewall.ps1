@@ -1,21 +1,3 @@
-param (
-    [string]$templateContent,
-    [System.Collections.Hashtable]$vars
-)
-
-
-# =====
-# REQUIREMENTS
-# =====
-
-# Function "DoWeHaveAdministratorPrivileges" wrote in external script where this script importing.
-# If need use this script not like library but like full separated script - write the function in this file or import it  
-
-
-
-# =====
-# FUNCTIONS
-# =====
 
 
 <#
@@ -187,21 +169,4 @@ function BlockFilesWithFirewall {
         [void](New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Program $line -Action Block -Profile Any)
         [void](New-NetFirewallRule -DisplayName $ruleName -Direction Outbound -Program $line -Action Block -Profile Any)
     }
-}
-
-
-# =====
-# MAIN
-# =====
-
-try {
-    if ($templateContent -and $vars) {
-        $variables = $vars
-        BlockFilesWithFirewall -content $firewallBlockContent
-        # RemoveBlockFilesFromFirewall -content $firewallRemoveBlockContent
-    }
-}
-catch {
-    Write-Error $_.Exception.Message
-    exit 1
 }

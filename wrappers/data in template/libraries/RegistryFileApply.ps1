@@ -1,21 +1,3 @@
-param (
-    [string]$templateContent,
-    [System.Collections.Hashtable]$vars
-)
-
-
-# =====
-# REQUIREMENTS
-# =====
-
-# Function "GetTypeEndLines" wrote in external script where this script importing.
-# If need use this script not like library but like full separated script - write the function in this file or import it
-
-
-# =====
-# FUNCTIONS
-# =====
-
 
 <#
 .DESCRIPTION
@@ -61,20 +43,4 @@ function RegistryFileApply {
     catch {
         Write-Error "Error when trying modify Registry"
     }
-}
-
-
-# =====
-# MAIN
-# =====
-
-try {
-    if ($templateContent -and $vars) {
-        $variables = $vars
-        RegistryFileApply $templateContent
-    }
-}
-catch {
-    Write-Error $_.Exception.Message
-    exit 1
 }

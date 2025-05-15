@@ -1,8 +1,3 @@
-param (
-    [string]$templateContent,
-    [System.Collections.Hashtable]$vars
-)
-
 
 <#
 .DESCRIPTION
@@ -55,21 +50,5 @@ function GetPatcherFile {
     }
     
     Write-Error "No valid URL for patcher or paths for file-patcher in template"
-    exit 1
-}
-
-
-# =====
-# MAIN
-# =====
-
-try {
-    if ($templateContent -and $vars) {
-        $variables = $vars
-        GetPatcherFile -content $templateContent
-    }
-}
-catch {
-    Write-Error $_.Exception.Message
     exit 1
 }

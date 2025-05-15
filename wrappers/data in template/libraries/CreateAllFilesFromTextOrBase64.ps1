@@ -1,34 +1,9 @@
-param (
-    [string]$templateContent,
-    [System.Collections.Hashtable]$vars
-)
-
-
-# =====
-# REQUIREMENTS
-# =====
-
-# Function "DoWeHaveAdministratorPrivileges" wrote in external script where this script importing.
-# If need use this script not like library but like full separated script - write the function in this file or import it  
-
-
-# =====
-# GLOBAL VARIABLES
-# =====
-
-$PSHost = If ($PSVersionTable.PSVersion.Major -le 5) {'PowerShell'} Else {'PwSh'}
 
 # Text - flags in parse sections
 [string]$binaryDataFlag = 'BINARY DATA'
 
 # Names loaded .ps1 files
 [string]$deleteFilesOrFoldersScriptName = 'DeleteFilesOrFolders'
-
-
-# =====
-# FUNCTIONS
-# =====
-
 
 <#
 .SYNOPSIS
@@ -191,21 +166,4 @@ function CreateFilesFromData {
             throw "Something happened wrong when create files with data with administrator privileges"
         }
     }
-}
-
-
-# =====
-# MAIN
-# =====
-
-try {
-    if ($templateContent -and $vars) {
-        $variables = $vars
-        CreateAllFilesFromText -sectionContents $templateContent
-        # CreateAllFilesFromBase64 -sectionContents $createFilesFromBase64Content
-    }
-}
-catch {
-    Write-Error $_.Exception.Message
-    exit 1
 }
