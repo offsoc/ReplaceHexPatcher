@@ -177,6 +177,22 @@ function DeleteFilesOrFolders {
                 if ($needRunAS -and $isReadOnly) {
                     [void]$itemsDeleteWithAdminsPrivilegesAndDisableReadOnly.Add($line)
                 }
+                if (-not $isReadOnly) {
+                    if ($needMoveToBin) {
+                        Move-ToRecycleBin -targetPath $line
+                    } else {
+                        Remove-Item -Path $line -Recurse
+                    }
+                }
+                if ($isReadOnly) {
+                    if ($needMoveToBin) {
+                        # files with "readonly" attribute can be moved in Bin without problems without remove this attribute
+                        Move-ToRecycleBin -targetPath $line
+                    } else {
+                        Set-ItemProperty -Path $line -Name Attributes -Value ($fileAttributes -bxor [System.IO.FileAttributes]::ReadOnly)
+                        Remove-Item -Path $line -Recurse
+                    }
+                }
             }
         } else {
             # If it is a folder, it is very difficult to determine in advance whether administrator rights are needed to delete it,
