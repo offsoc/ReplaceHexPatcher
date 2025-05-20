@@ -1760,7 +1760,7 @@ try {
         $patternsExtracted = $patterns
     }
 
-    # if any method from C# code exist - C# already imported in the script and not need compile and import it again
+    # if any class from C# code exist - C# already imported in the script and not need compile and import it again
     if (-not ("HexHandler.BytesReplacer" -as [Type])) {
         Add-Type -TypeDefinition $hexHandler -Language CSharp
     }

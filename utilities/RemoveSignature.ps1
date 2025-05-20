@@ -1,6 +1,22 @@
-# TODO
+param (
+    [Parameter(Mandatory)]
+    [string]$filePath
+)
 
-Add-Type @"
+if (-not (Test-Path $filePath)) {
+    Write-Error "File not found: $filePath"
+    exit 1
+}
+
+# =====
+# GLOBAL VARIABLES
+# =====
+
+[string]$filePathFull = [System.IO.Path]::GetFullPath($filePath)
+
+
+
+$signatureHandler = @"
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -21,12 +37,40 @@ public class SignatureRemover
 }
 "@
 
-# Usage example
-$filePath = "C:\path\to\your\file.exe"
-$result = [SignatureRemover]::RemoveSignature($filePath)
 
-if ($result) {
-    Write-Host "Digital signature has been successfully deleted."
-} else {
-    Write-Host "The digital signature could not be deleted. Error: $([System.Runtime.InteropServices.Marshal]::GetLastWin32Error())"
+try {
+    Write-Host "Start trying remove digital signature for file:"
+    Write-Host $filePathFull
+    Write-Host
+
+    # if any class from C# code exist - C# already imported in the script and not need compile and import it again
+    if (-not ("SignatureRemover" -as [Type])) {
+        Add-Type -TypeDefinition $signatureHandler -Language CSharp
+    }
+
+    [int]$sizeKBOriginal = (Get-ChildItem $filePathFull).Length / 1024
+    
+    [bool]$result = [SignatureRemover]::RemoveSignature($filePathFull)
+    
+    if ($result) {
+        Write-Host "Digital signature has been successfully deleted!"
+
+        [int]$sizeKBWithoutSignature = (Get-ChildItem $filePathFull).Length / 1024
+        
+        Write-Host "The file began to size less by $($sizeKBOriginal - $sizeKBWithoutSignature) KB"
+    } else {
+        [System.Management.Automation.Signature]$signature = Get-AuthenticodeSignature -FilePath $filePathFull
+
+        if (($signature.Status -eq "Valid") -or ($signature.Status -eq "HashMismatch") -or ($signature.Status -eq "NotTrusted")) {
+            Write-Error "File still have signature but something went wrong"
+            exit 1
+        }
+        
+        if (($signature.Status -eq "UnknownError") -or ($signature.Status -eq "NotSigned") -or ($signature.Status -eq "NotSupportedFileFormat") -or ($signature.Status -eq "Incompatible")) {
+            Write-Host "File don't have signature"
+        }
+    }
+} catch {
+    Write-Error $_.Exception.Message
+    exit 1
 }
