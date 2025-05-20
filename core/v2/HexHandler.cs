@@ -133,6 +133,53 @@ namespace HexHandler
         }
 
         /// <summary>
+        /// Check if file start from 2 symbols - MZ (or 4D 5A in hex)
+        /// It part of check if file is PE-file
+        /// </summary>
+        /// <returns>True if file start with MZ symbols or false if not</returns>
+        private bool IsFileStartWithMZSymbols()
+        {
+            byte[] mzSignature = new byte[] { 0x4D, 0x5A };
+            return StartsWith(mzSignature);
+        }
+
+        /// <summary>
+        /// Check if file at offset/position 0x3C have pointer to PE-header
+        /// and on this position we have hex 50 45 00 00 (PE\0\0)
+        /// </summary>
+        /// <returns>True if file have pointer to PE-header and PE-header</returns>
+        private bool IsFileHavePointerToPEHeader()
+        {
+            // got to offset 0x3C
+            stream.Seek(60, SeekOrigin.Begin);
+            byte[] buffer = new byte[4];
+            if (stream.Read(buffer, 0, buffer.Length) != buffer.Length)
+            {
+                return false;
+            }
+
+            int position = BitConverter.ToInt32(buffer, 0);
+            byte[] PE00_buffer = new byte[4];
+            stream.Seek(position, SeekOrigin.Begin);
+            if (stream.Read(PE00_buffer, 0, PE00_buffer.Length) != PE00_buffer.Length)
+            {
+                return false;
+            }
+            byte[] PE00_true = new byte[] { 0x50, 0x45, 0x00, 0x00 };
+
+            return PE00_buffer.SequenceEqual(PE00_true);
+        }
+        
+        /// <summary>
+        /// Detect if file is PE-file like .exe or .dll or sys...
+        /// </summary>
+        /// <returns>True if file is PE-file</returns>
+        public bool IsFilePEFile()
+        {
+            return IsFileStartWithMZSymbols() && IsFileHavePointerToPEHeader();
+        }
+
+        /// <summary>
         /// Test if stream has same bytes array as given in given position
         /// </summary>
         /// <param name="sequence">Bytes sequence</param>
