@@ -81,7 +81,13 @@ function CreateFilesFromData {
     # else endLinesNeed var is empty - mean second line in content is start for future file content
     if ($isBase64) {
         [string[]]$tempContentLines = $cleanedContentLines[1..($cleanedContentLines.Length-1)]
-        [byte[]]$targetContent = [Convert]::FromBase64String($tempContentLines)
+        
+        try {
+            [byte[]]$targetContent = [Convert]::FromBase64String($tempContentLines)
+        }
+        catch {
+            throw "Cannot decode base64-code. Looks like provided base64-code is not valid."
+        }
     } elseif ($endLinesNeed -eq '') {
         [string[]]$tempContentLines = $cleanedContentLines[1..($cleanedContentLines.Length-1)]
         
