@@ -18,8 +18,10 @@ param (
 )
 
 if (-not (Test-Path $filePath)) {
-    Write-Error "File not found: $filePath"
-    exit 1
+    if (-not (Test-Path -LiteralPath $filePath)) {
+        Write-Error "File not found: $filePath"
+        exit 1
+    }
 }
 
 if ($patterns.Count -eq 0) {
@@ -50,15 +52,16 @@ $PSHost = If ($PSVersionTable.PSVersion.Major -le 5) { 'PowerShell' } Else { 'Pw
             return "-$($_.Key) `"$tempValue`""
         }
 
-        if (Test-Path $_.Value) {
-            $tempValue = [System.IO.Path]::GetFullPath($_.Value)
+        if ((Test-Path $_.Value) -or (Test-Path -LiteralPath $_.Value)) {
+            $tempValue = [System.IO.Path]::GetFullPath(($_.Value -ireplace "``", ""))
             return "-$($_.Key) `"$tempValue`""
         }
 
         return "-$($_.Key) `"$($_.Value)`""
     }) -join " "
 
-[string]$filePathFull = [System.IO.Path]::GetFullPath($filePath)
+[string]$filePathFull_Unescaped = [System.IO.Path]::GetFullPath(($filePath -ireplace "``", ""))
+[string]$filePathFull = [System.Management.Automation.WildcardPattern]::Escape($filePathFull_Unescaped)
 
 # Flag that mean file launched like a script and not imported like a library
 [bool]$isDirectExecution = [bool]$($MyInvocation.InvocationName -ne '.')
@@ -107,9 +110,9 @@ function Test-ReadOnlyAndWriteAccess {
     }
     else {
         $isReadOnly = $false
-
+        
         try {
-            $stream = [System.IO.File]::Open($targetPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Write)
+            $stream = [System.IO.File]::Open(("$targetPath" -ireplace "``",""), [System.IO.FileMode]::Open, [System.IO.FileAccess]::Write)
             $stream.Close()
             $needRunAs = $false
         }
@@ -397,7 +400,7 @@ function SearchReplace-HexPatternInBinaryFile {
     [string[]]$searchPatterns, [string[]]$replacePatterns = Separate-Patterns $patternsArray -possibleSearchPatternsOnly $isSearchOnly
 
     try {
-        $stream = [System.IO.File]::Open($targetPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite)
+        $stream = [System.IO.File]::Open(($targetPath -ireplace "``", ""), [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite)
     }
     catch {
         [void]($stream.Close())
@@ -452,12 +455,11 @@ function KillExeTasks {
         return
     }
     
-    $targetName = [System.IO.Path]::GetFileNameWithoutExtension($targetPath)
+    $targetName = [System.IO.Path]::GetFileNameWithoutExtension(($targetPath -ireplace "``", ""))
 
+    
     $process = Get-Process | ForEach-Object {
-        if ($_.Path -eq $targetPath) {
-            return $_.Path -eq $targetPath
-        }
+        return $_.Path -eq ($targetPath -ireplace "``", "")
     }
 
     if ($process) {
@@ -640,7 +642,7 @@ if ($isDirectExecution) {
     }
 
     [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $filePathFull -patterns $patternsExtracted -needMakeBackup $makeBackup -isSearchOnly $onlyCheckOccurrences
-
+    
     Show-InfoAboutReplacedPatterns $patternsExtracted $foundPositions $showMoreInfo -needShowPositionsDecimal $showFoundOffsetsInDecimal -needShowPositionsHex $showFoundOffsetsInHex
 
     if (-not $skipStopwatch) {

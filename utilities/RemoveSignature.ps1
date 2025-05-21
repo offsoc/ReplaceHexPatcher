@@ -4,15 +4,18 @@ param (
 )
 
 if (-not (Test-Path $filePath)) {
-    Write-Error "File not found: $filePath"
-    exit 1
+    if (-not (Test-Path -LiteralPath $filePath)) {
+        Write-Error "File not found: $filePath"
+        exit 1
+    }
 }
 
 # =====
 # GLOBAL VARIABLES
 # =====
 
-[string]$filePathFull = [System.IO.Path]::GetFullPath($filePath)
+[string]$filePathFull_Unescaped = [System.IO.Path]::GetFullPath(($filePath -ireplace "``", ""))
+[string]$filePathFull = [System.Management.Automation.WildcardPattern]::Escape($filePathFull_Unescaped)
 
 
 
@@ -50,7 +53,7 @@ try {
 
     [int]$sizeKBOriginal = (Get-ChildItem $filePathFull).Length / 1024
     
-    [bool]$result = [SignatureRemover]::RemoveSignature($filePathFull)
+    [bool]$result = [SignatureRemover]::RemoveSignature($filePathFull_Unescaped)
     
     if ($result) {
         Write-Host "Digital signature has been successfully deleted!"
