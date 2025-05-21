@@ -81,6 +81,13 @@ But it was not without drawbacks. And here they are:
   - `& ([scriptblock]::Create((Invoke-RestMethod -Uri "https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/core/v2/ReplaceHexBytesAll.ps1")))`
   - `$url="https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/core/v2/ReplaceHexBytesAll.ps1"; $f=[System.IO.Path]::GetTempFileName()+".ps1"; (irm $url)>$f; & $f`
   - As a result, as it turned out, Powershell for some reason automatically converted the encoding to `UTF-16 LE` and saved the file with this encoding (and the size of the saved file increased by 2 times), although the encoding in the original file was `UTF-8 with BOM`
+- Escaping in Powershell is done "not according to the canon", that is, for escaping, you do not need to use the backslash `\`, but the apostrophe "`"
+- The Powershell window when selecting files via the Tab key extension - sometimes writes the file names as they are in the Explorer, and sometimes escapes special characters
+  - For example, it can escape square brackets with apostrophes `D:\TEMP\My Best App [Win] for test.7z` (it was not possible to insert apostrophes in the example here because they are not escaped in Markdown)
+  - And almost all cmdlets that work with the file system, registry, etc. (for example, `Test-Path`, `Resolve-Path`, `Get-Item` and many others) have additional arguments to use the previously obtained path in the "as is" cmdlet (the "-LiteralPath" argument) or you can use the resulting path as a regular expression (when you just pass a string without arguments) , and then square brackets will be treated as a regular expression command and the path will not be found
+  - But C# functions (for example, opening a stream file using `[System.IO.File]::Open()`) do not support escaping from Powershell, and escaping must be removed when passing the path to these functions
+  - An additional "juggling layer" is obtained
+
 
 ## Usefulness
 
