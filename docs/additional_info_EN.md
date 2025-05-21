@@ -84,9 +84,11 @@ But it was not without drawbacks. And here they are:
 - Escaping in Powershell is done "not according to the canon", that is, for escaping, you do not need to use the backslash `\`, but the apostrophe "`"
 - The Powershell window when selecting files via the Tab key extension - sometimes writes the file names as they are in the Explorer, and sometimes escapes special characters
   - For example, it can escape square brackets with apostrophes `D:\TEMP\My Best App [Win] for test.7z` (it was not possible to insert apostrophes in the example here because they are not escaped in Markdown)
-  - And almost all cmdlets that work with the file system, registry, etc. (for example, `Test-Path`, `Resolve-Path`, `Get-Item` and many others) have additional arguments to use the previously obtained path in the "as is" cmdlet (the "-LiteralPath" argument) or you can use the resulting path as a regular expression (when you just pass a string without arguments) , and then square brackets will be treated as a regular expression command and the path will not be found
+  - And almost all cmdlets that work with the file system, registry, etc. (for example, `Test-Path`, `Resolve-Path`, `Get-Item` and many others) have additional arguments to use the previously obtained path in the "as is" cmdlet (the `-LiteralPath` argument) or you can use the resulting path as a regular expression (when you just pass a string without arguments) , and then square brackets will be treated as a regular expression command and the path will not be found
   - But C# functions (for example, opening a stream file using `[System.IO.File]::Open()`) do not support escaping from Powershell, and escaping must be removed when passing the path to these functions
-  - An additional "juggling layer" is obtained
+  - And also, when comparing strings with the `-eq` operator, square brackets and other special characters are considered as part of the string, and not as part of the regular
+  - **Therefore, in order to cover all use cases of paths** passed to the script as arguments, it is necessary to remove all escaping from the resulting path and in all cmdlets to which such a path is passed, do not forget to add the `-LiteralPath` argument. Or, on the contrary, save and use the escaped path, and in conditions and C# functions, pre-process the string with the path, removing the escaping from it.
+  - This is a noticeable hemorrhoid and adds an additional "juggling layer"
 
 
 ## Usefulness
