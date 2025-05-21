@@ -275,9 +275,7 @@ There is a "flag" (indicator/switch) for this section - the phrase `CRLF` or `LF
 
 8. `file_create_from_base64`
 
-Here you specify the data for creating a file based on the decrypted base64 code. The first line of the section is the path to the file that needs to be created and filled with data. The second line can be either a "flag" (see here below) or already the beginning of the data that needs to be placed in the created file. If such a file already exists, it will be deleted first. Next are the lines with 1 large base64 code and this code will be decrypted and its contents placed in a file. The code can be decrypted into a text file, or it can be decrypted into a binary file, the corresponding `BINARY DATA` flag is responsible for this.
-
-There are "flags" (indicators/switches) for this section - the phrase `CRLF`, or `LF`, as well as `BINARY DATA`. All flags should be located in the second line of the section. If there is a phrase `CRLF` or `LF`, this will determine the type of line endings in the created text file, and even if the type of line endings is different in the decrypted base64 code, the type of line endings will be converted. If this "flag" is not present, the line ending type will not be changed in any way. The presence of the `BINARY DATA` flag will mean that there is no text in the decrypted base64 code and the code must be decrypted into bytes and written to a file without representing bytes as text.
+Here you can specify the data for creating a file based on the decrypted base64 code. The first line of the section is the path to the file that needs to be created and filled with data. If the file specified in the path already exists, it will be deleted first. The second and subsequent lines are a single block of base64 code, and this code will be decrypted and its contents placed in a file (more precisely, the file will consist of the contents of the decrypted base64 code).
 
 9. `firewall_remove_block`
 

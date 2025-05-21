@@ -1,9 +1,9 @@
 
-# Text - flags in parse sections
-[string]$binaryDataFlag = 'BINARY DATA'
-
 # Names loaded .ps1 files
 [string]$deleteFilesOrFoldersScriptName = 'DeleteFilesOrFolders'
+
+$scriptPath = $MyInvocation.MyCommand.Path
+$scriptDirPath = Split-Path -Path $scriptPath
 
 <#
 .SYNOPSIS
@@ -32,34 +32,7 @@ function CreateAllFilesFromBase64 {
     )
     
     foreach ($content in $sectionContents) {
-        CreateFilesFromData -sectionContent $content -isBase64Content
-    }
-}
-
-
-<#
-.SYNOPSIS
-Convert given text to base64 string or bytes array and return it
-#>
-function ConvertBase64ToData {
-    param (
-        [Parameter(Mandatory)]
-        [string]$content,
-        [switch]$isBinary = $false
-    )
-
-    if ($content.Length -eq 0) {
-        return $content
-    } else {
-        [byte[]]$decodedBytes = [System.Convert]::FromBase64String($content.Trim())
-        
-        if ($isBinary) {
-            return $decodedBytes
-        } else {
-            [string]$decodedString = [System.Text.Encoding]::UTF8.GetString($decodedBytes)
-    
-            return $decodedString
-        }
+        CreateFilesFromData -sectionContent $content -isBase64
     }
 }
 
@@ -72,7 +45,7 @@ function CreateFilesFromData {
     param (
         [Parameter(Mandatory)]
         [string]$sectionContent,
-        [switch]$isBase64Content = $false
+        [switch]$isBase64 = $false
     )
 
     # Trim only start because end file can have empty lines if new file need empty lines
@@ -80,7 +53,6 @@ function CreateFilesFromData {
     [string]$targetPath = ''
     [string]$endLinesNeed = ''
     [string]$targetContent = ''
-    [bool]$isBinaryBase64 = $false
     
     # replace variables with variables values in all current content
     foreach ($key in $variables.Keys) {
@@ -92,7 +64,7 @@ function CreateFilesFromData {
 
     # if target file exist - delete it
     if (Test-Path $targetPath) {
-        . (Resolve-Path ".\$deleteFilesOrFoldersScriptName.ps1")
+        . (Resolve-Path "$scriptDirPath\$deleteFilesOrFoldersScriptName.ps1")
         DeleteFilesOrFolders $targetPath
     }
 
@@ -102,56 +74,38 @@ function CreateFilesFromData {
             $endLinesNeed = "`r`n"
         } elseif ($cleanedContentLines[1].Trim() -eq 'LF') {
             $endLinesNeed = "`n"
-        } elseif ($cleanedContentLines[1].Trim() -eq $binaryDataFlag) {
-            $endLinesNeed = 'no need modify'
-            $isBinaryBase64 = $true
         }
     }
-
+    
     # if endLinesNeed settled - mean second line in content is tag for endLinesNeed and tag is not part future file content
     # else endLinesNeed var is empty - mean second line in content is start for future file content
-    if ($endLinesNeed -eq '') {
+    if ($isBase64) {
+        [string[]]$tempContentLines = $cleanedContentLines[1..($cleanedContentLines.Length-1)]
+        [byte[]]$targetContent = [Convert]::FromBase64String($tempContentLines)
+    } elseif ($endLinesNeed -eq '') {
         [string[]]$tempContentLines = $cleanedContentLines[1..($cleanedContentLines.Length-1)]
         
-        if ($isBase64Content) {
-            [byte[]]$targetContent = ConvertBase64ToData ($tempContentLines -join '') -isBinary
-        } else {
-            $endLinesNeed = [System.Environment]::NewLine
-            $targetContent = ($tempContentLines) -join $endLinesNeed
-        }
+        $endLinesNeed = [System.Environment]::NewLine
+        $targetContent = ($tempContentLines) -join $endLinesNeed
     } else {
         [string[]]$tempContentLines = $cleanedContentLines[2..($cleanedContentLines.Length-1)]
         
-        if ($isBase64Content) {            
-            if ($isBinaryBase64) {
-                [byte[]]$targetContent = ConvertBase64ToData ($tempContentLines -join '') -isBinary
-            } else {
-                $targetContent = ConvertBase64ToData ($tempContentLines -join '')
-                if ($endLinesNeed -eq "`n") {
-                    $targetContent = ($targetContent -replace "`r`n", "`n") -replace "`r", "`n"
-                }
-                if ($endLinesNeed -eq "`r`n") {
-                    $targetContent = $targetContent -replace "`n", "`r`n"
-                }
-            }
-        } else {
-            $targetContent = ($tempContentLines) -join $endLinesNeed
-        }
+        $targetContent = ($tempContentLines) -join $endLinesNeed
     }
-
-    # create file with content inside and all folder for file path
+    
+    # create file with content inside and all folders for file path
     try {
-        if ($isBinaryBase64) {
-            [void](New-Item -Path $targetPath -ItemType File -Force -ErrorAction Stop)
+        [void](New-Item -Path $targetPath -ItemType File -Force -ErrorAction Stop)
+
+        if ($isBase64) {
             [System.IO.File]::WriteAllBytes($targetPath, $targetContent)
         } else {
-            [void](New-Item -Path $targetPath -ItemType File -Force -ErrorAction Stop)
             Set-Content -Value $targetContent -Path $targetPath -NoNewline -ErrorAction Stop
         }
     }
     catch {
         # create same files with same content but with admin privileges
-        if ($isBinaryBase64) {
+        if ($isBase64) {
             # we can't execute WriteAllBytes in Start-Process because we can't set bytes to command string
             # so WriteAllBytes to temp file then move temp file with admin privileges
             $tempFile = [System.IO.Path]::GetTempFileName()

@@ -66,8 +66,7 @@ Together with the wrappers:
 - Working with a template file with prepared patterns
 - Using variables in the template
   - Create new text files based on text
-  - Creation of new base64-based text files
-  - Creation of new binary files based on base64
+  - Creation of new files based on base64
   - Using strings to modify the registry
   - Executing Powershell code from a template
   - Executing CMD code from a template
