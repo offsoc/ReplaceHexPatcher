@@ -74,6 +74,14 @@ Here is a list of functions that are specific and I may forget to implement them
 - [ ] Add functionality for working with PE headers
   - https://chentiangemalc.wordpress.com/2021/02/24/parsing-pe-files-in-powershell/
   - https://github.com/secana/PeNet
+- [ ] Implement the native CRC32 calculation utility
+  - It is worth considering C# code from other projects:
+  - https://damieng.com/blog/2006/08/08/calculating_crc32_in_c_and_net/
+    - https://github.com/damieng/DamienGKit/blob/master/CSharp/DamienG.Library/Security/Cryptography/Crc32.cs
+  - https://github.com/zoltraks/csharp-crc32/blob/main/src/Crc32/Crc32.cs
+  - https://forums.mydigitallife.net/threads/c-calculating-crc32-hash-from-any-file-or-string.29306/
+  - https://staceyw1.wordpress.com/2005/06/09/crc32-in-c/
+  - Perhaps the new version of C#/.NET already has an implementation of the CRC32 calculation - https://learn.microsoft.com/ru-ru/dotnet/api/system.io.hashing.crc32
 
 ### Information output
 

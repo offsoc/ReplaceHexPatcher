@@ -74,6 +74,14 @@ Language: Русский | [English](todo_EN.md)
 - [ ] Добавить функционал работы с PE-заголовками
   - https://chentiangemalc.wordpress.com/2021/02/24/parsing-pe-files-in-powershell/
   - https://github.com/secana/PeNet
+- [ ] Реализовать нативную утилиту вычисления CRC32
+  - Стоит рассмотреть C#-код из других проектов:
+  - https://damieng.com/blog/2006/08/08/calculating_crc32_in_c_and_net/
+    - https://github.com/damieng/DamienGKit/blob/master/CSharp/DamienG.Library/Security/Cryptography/Crc32.cs
+  - https://github.com/zoltraks/csharp-crc32/blob/main/src/Crc32/Crc32.cs
+  - https://forums.mydigitallife.net/threads/c-calculating-crc32-hash-from-any-file-or-string.29306/
+  - https://staceyw1.wordpress.com/2005/06/09/crc32-in-c/
+  - Возможно в новых версия C#/.NET уже есть реализация вычисления CRC32 - https://learn.microsoft.com/ru-ru/dotnet/api/system.io.hashing.crc32
 
 ### Вывод информации
 
