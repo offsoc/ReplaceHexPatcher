@@ -282,33 +282,128 @@ function GetVariables {
 
 <#
 .DESCRIPTION
+Function try decode given text from base64 to default text
+Return decoded text if decoded without problems
+Otherwise return $null
+#>
+function ConvertFrom-Base64 {
+    param (
+        [Parameter(Mandatory)]
+        [string]$base64String
+    )
+
+    try {
+        [byte[]]$decodedData = [System.Convert]::FromBase64String($base64String)
+        return [System.Text.Encoding]::UTF8.GetString($decodedData)
+    }
+    catch {
+        return $null
+    }
+}
+
+
+<#
+.DESCRIPTION
+Function try decode given text from base64 to default text
+If text decoded without problems - it save decoded text to temp file and return path to file
+Otherwise return $null
+#>
+function TryDecodeIfBase64 {
+    param (
+        [Parameter(Mandatory)]
+        [string]$base64String
+    )
+    
+    try {
+        [byte[]]$decodedData = [System.Convert]::FromBase64String($base64String)
+        [string]$decodedText = [System.Text.Encoding]::UTF8.GetString($decodedData)
+
+        [string]$tempFile = [System.IO.Path]::GetTempFileName()
+        Get-Process | Where-Object {$_.CPU -ge 1} | Out-File $tempFile
+        $decodedText | Out-File -FilePath $tempFile -Encoding utf8 -Force
+        $renamedTempFile = ($tempFile.Substring(0, $tempFile.LastIndexOf("."))+".txt")
+        Rename-Item $tempFile $renamedTempFile
+
+        return (Get-ChildItem $renamedTempFile).FullName
+    }
+    catch {
+        return $null
+    }
+}
+
+<#
+.DESCRIPTION
 The path to the template is passed as an argument to this script.
 This can be the path to a file on your computer or the URL to the template text.
 This function checks for the presence of a file on the computer if it is the path to the file,
     or creates a temporary file and downloads a template from the specified URL into it
 #>
-function GetTemplateFile {
-    [OutputType([string[]])]
+function Get-TemplateFile {
+    [OutputType([string])]
     param (
         [Parameter(Mandatory)]
-        [string]$templateWay
+        [string]$templateWay,
+        [Parameter(Mandatory)]
+        # [System.Collections.Generic.List[string]]
+        [ref]$tempFilesList
     )
 
-    if (Test-Path $templateWay 2>$null) {
-        if ($templateWay.Contains($env:Temp)) {
-            return (Get-ChildItem $templateWay).FullName, $fileIsTempFlag
+    $decodedTemplate = ''
+
+    if ((Test-Path $templateWay 2>$null) -or (Test-Path -LiteralPath $templateWay 2>$null)) {
+        # case when template is path to file
+        [string]$filePathFull_Unescaped = [System.IO.Path]::GetFullPath(($templateWay -ireplace "``", ""))
+        [string]$filePathFull = [System.Management.Automation.WildcardPattern]::Escape($filePathFull_Unescaped)
+
+        $content = [System.IO.File]::ReadAllText($templateWay)
+
+        if ($filePathFull.Contains($env:Temp)) {
+            [void]($tempFilesList.Value.Add($filePathFull))
         }
-        return (Get-ChildItem $templateWay).FullName, ''
-    } elseif ((Invoke-WebRequest -UseBasicParsing -Uri $templateWay).StatusCode -eq 200) {
+
+        if (($decodedTemplatePath = TryDecodeIfBase64 $content) -and $decodedTemplatePath) {
+            [void]($tempFilesList.Value.Add($decodedTemplatePath))
+            return (Get-ChildItem $decodedTemplatePath).FullName
+        }
+        
+        return (Get-ChildItem $filePathFull).FullName
+    } elseif ($templateWay.StartsWith("http") -and ((Invoke-WebRequest -UseBasicParsing -Uri $templateWay).StatusCode -eq 200)) {
+        # case when template is URL
         [string]$tempFile = [System.IO.Path]::GetTempFileName()
         Get-Process | Where-Object {$_.CPU -ge 1} | Out-File $tempFile
         (New-Object System.Net.WebClient).DownloadFile($templateWay,$tempFile)
         $renamedTempFile = ($tempFile.Substring(0, $tempFile.LastIndexOf("."))+".txt")
         Rename-Item $tempFile $renamedTempFile
-        return (Get-ChildItem $renamedTempFile).FullName, $fileIsTempFlag
+        [void]($tempFilesList.Value.Add($renamedTempFile))
+
+        $content = [System.IO.File]::ReadAllText($renamedTempFile)
+
+        if (($decodedTemplatePath = TryDecodeIfBase64 $content) -and $decodedTemplatePath) {
+            [void]($tempFilesList.Value.Add($decodedTemplatePath))
+            return (Get-ChildItem $decodedTemplatePath).FullName
+        }
+        
+        return (Get-ChildItem $renamedTempFile).FullName
+    } else {
+        # case when template is string
+        [string]$tempFile = [System.IO.Path]::GetTempFileName()
+        Get-Process | Where-Object {$_.CPU -ge 1} | Out-File $tempFile
+        $templateWay | Out-File -FilePath $tempFile -Encoding utf8 -Force
+        $renamedTempFile = ($tempFile.Substring(0, $tempFile.LastIndexOf("."))+".txt")
+        Rename-Item $tempFile $renamedTempFile
+        [void]($tempFilesList.Value.Add($renamedTempFile))
+
+        $content = [System.IO.File]::ReadAllText($renamedTempFile)
+
+        if (($decodedTemplatePath = TryDecodeIfBase64 $content) -and $decodedTemplatePath) {
+            [void]($tempFilesList.Value.Add($decodedTemplatePath))
+            return (Get-ChildItem $decodedTemplatePath).FullName
+        }
+
+        return (Get-ChildItem $renamedTempFile).FullName
     }
     
-    Write-Error "No valid template path or URL was provided"
+    Write-Error "No valid template"
     exit 1
 }
 
@@ -355,10 +450,10 @@ $watch = [System.Diagnostics.Stopwatch]::StartNew()
 $watch.Start() # launch timer
 
 try {
-    [string]$fullTemplatePath, [string]$templateFileTempFlag = GetTemplateFile $templatePath
+    [System.Collections.Generic.List[string]]$tempFilesForRemove = New-Object System.Collections.Generic.List[string]
+    [string]$fullTemplatePath = Get-TemplateFile -templateWay $template -tempFilesList ([ref]$tempFilesForRemove)
     [string]$cleanedTemplate = CleanTemplate $fullTemplatePath
     $templateDir = [System.IO.Path]::GetDirectoryName($fullTemplatePath)
-    [System.Collections.ArrayList]$tempFilesForRemove = New-Object System.Collections.ArrayList
 
     Set-Location $scriptDir
 
@@ -659,21 +754,18 @@ try {
     }
 
 
-    # Delete all temp Powershell-script files
-    $tempFilesForRemove | foreach { Remove-Item -Path $_ -Force }
 
     # Delete patcher or template files if it downloaded to temp file
 
     if ($patcherFileTempFlag -eq $fileIsTempFlag) {
         Remove-Item $patcherFile
     }
-
-    if ($templateFileTempFlag -eq $fileIsTempFlag) {
-        Remove-Item $fullTemplatePath
-    }
 } catch {
     Write-Error $_.Exception.Message
     exit 1
+} finally {
+    # Delete all temp Powershell-script files
+    $tempFilesForRemove | foreach { Remove-Item -Path $_ -Force }
 }
 
 $watch.Stop() # stop timer
