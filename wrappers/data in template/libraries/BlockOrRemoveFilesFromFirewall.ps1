@@ -67,7 +67,6 @@ function RemoveBlockFilesFromFirewall {
     
     if (-Not (DoWeHaveAdministratorPrivileges)) {
         throw "For modify Firewall rules need Administrator privileges, but this script not have it.`nRelaunch script with admins privileges"
-        exit 1
     }
 
     [string]$cleanedContent = $content.Clone().Trim()
@@ -138,7 +137,6 @@ function BlockFilesWithFirewall {
     
     if (-Not (DoWeHaveAdministratorPrivileges)) {
         throw "For modify Firewall rules need Administrator privileges, but this script not have it.`nRelaunch script with admins privileges"
-        exit 1
     }
 
     [string]$cleanedContent = $content.Clone()

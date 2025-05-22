@@ -62,6 +62,7 @@ function CombineLinesForHosts {
     )
     
     [string]$contentForAddToHosts = ''
+    [string]$urlFlag = 'SEE_HERE_FIRST'
 
     [string[]]$templateContentLines = $content -split "\n"
 
@@ -75,11 +76,40 @@ function CombineLinesForHosts {
 
             $contentForAddToHosts += $line + "`r`n"
         }
+    } elseif ($templateContentLines[0].Trim().ToUpper().StartsWith($urlFlag)) {
+        # if there is a flag phrase at the beginning of the text "SEE_HERE_FIRST" and there is a link behind it...
+        # and the link is indeed there and it is available for download, then add to hosts
+        # the content downloaded from the link, not the rest of the lines in the add section
+
+        [string]$urlText = $templateContentLines[0].Trim() -replace "^$urlFlag\s*", ""
+
+        if ($urlText -like "http*") {
+            $tempStatusCode = ''
+            try {
+                $tempStatusCode = (Invoke-WebRequest -UseBasicParsing -Uri $urlText -ErrorAction Stop).StatusCode
+            }
+            catch {
+                CombineLinesForHosts ($content -replace "^SEE_HERE_FIRST.*[\r\n]+","")
+                return ''
+            }
+            
+            if ($tempStatusCode -eq 200) {
+                $urlContent = (Invoke-WebRequest -Uri $urlText -UseBasicParsing).Content
+                
+                $contentForAddToHosts += $urlContent
+            } else {
+                CombineLinesForHosts ($content -replace "^SEE_HERE_FIRST.*[\r\n]+","")
+                return ''
+            }
+        }
     } else {
         foreach ($line in $content -split "\n") {
             # Trim line is important because end line include \n
             $line = $line.Trim()
-            if ($line.StartsWith('#') -OR $line.StartsWith($localhostIP)) {
+
+            if ($line.StartsWith($urlFlag)) {
+                continue
+            } elseif ($line.StartsWith('#') -OR $line.StartsWith($localhostIP)) {
                 $contentForAddToHosts += $line + "`r`n"
             } else {
                 $contentForAddToHosts += $zeroIP + ' ' + $line + "`r`n"

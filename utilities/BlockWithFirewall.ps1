@@ -87,7 +87,7 @@ function GetPathsForExe {
         # Trim line is important because end line include \n
         $line = $line.Trim()
 
-        if (-not (Test-Path $line)) {
+        if ((-not (Test-Path $line)) -or (Test-Path $line -PathType Container)) {
             continue
         }
 
@@ -131,7 +131,6 @@ function BlockFilesWithFirewall {
     
     if (-Not (DoWeHaveAdministratorPrivileges)) {
         throw "For modify Firewall rules need Administrator privileges, but this script not have it.`nRelaunch script with admins privileges"
-        exit 1
     }
 
     [string]$cleanedContent = $content.Clone().Trim()
