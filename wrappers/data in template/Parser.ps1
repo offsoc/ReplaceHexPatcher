@@ -186,14 +186,14 @@ function ExtractContent {
     [string]$cleanedTemplateContent = $content.Clone()
     [string]$startSectionName = "[start-$sectionName]"
     [string]$endSectionName = "[end-$sectionName]"
-
+    
     if (-not $saveEmptyLines) {
         $cleanedTemplateContent = RemoveEmptyLines $cleanedTemplateContent
     }
-
-
+    
     # start position content between content tags (+1 mean not include in content \n after start tag)
-    [int]$startContentIndex = $cleanedTemplateContent.IndexOf($startSectionName)+$startSectionName.Length
+    [int]$startSectionIndex = $cleanedTemplateContent.IndexOf($startSectionName)
+    [int]$startContentIndex = $startSectionIndex+$startSectionName.Length
     if ($cleanedTemplateContent[$startContentIndex] -eq "`n") {
         $startContentIndex +=1
     }
@@ -204,7 +204,7 @@ function ExtractContent {
     # end position content between content tags
     [int]$endContentIndex = $cleanedTemplateContent.IndexOf($endSectionName)
 
-    if (($startContentIndex -eq -1) -or ($endContentIndex -eq -1)) {
+    if (($startSectionIndex -eq -1) -or ($startSectionIndex -eq -1)) {
         return ''
     }
     if ($startContentIndex -gt $endContentIndex) {
