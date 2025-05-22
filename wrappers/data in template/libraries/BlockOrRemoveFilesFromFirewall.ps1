@@ -25,7 +25,7 @@ function GetPathsForExe {
         # Trim line is important because end line include \n
         $line = $line.Trim()
 
-        if (-not (Test-Path $line)) {
+        if ((-not (Test-Path $line)) -or (Test-Path $line -PathType Container)) {
             continue
         }
 
