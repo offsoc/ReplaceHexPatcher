@@ -612,16 +612,22 @@ try {
         Write-Host
         Write-InfoMsg "Start parsing lines for create files..."
 
-        # Import external Powershell-code
-        $createAllFilesFromTextOrBase64ScriptNameFull = "$createAllFilesFromTextOrBase64ScriptName.ps1"
-        if (Test-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull") {
-            . (Resolve-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull")
-        } elseif (Test-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull") {
-            . (Resolve-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull")
+        if (Get-Command -Name CreateAllFilesFromText -ErrorAction SilentlyContinue) {
+            CreateAllFilesFromText $createFilesFromTextContent
         } else {
-            $tempPSFile = (DownloadPSScript -link $createAllFilesFromTextOrBase64ScriptURL -fileName $createAllFilesFromTextOrBase64ScriptNameFull)
-            [void]($tempFilesForRemove.Add($tempPSFile))
-            . $tempPSFile
+            # Import external Powershell-code
+            $createAllFilesFromTextOrBase64ScriptNameFull = "$createAllFilesFromTextOrBase64ScriptName.ps1"
+            if (Test-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull") {
+                . (Resolve-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull")
+            } elseif (Test-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull") {
+                . (Resolve-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull")
+            } else {
+                $tempPSFile = (DownloadPSScript -link $createAllFilesFromTextOrBase64ScriptURL -fileName $createAllFilesFromTextOrBase64ScriptNameFull)
+                [void]($tempFilesForRemove.Add($tempPSFile))
+                . $tempPSFile
+            }
+
+            CreateAllFilesFromText $createFilesFromTextContent
         }
 
         Write-InfoMsg "Creating text files complete"
@@ -631,16 +637,22 @@ try {
         Write-Host
         Write-InfoMsg "Start parsing data for create files from base64..."
 
-        # Import external Powershell-code
-        $createAllFilesFromTextOrBase64ScriptNameFull = "$createAllFilesFromTextOrBase64ScriptName.ps1"
-        if (Test-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull") {
-            . (Resolve-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull")
-        } elseif (Test-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull") {
-            . (Resolve-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull")
+        if (Get-Command -Name CreateAllFilesFromBase64 -ErrorAction SilentlyContinue) {
+            CreateAllFilesFromBase64 $createFilesFromBase64Content
         } else {
-            $tempPSFile = (DownloadPSScript -link $createAllFilesFromTextOrBase64ScriptURL -fileName $createAllFilesFromTextOrBase64ScriptNameFull)
-            [void]($tempFilesForRemove.Add($tempPSFile))
-            . $tempPSFile
+            # Import external Powershell-code
+            $createAllFilesFromTextOrBase64ScriptNameFull = "$createAllFilesFromTextOrBase64ScriptName.ps1"
+            if (Test-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull") {
+                . (Resolve-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull")
+            } elseif (Test-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull") {
+                . (Resolve-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull")
+            } else {
+                $tempPSFile = (DownloadPSScript -link $createAllFilesFromTextOrBase64ScriptURL -fileName $createAllFilesFromTextOrBase64ScriptNameFull)
+                [void]($tempFilesForRemove.Add($tempPSFile))
+                . $tempPSFile
+            }
+
+            CreateAllFilesFromBase64 $createFilesFromBase64Content
         }
 
         Write-InfoMsg "Creating files from base64 complete"
@@ -650,16 +662,22 @@ try {
         Write-Host
         Write-InfoMsg "Start parsing lines paths for remove from firewall..."
 
-        # Import external Powershell-code
-        $blockOrRemoveFilesFromFirewallScriptNameFull = "$blockOrRemoveFilesFromFirewallScriptName.ps1"
-        if (Test-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull") {
-            . (Resolve-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull")
-        } elseif (Test-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull") {
-            . (Resolve-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull")
+        if (Get-Command -Name RemoveBlockFilesFromFirewall -ErrorAction SilentlyContinue) {
+            RemoveBlockFilesFromFirewall $firewallRemoveBlockContent
         } else {
-            $tempPSFile = (DownloadPSScript -link $blockOrRemoveFilesFromFirewallScriptURL -fileName $blockOrRemoveFilesFromFirewallScriptNameFull)
-            [void]($tempFilesForRemove.Add($tempPSFile))
-            . $tempPSFile
+            # Import external Powershell-code
+            $blockOrRemoveFilesFromFirewallScriptNameFull = "$blockOrRemoveFilesFromFirewallScriptName.ps1"
+            if (Test-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull") {
+                . (Resolve-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull")
+            } elseif (Test-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull") {
+                . (Resolve-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull")
+            } else {
+                $tempPSFile = (DownloadPSScript -link $blockOrRemoveFilesFromFirewallScriptURL -fileName $blockOrRemoveFilesFromFirewallScriptNameFull)
+                [void]($tempFilesForRemove.Add($tempPSFile))
+                . $tempPSFile
+            }
+
+            RemoveBlockFilesFromFirewall $firewallRemoveBlockContent
         }
 
         Write-InfoMsg "Remove rules from firewall complete"
@@ -669,16 +687,22 @@ try {
         Write-Host
         Write-InfoMsg "Start parsing lines paths for block in firewall..."
 
-        # Import external Powershell-code
-        $blockOrRemoveFilesFromFirewallScriptNameFull = "$blockOrRemoveFilesFromFirewallScriptName.ps1"
-        if (Test-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull") {
-            . (Resolve-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull")
-        } elseif (Test-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull") {
-            . (Resolve-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull")
+        if (Get-Command -Name BlockFilesWithFirewall -ErrorAction SilentlyContinue) {
+            BlockFilesWithFirewall $firewallBlockContent
         } else {
-            $tempPSFile = (DownloadPSScript -link $blockOrRemoveFilesFromFirewallScriptURL -fileName $blockOrRemoveFilesFromFirewallScriptNameFull)
-            [void]($tempFilesForRemove.Add($tempPSFile))
-            . $tempPSFile
+            # Import external Powershell-code
+            $blockOrRemoveFilesFromFirewallScriptNameFull = "$blockOrRemoveFilesFromFirewallScriptName.ps1"
+            if (Test-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull") {
+                . (Resolve-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull")
+            } elseif (Test-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull") {
+                . (Resolve-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull")
+            } else {
+                $tempPSFile = (DownloadPSScript -link $blockOrRemoveFilesFromFirewallScriptURL -fileName $blockOrRemoveFilesFromFirewallScriptNameFull)
+                [void]($tempFilesForRemove.Add($tempPSFile))
+                . $tempPSFile
+            }
+
+            BlockFilesWithFirewall $firewallBlockContent
         }
 
         Write-InfoMsg "Adding rules in firewall complete"
