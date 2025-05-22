@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory)]
-    [string]$templatePath,
+    [string]$template,
     [string]$patcherPath
 )
 
