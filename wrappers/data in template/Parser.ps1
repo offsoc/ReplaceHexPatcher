@@ -418,6 +418,21 @@ function DownloadPSScript {
 }
 
 
+<#
+.SYNOPSIS
+Write-Host given text with green prefix "[INFO]: "
+#>
+function Write-InfoMsg {
+    param (
+        [Parameter(Mandatory)]
+        [string]$text
+    )
+    
+    Write-Host "[INFO]: " -ForegroundColor Green -NoNewline
+    Write-Host $text
+}
+
+
 
 # =====
 # MAIN
@@ -484,15 +499,15 @@ try {
 
     if ($variablesContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start parsing template variables..."
+        Write-InfoMsg "Start parsing template variables..."
         $variables = GetVariables $variablesContent
-        Write-Host "Parsing template variables complete"
+        Write-InfoMsg "Parsing template variables complete"
     }
-
+    
     if ($patcherPathOrUrlContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start patcher path..."
-
+        Write-InfoMsg "Start patcher path..."
+        
         # Import external Powershell-code
         $getPatcherScriptNameFull = "$getPatcherScriptName.ps1"
         if (Test-Path ".\$getPatcherScriptNameFull") {
@@ -504,15 +519,15 @@ try {
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
         }
-
+        
         [string]$patcherFile, [string]$patcherFileTempFlag = GetPatcherFile $patcherPathOrUrlContent
-        Write-Host "Patcher received"
+        Write-InfoMsg "Patcher received"
     }
-
+    
     if ($targetsAndPatternsContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start parsing patch targets and apply patches..."
-
+        Write-InfoMsg "Start parsing patch targets and apply patches..."
+        
         # Import external Powershell-code
         $detectFilesAndPatternsAndPatchScriptNameFull = "$detectFilesAndPatternsAndPatchScriptName.ps1"
         if (Test-Path ".\$detectFilesAndPatternsAndPatchScriptNameFull") {
@@ -524,14 +539,15 @@ try {
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
         }
-
+        
         DetectFilesAndPatternsAndPatch -patcherFile $patcherFile -content $targetsAndPatternsContent
-        Write-Host "Parsing patch targets and apply patches complete"    
-    }
 
+        Write-InfoMsg "Parsing patch targets and apply patches complete"    
+    }
+    
     if ($hostsRemoveContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start parsing lines for remove from hosts..."
+        Write-InfoMsg "Start parsing lines for remove from hosts..."
 
         # Import external Powershell-code
         $removeFromHostsScriptNameFull = "$removeFromHostsScriptName.ps1"
@@ -546,12 +562,13 @@ try {
         }
 
         RemoveFromHosts $hostsRemoveContent
-        Write-Host "Removing lines from hosts complete"
+        
+        Write-InfoMsg "Removing lines from hosts complete"
     }
 
     if ($hostsAddContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start parsing lines for add to hosts..."
+        Write-InfoMsg "Start parsing lines for add to hosts..."
 
         # Import external Powershell-code
         $addToHostsScriptNameFull = "$addToHostsScriptName.ps1"
@@ -566,12 +583,13 @@ try {
         }
 
         AddToHosts $hostsAddContent
-        Write-Host "Adding lines to hosts complete"
+        
+        Write-InfoMsg "Adding lines to hosts complete"
     }
 
     if ($deleteNeedContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start parsing lines with paths for files and folders delete..."
+        Write-InfoMsg "Start parsing lines with paths for files and folders delete..."
 
         # Import external Powershell-code
         $deleteFilesOrFoldersScriptNameFull = "$deleteFilesOrFoldersScriptName.ps1"
@@ -586,12 +604,13 @@ try {
         }
 
         DeleteFilesOrFolders $deleteNeedContent
-        Write-Host "Deleting files and folders complete"
+        
+        Write-InfoMsg "Deleting files and folders complete"
     }
 
     if (($createFilesFromTextContent.Count -gt 0) -and ($createFilesFromTextContent[0].Length -gt 0)) {
         Write-Host
-        Write-Host "Start parsing lines for create files..."
+        Write-InfoMsg "Start parsing lines for create files..."
 
         # Import external Powershell-code
         $createAllFilesFromTextOrBase64ScriptNameFull = "$createAllFilesFromTextOrBase64ScriptName.ps1"
@@ -605,13 +624,12 @@ try {
             . $tempPSFile
         }
 
-        CreateAllFilesFromText $createFilesFromTextContent
-        Write-Host "Creating text files complete"
+        Write-InfoMsg "Creating text files complete"
     }
 
     if (($createFilesFromBase64Content.Count -gt 0) -and ($createFilesFromBase64Content[0].Length -gt 0)) {
         Write-Host
-        Write-Host "Start parsing data for create files from base64..."
+        Write-InfoMsg "Start parsing data for create files from base64..."
 
         # Import external Powershell-code
         $createAllFilesFromTextOrBase64ScriptNameFull = "$createAllFilesFromTextOrBase64ScriptName.ps1"
@@ -625,13 +643,12 @@ try {
             . $tempPSFile
         }
 
-        CreateAllFilesFromBase64 $createFilesFromBase64Content
-        Write-Host "Creating files from base64 complete"
+        Write-InfoMsg "Creating files from base64 complete"
     }
 
     if ($firewallRemoveBlockContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start parsing lines paths for remove from firewall..."
+        Write-InfoMsg "Start parsing lines paths for remove from firewall..."
 
         # Import external Powershell-code
         $blockOrRemoveFilesFromFirewallScriptNameFull = "$blockOrRemoveFilesFromFirewallScriptName.ps1"
@@ -645,13 +662,12 @@ try {
             . $tempPSFile
         }
 
-        RemoveBlockFilesFromFirewall $firewallRemoveBlockContent
-        Write-Host "Remove rules from firewall complete"
+        Write-InfoMsg "Remove rules from firewall complete"
     }
 
     if ($firewallBlockContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start parsing lines paths for block in firewall..."
+        Write-InfoMsg "Start parsing lines paths for block in firewall..."
 
         # Import external Powershell-code
         $blockOrRemoveFilesFromFirewallScriptNameFull = "$blockOrRemoveFilesFromFirewallScriptName.ps1"
@@ -665,13 +681,12 @@ try {
             . $tempPSFile
         }
 
-        BlockFilesWithFirewall $firewallBlockContent
-        Write-Host "Adding rules in firewall complete"
+        Write-InfoMsg "Adding rules in firewall complete"
     }
 
     if ($registryModifyContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start parsing lines for modify registry..."
+        Write-InfoMsg "Start parsing lines for modify registry..."
 
         # Import external Powershell-code
         $registryFileApplyScriptNameFull = "$registryFileApplyScriptName.ps1"
@@ -691,7 +706,7 @@ try {
 
     if ($powershellCodeContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start execute external Powershell code..."
+        Write-InfoMsg "Start execute external Powershell code..."
         Write-Host
 
         # Import external Powershell-code
@@ -707,12 +722,12 @@ try {
         }
 
         PowershellCodeExecute $powershellCodeContent -hideExternalOutput
-        Write-Host "Executing external Powershell code complete"
+        Write-InfoMsg "Executing external Powershell code complete"
     }
 
     if ($cmdCodeContent.Length -gt 0) {
         Write-Host
-        Write-Host "Start execute external CMD code..."
+        Write-InfoMsg "Start execute external CMD code..."
         Write-Host
 
         # Import external Powershell-code
@@ -728,7 +743,7 @@ try {
         }
 
         CmdCodeExecute $cmdCodeContent
-        Write-Host "Executing external CMD code complete"
+        Write-InfoMsg "Executing external CMD code complete"
     }
 
 
