@@ -9,7 +9,7 @@ param (
 # GLOBAL VARIABLES
 # =====
 
-$comments = @(';;')
+$comments = @(';;', '#')
 
 # Here will stored parsed template variables
 [System.Collections.Hashtable]$variables = @{}
