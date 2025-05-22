@@ -90,6 +90,12 @@ function CleanTemplate {
 
     # Replace $USER to current username
     $content = $content -ireplace '\$USER', $env:USERNAME
+    # Replace USERNAME_FIELD to current username
+    $content = $content -ireplace 'USERNAME_FIELD', $env:USERNAME
+    # Replace USERPROFILE_FIELD to current username
+    $content = $content -ireplace 'USERPROFILE_FIELD', $env:USERPROFILE
+    # Replace USERHOME_FIELD to current username
+    $content = $content -ireplace 'USERHOME_FIELD', $env:USERPROFILE
 
     return ($content -join "`n")
 }
