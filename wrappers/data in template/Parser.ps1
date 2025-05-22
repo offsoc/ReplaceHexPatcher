@@ -168,13 +168,12 @@ Get templateContent and sectionName and return text
 between [start-sectionName] and [end-sectionName]
 #>
 function ExtractContent {
-    [OutputType([string[]])]
+    [OutputType([string])]
     param (
         [Parameter(Mandatory)]
         [string]$content,
         [Parameter(Mandatory)]
         [string]$sectionName,
-        [switch]$several = $false,
         [switch]$saveEmptyLines = $false
     )
 
@@ -186,7 +185,6 @@ function ExtractContent {
         $cleanedTemplateContent = RemoveEmptyLines $cleanedTemplateContent
     }
 
-    [System.Collections.ArrayList]$contentSection = New-Object System.Collections.ArrayList
 
     # start position content between content tags (+1 mean not include in content \n after start tag)
     [int]$startContentIndex = $cleanedTemplateContent.IndexOf($startSectionName)+$startSectionName.Length
@@ -201,40 +199,14 @@ function ExtractContent {
     [int]$endContentIndex = $cleanedTemplateContent.IndexOf($endSectionName)
 
     if (($startContentIndex -eq -1) -or ($endContentIndex -eq -1)) {
-        return $contentSection
+        return ''
     }
     if ($startContentIndex -gt $endContentIndex) {
         Write-Error "Wrong template. Error on parse section $sectionName"
         exit 1
     }
 
-    if ($several) {
-        do {
-            [void]$contentSection.Add($cleanedTemplateContent.Substring($startContentIndex, $endContentIndex-$startContentIndex))
-            
-            if ($startContentIndex -gt $endContentIndex) {
-                Write-Error "Wrong template. Error on parse section $sectionName"
-                exit 1
-            }
-
-            [int]$fullEndSectionIndex = $endContentIndex + $endSectionName.Length
-
-            $cleanedTemplateContent = $cleanedTemplateContent.Substring($fullEndSectionIndex, $cleanedTemplateContent.Length-$fullEndSectionIndex-1)
-
-            # start position content between content tags (+1 mean not include in content \n after start tag)
-            [int]$startContentIndex = $cleanedTemplateContent.IndexOf($startSectionName)+$startSectionName.Length + 1
-            # end position content between content tags
-            [int]$endContentIndex = $cleanedTemplateContent.IndexOf($endSectionName)
-        } until (
-            ($startContentIndex -eq -1) -or ($endContentIndex -eq -1)
-        )
-    } else {
-        [void]$contentSection.Add($cleanedTemplateContent.Substring($startContentIndex, $endContentIndex-$startContentIndex))
-    }
-
-    # If array will contain 1 element and it will returned to variable with type [string]
-    # this variable will contain this 1 element, not all array
-    return $contentSection.ToArray()
+    return $cleanedTemplateContent.Substring($startContentIndex, $endContentIndex-$startContentIndex)
 }
 
 
@@ -473,8 +445,8 @@ try {
     [string]$hostsRemoveContent = ExtractContent $cleanedTemplate "hosts_remove"
     [string]$hostsAddContent = ExtractContent $cleanedTemplate "hosts_add"
     [string]$deleteNeedContent = ExtractContent $cleanedTemplate "files_or_folders_delete"
-    [string[]]$createFilesFromTextContent = ExtractContent $cleanedTemplate "file_create_from_text" -saveEmptyLines -several
-    [string[]]$createFilesFromBase64Content = ExtractContent $cleanedTemplate "file_create_from_base64" -saveEmptyLines -several
+    [string]$createFilesFromTextContent = ExtractContent $cleanedTemplate "file_create_from_text" -saveEmptyLines
+    [string]$createFilesFromBase64Content = ExtractContent $cleanedTemplate "file_create_from_base64" -saveEmptyLines
     [string]$firewallBlockContent = ExtractContent $cleanedTemplate "firewall_block"
     [string]$firewallRemoveBlockContent = ExtractContent $cleanedTemplate "firewall_remove_block"
     [string]$registryModifyContent = ExtractContent $cleanedTemplate "registry_file"
