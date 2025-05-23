@@ -9,7 +9,6 @@ function PowershellCodeExecute {
     param (
         [Parameter(Mandatory)]
         [string]$content,
-        [switch]$hideExternalOutput = $false,
         [switch]$needRunAS = $false
     )
 
@@ -30,30 +29,18 @@ function PowershellCodeExecute {
     
         # execute file .ps1 with admin rights if exist else request admins rights
         if ((DoWeHaveAdministratorPrivileges) -or (-not $needRunAS)) {
-            [string]$nullFile = [System.IO.Path]::GetTempFileName()
-            
-            [System.Collections.Hashtable]$processArgs = @{
-                FilePath = $PSHost.Clone()
-                ArgumentList = "-NoProfile -ExecutionPolicy Bypass -File `"$tempFile`""
-                NoNewWindow = $true
-                Wait = $true
-            }
-
-            if ($hideExternalOutput) {
-                $processArgs.RedirectStandardOutput = $nullFile
-            }
-
-            Start-Process @processArgs
-        
-            Remove-Item -Path $nullFile -Force -ErrorAction Stop
+            Invoke-Expression $cleanedContent
         } else {
+            write-host "pro"
             $processId = Start-Process -FilePath $PSHost `
                 -Verb RunAs `
                 -ArgumentList "-ExecutionPolicy Bypass -NoProfile -File `"$tempFile`"" `
                 -PassThru `
                 -Wait
+
         
             if ($processId.ExitCode -gt 0) {
+                Remove-Item -Path $tempFile -Force -ErrorAction Stop
                 throw "Something happened wrong when execute Powershell code in file $tempFile"
             }
         }
@@ -61,6 +48,7 @@ function PowershellCodeExecute {
         Remove-Item -Path $tempFile -Force -ErrorAction Stop
     }
     catch {
-        Write-Error "Error while execute Powershell-code from template - " $_.Exception.Message
+        Write-Error "We have problems with executing Powershell script from template"
+        throw $_.Exception.Message
     }
 }

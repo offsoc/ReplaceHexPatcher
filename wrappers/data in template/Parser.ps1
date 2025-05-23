@@ -745,7 +745,7 @@ try {
             . $tempPSFile
         }
 
-        PowershellCodeExecute $powershellCodeContent -hideExternalOutput
+        PowershellCodeExecute $powershellCodeContent
         Write-InfoMsg "Executing external Powershell code complete"
     }
 
