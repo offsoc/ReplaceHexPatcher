@@ -459,7 +459,9 @@ function KillExeTasks {
 
     
     $process = Get-Process | ForEach-Object {
-        return $_.Path -eq ($targetPath -ireplace "``", "")
+        if ($_.Path -eq ($targetPath -ireplace "``", "")) {
+            return $_
+        }
     }
 
     if ($process) {
