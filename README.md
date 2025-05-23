@@ -16,6 +16,8 @@ Language: [Русский](README_RU.md) | English
   - [Changelog](#changelog)
   - [Additional info](#additional-info)
   - [System requirements](#system-requirements)
+    - [Configuring the Powershell](#configuring-the-powershell)
+    - [Supported OS](#supported-os)
 
 
 ## What kind of repository is this
@@ -148,7 +150,20 @@ In a separate [file](./docs/additional_info_EN.md)
 
 ## System requirements
 
+### Configuring the Powershell
+
+Configuring the Powershell Script Launch Policy (ExecutionPolicy) - [learn.microsoft.com v1](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-5.1), [learn.microsoft.com v2](https://learn.microsoft.com/previous-versions/windows/powershell-scripting/hh847748(v=wps.640)), [StackOverflow (RU)](https://ru.stackoverflow.com/questions/935212/powershell-%d0%b2%d1%8b%d0%bf%d0%be%d0%bb%d0%bd%d0%b5%d0%bd%d0%b8%d0%b5-%d1%81%d1%86%d0%b5%d0%bd%d0%b0%d1%80%d0%b8%d0%b5%d0%b2-%d0%be%d1%82%d0%ba%d0%bb%d1%8e%d1%87%d0%b5%d0%bd%d0%be-%d0%b2-%d1%8d%d1%82%d0%be%d0%b9-%d1%81%d0%b8%d1%81%d1%82%d0%b5%d0%bc%d0%b5)
+
+Run Powershell as an administrator and run the command
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser
+```
+
+### Supported OS
+
 All the code was written and tested on Windows 10 x64 22H2.
+It is expected that in Windows 11 it will also work out of the box.
 
 I have not checked the compatibility of the code and the Powershell functions used with previous versions. You will probably need Powershell 5.1, which comes bundled with Windows 10, to perform them.
 
