@@ -471,8 +471,10 @@ try {
     [string]$firewallBlockContent = ExtractContent $cleanedTemplate "firewall_block"
     [string]$firewallRemoveBlockContent = ExtractContent $cleanedTemplate "firewall_remove_block"
     [string]$registryModifyContent = ExtractContent $cleanedTemplate "registry_file"
-    [string]$powershellCodeContent = ExtractContent $cleanedTemplate "powershell_code"
-    [string]$cmdCodeContent = ExtractContent $cleanedTemplate "cmd_code"
+    [string]$prePowershellCodeContent = ExtractContent $cleanedTemplate "pre_powershell_code"
+    [string]$preCmdCodeContent = ExtractContent $cleanedTemplate "pre_cmd_code"
+    [string]$postPowershellCodeContent = ExtractContent $cleanedTemplate "post_powershell_code"
+    [string]$postCmdCodeContent = ExtractContent $cleanedTemplate "post_cmd_code"
 
 
     # Simple detection for needed admins rights:
@@ -522,6 +524,48 @@ try {
         
         [string]$patcherFile, [string]$patcherFileTempFlag = GetPatcherFile $patcherPathOrUrlContent
         Write-InfoMsg "Patcher received"
+    }
+
+    if ($prePowershellCodeContent.Length -gt 0) {
+        Write-Host
+        Write-InfoMsg "Start execute external pre-patch Powershell code..."
+        Write-Host
+
+        # Import external Powershell-code
+        $powershellCodeExecuteScriptNameFull = "$powershellCodeExecuteScriptName.ps1"
+        if (Test-Path ".\$powershellCodeExecuteScriptNameFull") {
+            . (Resolve-Path ".\$powershellCodeExecuteScriptNameFull")
+        } elseif (Test-Path ".\libraries\$powershellCodeExecuteScriptNameFull") {
+            . (Resolve-Path ".\libraries\$powershellCodeExecuteScriptNameFull")
+        } else {
+            $tempPSFile = (DownloadPSScript -link $powershellCodeExecuteScriptURL -fileName $powershellCodeExecuteScriptNameFull)
+            [void]($tempFilesForRemove.Add($tempPSFile))
+            . $tempPSFile
+        }
+
+        PowershellCodeExecute $prePowershellCodeContent
+        Write-InfoMsg "Executing external pre-patch Powershell code complete"
+    }
+
+    if ($preCmdCodeContent.Length -gt 0) {
+        Write-Host
+        Write-InfoMsg "Start execute external pre-patch CMD code..."
+        Write-Host
+
+        # Import external Powershell-code
+        $cmdCodeExecuteScriptNameFull = "$cmdCodeExecuteScriptName.ps1"
+        if (Test-Path ".\$cmdCodeExecuteScriptNameFull") {
+            . (Resolve-Path ".\$cmdCodeExecuteScriptNameFull")
+        } elseif (Test-Path ".\libraries\$cmdCodeExecuteScriptNameFull") {
+            . (Resolve-Path ".\libraries\$cmdCodeExecuteScriptNameFull")
+        } else {
+            $tempPSFile = (DownloadPSScript -link $cmdCodeExecuteScriptURL -fileName $cmdCodeExecuteScriptNameFull)
+            [void]($tempFilesForRemove.Add($tempPSFile))
+            . $tempPSFile
+        }
+
+        CmdCodeExecute $preCmdCodeContent
+        Write-InfoMsg "Executing external pre-patch CMD code complete"
     }
     
     if ($targetsAndPatternsContent.Length -gt 0) {
@@ -728,9 +772,9 @@ try {
         Write-Host "Modifying registry complete"
     }
 
-    if ($powershellCodeContent.Length -gt 0) {
+    if ($postPowershellCodeContent.Length -gt 0) {
         Write-Host
-        Write-InfoMsg "Start execute external Powershell code..."
+        Write-InfoMsg "Start execute external post-patch Powershell code..."
         Write-Host
 
         # Import external Powershell-code
@@ -745,13 +789,13 @@ try {
             . $tempPSFile
         }
 
-        PowershellCodeExecute $powershellCodeContent
-        Write-InfoMsg "Executing external Powershell code complete"
+        PowershellCodeExecute $postPowershellCodeContent
+        Write-InfoMsg "Executing external post-patch Powershell code complete"
     }
 
-    if ($cmdCodeContent.Length -gt 0) {
+    if ($postCmdCodeContent.Length -gt 0) {
         Write-Host
-        Write-InfoMsg "Start execute external CMD code..."
+        Write-InfoMsg "Start execute external post-patch CMD code..."
         Write-Host
 
         # Import external Powershell-code
@@ -766,8 +810,8 @@ try {
             . $tempPSFile
         }
 
-        CmdCodeExecute $cmdCodeContent
-        Write-InfoMsg "Executing external CMD code complete"
+        CmdCodeExecute $postCmdCodeContent
+        Write-InfoMsg "Executing external post-patch CMD code complete"
     }
 
 

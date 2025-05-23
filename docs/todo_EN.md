@@ -25,7 +25,7 @@ Here is a list of functions that are specific and I may forget to implement them
 - [ ] Implement pattern reading from the file in the patcher itself
 - [ ] Implement reading a template from the base64 code
 - As in the case of a base64 file, there is an argument string.
-- [ ] Add sections with `pre-cmd` and `pre-powershell` code and with `post-cmd` and `post-powershell` code
+- [x] Add sections with `pre-cmd` and `pre-powershell` code and with `post-cmd` and `post-powershell` code
 - The code in the sections must be executed before and after the patch is executed according to the section names
   - If the execution of the section code failed, abort the patcher operation.
 - [ ] Add [globbing] support(https://stackoverflow.com/questions/30229465/what-is-file-globbing ) in the lines with the paths to the files/folders to be found in the template file

@@ -169,19 +169,21 @@ Now about the template. The template structure was made so that the data could b
           - everything that is not inside any section will not be analyzed in any way, in fact, it can be considered comments on the template and sections, and you can write anything inside the sections
           - sections can be arranged in any sequence, this will not affect the order of their analysis. The order is set in the MAIN area in the parser
    1. There are such sections, more details about each will be further
-          - `patcher_path_or_url`
-          - `variables`
-          - `targets_and_patterns`
-          - `file_create_from_text`
-          - `file_create_from_base64`
-          - `hosts_add`
-          - `hosts_remove`
-          - `files_or_folders_delete`
-          - `firewall_block`
-          - `firewall_remove_block`
-          - `registry_file`
-          - `powershell_code`
-          - `cmd_code`
+       - `patcher_path_or_url`
+       - `variables`
+       - `pre_powershell_code`
+       - `pre_cmd_code`
+       - `targets_and_patterns`
+       - `file_create_from_text`
+       - `file_create_from_base64`
+       - `hosts_add`
+       - `hosts_remove`
+       - `files_or_folders_delete`
+       - `firewall_block`
+       - `firewall_remove_block`
+       - `registry_file`
+       - `post_powershell_code`
+       - `post_cmd_code`
 2. Comments
    - Everything that is not inside any section will not be analyzed in any way, in fact, we can consider it comments on the template and sections, and you can write anything inside the sections
       - There may also be comments inside the sections. All lines containing this text `;;` are considered comments and will be deleted before further analysis
@@ -194,18 +196,20 @@ Now about the template. The template structure was made so that the data could b
 2. Checking for sections `hosts_remove`, `hosts_add`, `firewall_block`, `firewall_remove_block`, `registry_file`. If there are such sections and the parser is not running on behalf of the Administrator, we restart the parser with the arguments received on behalf of the Administrator, because when using data from these sections, 100% admin rights will be needed and in order not to request these rights in separate processes when processing data from each section, it is more convenient to restart the script with the necessary rights from the very beginning.
 3. Search for sections and extract data from them in this order
     1. `variables`
-    2. `patcher_path_or_url`
-    3. `targets_and_patterns`
-    4. `hosts_remove`
-    5. `hosts_add`
-    6. `files_or_folders_delete`
-    7. `file_create_from_text`
-    8. `file_create_from_base64`
-    9. `firewall_remove_block`
-    10. `firewall_block`
-    11. `registry_file`
-    12. `powershell_code`
-    13. `cmd_code`
+    2. `pre_powershell_code`
+    3. `pre_cmd_code`
+    4. `patcher_path_or_url`
+    5. `targets_and_patterns`
+    6. `hosts_remove`
+    7. `hosts_add`
+    8. `files_or_folders_delete`
+    9. `file_create_from_text`
+    10. `file_create_from_base64`
+    11. `firewall_remove_block`
+    12. `firewall_block`
+    13. `registry_file`
+    14. `post_powershell_code`
+    15. `post_cmd_code`
 4. The first found section of each type will be used if one type (for example, `hosts_add`) has several sections in the template - all subsequent sections of this type, except the first one from above, will not be used.
     - The exception is the sections `file_create_from_text` and `file_create_from_base64`, because if you need to create multiple files, you need to place several such sections
 5. When using data extracted from each section, the data is first "cleaned" - `Trim()` software for the block with the entire text of the section, and then search and replace variables from the `variables` section
@@ -234,7 +238,29 @@ Here, each line indicates the path on the disk to the patcher script, or the URL
 
 The error will only occur if there is no path to an existing file on disk among all the lines or the URL is not available for downloading data. If there are lines with some text that is not a file path or link, these lines will simply be ignored.
 
-3. `targets_and_patterns`
+3. `pre_powershell_code`
+
+A block with Powershell code that is executed before applying hex patterns.
+
+Here you specify the code that will be placed in a separate `.ps1` file and will be launched. The function processing this section has the parameters `-hideExternalOutput` and `-needRunAS`. By adding the `-hideExternalOutput` parameter, the entire standard output stream will be redirected to `$null` (this is done if the nested script has a lot of text to output to the terminal window and you need to hide this text), and the `-needRunAS` parameter runs this script with a request for Administrator rights. If the script is not restarted with admin rights in a separate process, the results of its work will be displayed in the current Powershell window.
+
+The text from this section is also analyzed and variables are replaced with their values from the variables section.
+
+If an error or exception occurs when executing this code, processing of other sections of the template will be stopped.
+
+4. `pre_cmd_code`
+
+A block with CMD code that is executed before applying hex patterns.
+
+Here you specify the code that will be placed in a separate `.cmd` file and will be launched. The function processing this section has the parameters `-hideExternalOutput` and `-needRunAS` and `-needNewWindow`.  By adding the `-hideExternalOutput` parameter, the entire standard output stream will be redirected to `$null` (this is done if the nested script has a lot of text to output to the terminal window and you need to hide this text), and the `-needRunAS` parameter runs this script with a request for Administrator rights, and the `-needNewWindow` parameter runs the script is in a new window.
+
+At the same time, if there is a `-needRunAS` parameter and the current parser script does not have admin rights, then the created `.cmd` script will in any case be launched in a new window to request Administrator rights.
+
+The text from this section is also analyzed and variables are replaced with their values from the variables section.
+
+If an error occurs when executing this code, processing of other sections of the template will be stopped.
+
+5. `targets_and_patterns`
 
 Here are the file paths and patterns for searching + replacing files. First comes the string - the absolute path to the file. The following lines are patterns for searching+replacing bytes. The pattern strings can be either a separate string with bytes to search and a separate string to replace, or the string can contain both patterns, but they must be separated by the same separator that is used when passing patterns as arguments to `ReplaceHexBytesAll.ps1`.
 In general, the file path string is searched first, and all the following lines are analyzed as hex patterns until the next file path string is found.
@@ -301,19 +327,17 @@ You don't need to write the "title" in the form of the first line `Windows Regis
 
 If the script is run without Administrator rights, a `.reg` file will be created in the temporary folder in which this data will be written. Then a separate Powershell process will be launched with a request for administrator rights and in this process the command to import data from this file into the Windows registry will be executed.
 
-12. `powershell_code`
+12. `post_powershell_code`
 
-Here you specify the code that will be placed in a separate `.ps1` file and will be launched. The function processing this section has the parameters `-hideExternalOutput` and `-needRunAS`. By adding the `-hideExternalOutput` parameter, the entire standard output stream will be redirected to `$null` (this is done if the nested script has a lot of text to output to the terminal window and you need to hide this text), and the `-needRunAS` parameter runs this script with a request for Administrator rights. If the script is not restarted with admin rights in a separate process, the results of its work will be displayed in the current Powershell window.
+A block with Powershell code that is executed after applying hex patterns.
 
-The text from this section is also analyzed and variables are replaced with their values from the variables section.
+The rest of the information is the same as in the `pre_powershell_code` section.
 
-13. `cmd_code`
+13. `post_cmd_code`
 
-Here you specify the code that will be placed in a separate `.cmd` file and will be launched. The function processing this section has the parameters `-hideExternalOutput` and `-needRunAS` and `-needNewWindow`.  By adding the `-hideExternalOutput` parameter, the entire standard output stream will be redirected to `$null` (this is done if the nested script has a lot of text to output to the terminal window and you need to hide this text), and the `-needRunAS` parameter runs this script with a request for Administrator rights, and the `-needNewWindow` parameter runs the script is in a new window.
+A block with a CMD code that is executed after applying hex patterns.
 
-At the same time, if there is a `-needRunAS` parameter and the current parser script does not have admin rights, then the created `.cmd` script will in any case be launched in a new window to request Administrator rights.
-
-The text from this section is also analyzed and variables are replaced with their values from the variables section.
+The rest of the information is the same as in the `pre_cmd_code` section.
 
 
 ## Testing
