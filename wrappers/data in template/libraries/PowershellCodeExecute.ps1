@@ -31,7 +31,6 @@ function PowershellCodeExecute {
         if ((DoWeHaveAdministratorPrivileges) -or (-not $needRunAS)) {
             Invoke-Expression $cleanedContent
         } else {
-            write-host "pro"
             $processId = Start-Process -FilePath $PSHost `
                 -Verb RunAs `
                 -ArgumentList "-ExecutionPolicy Bypass -NoProfile -File `"$tempFile`"" `
@@ -41,14 +40,14 @@ function PowershellCodeExecute {
         
             if ($processId.ExitCode -gt 0) {
                 Remove-Item -Path $tempFile -Force -ErrorAction Stop
-                throw "Something happened wrong when execute Powershell code in file $tempFile"
+                throw "Something happened wrong when execute Powershell code from template. Exit code is $($processId.ExitCode)"
             }
         }
     
         Remove-Item -Path $tempFile -Force -ErrorAction Stop
     }
     catch {
-        Write-Error "We have problems with executing Powershell script from template"
+        Write-Error "We have problems with executing Powershell script from template. Exit code is $($processId.ExitCode)"
         throw $_.Exception.Message
     }
 }

@@ -36,8 +36,9 @@ function CmdCodeExecute {
 
         [System.Collections.Hashtable]$processArgs = @{
             FilePath = "cmd.exe"
-            ArgumentList = "-ExecutionPolicy Bypass /c `"$tempFile`""
+            ArgumentList = "/c `"$tempFile`""
             NoNewWindow = $true
+            PassThru = $true
             Wait = $true
         }
 
@@ -49,25 +50,31 @@ function CmdCodeExecute {
         }
         
         if ((DoWeHaveAdministratorPrivileges) -or (-not $needRunAS)) {
-            Start-Process @processArgs
+            $processId = Start-Process @processArgs
             
+            if ($processId.ExitCode -gt 0) {
+                Remove-Item -Path $nullFile -Force -ErrorAction Stop
+                throw "Something happened wrong when execute CMD code from template. Exit code is $($processId.ExitCode)"
+            }
+
             Remove-Item -Path $nullFile -Force -ErrorAction Stop
         } else {
-            $processArgs.PassThru = $true
             $processArgs.Verb = 'RunAs'
             # NoNewWindow parameter incompatible with "-Verb RunAs" - need remove it from args
             $processArgs.Remove('NoNewWindow')
-
+            
             $processId = Start-Process @processArgs
         
             if ($processId.ExitCode -gt 0) {
-                throw "Something happened wrong when execute CMD code in file $tempFile"
+                Remove-Item -Path $nullFile -Force -ErrorAction Stop
+                throw "Something happened wrong when execute CMD code from template. Exit code is $($processId.ExitCode)"
             }
         }
         
         Remove-Item -Path $tempFile -Force -ErrorAction Stop
     }
     catch {
-        Write-Error "Error while execute CMD-code from template - " $_.Exception.Message
+        Write-Error "Error while execute CMD-code from template"
+        throw $_.Exception.Message
     }
 }
