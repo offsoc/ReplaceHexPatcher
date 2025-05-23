@@ -9,6 +9,7 @@ function PowershellCodeExecute {
     param (
         [Parameter(Mandatory)]
         [string]$content,
+        [switch]$hideExternalOutput = $false,
         [switch]$needRunAS = $false
     )
 
@@ -29,21 +30,34 @@ function PowershellCodeExecute {
     
         # execute file .ps1 with admin rights if exist else request admins rights
         if ((DoWeHaveAdministratorPrivileges) -or (-not $needRunAS)) {
-            Invoke-Expression $cleanedContent
+            if ($hideExternalOutput) {
+                Invoke-Expression $cleanedContent *> $null
+            } else {
+                Invoke-Expression $cleanedContent
+            }
         } else {
-            $processId = Start-Process -FilePath $PSHost `
-                -Verb RunAs `
-                -ArgumentList "-ExecutionPolicy Bypass -NoProfile -File `"$tempFile`"" `
-                -PassThru `
-                -Wait
+            [string]$nullFile = [System.IO.Path]::GetTempFileName()
+            [System.Collections.Hashtable]$processArgs = @{
+                ArgumentList = "-ExecutionPolicy Bypass -NoProfile -File `"$tempFile`""
+                Verb = "RunAs"
+                PassThru = $true
+                Wait = $true
+            }
 
+            if ($hideExternalOutput) {
+                $processArgs.RedirectStandardOutput = $nullFile
+            }
+            
+            $processId = Start-Process @processArgs
         
             if ($processId.ExitCode -gt 0) {
+                Remove-Item -Path $nullFile -Force -ErrorAction SilentlyContinue
                 Remove-Item -Path $tempFile -Force -ErrorAction Stop
                 throw "Something happened wrong when execute Powershell code from template. Exit code is $($processId.ExitCode)"
             }
         }
     
+        Remove-Item -Path $nullFile -Force -ErrorAction SilentlyContinue
         Remove-Item -Path $tempFile -Force -ErrorAction Stop
     }
     catch {
