@@ -179,7 +179,7 @@ function Separate-Patterns {
     [OutputType([string[]])]
     param (
         [Parameter(Mandatory)]
-        [string[]]$patternsArray,
+        [string[]]$patternsPairs,
         [bool]$possibleSearchPatternsOnly = $false
     )
     
@@ -187,7 +187,7 @@ function Separate-Patterns {
     [System.Collections.Generic.List[string]]$replacePatterns = New-Object System.Collections.Generic.List[string]
 
     # Separate pattern-string on search and replace strings
-    foreach ($pattern in $patternsArray) {
+    foreach ($pattern in $patternsPairs) {
         # Clean and split string with search and replace hex patterns
         [string[]]$temp = $pattern.Clone().Replace(" ", "").Replace("\", "/").Replace("|", "/").ToUpper().Split("/")
 
@@ -248,7 +248,7 @@ function Apply-HexPatternInBinaryFile {
         [Parameter(Mandatory)]
         [string]$targetPath,
         [Parameter(Mandatory)]
-        [string[]]$patternsArray,
+        [string[]]$patternsPairs,
         [Parameter(Mandatory)]
         [bool]$needMakeBackup,
         [bool]$isSearchOnly = $false
@@ -280,7 +280,7 @@ function Apply-HexPatternInBinaryFile {
             Copy-Item -Path "$targetPath" -Destination "$backupTempAbsoluteName" -Force
         }
 
-        [long[][]]$foundPositions = SearchReplace-HexPatternInBinaryFile -targetPath $targetPath -patternsArray $patternsArray -isSearchOnly $isSearchOnly
+        [long[][]]$foundPositions = SearchReplace-HexPatternInBinaryFile -targetPath $targetPath -patternsPairs $patternsPairs -isSearchOnly $isSearchOnly
     }
     catch {
         Remove-Item -Path "$backupTempAbsoluteName" -Force 2>$null
@@ -393,11 +393,11 @@ function SearchReplace-HexPatternInBinaryFile {
         [Parameter(Mandatory)]
         [string]$targetPath,
         [Parameter(Mandatory)]
-        [string[]]$patternsArray,
+        [string[]]$patternsPairs,
         [bool]$isSearchOnly = $false
     )
 
-    [string[]]$searchPatterns, [string[]]$replacePatterns = Separate-Patterns $patternsArray -possibleSearchPatternsOnly $isSearchOnly
+    [string[]]$searchPatterns, [string[]]$replacePatterns = Separate-Patterns $patternsPairs -possibleSearchPatternsOnly $isSearchOnly
 
     try {
         $stream = [System.IO.File]::Open(($targetPath -ireplace "``", ""), [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite)
@@ -522,7 +522,7 @@ Show info about found+replaced or not found patterns
 function Show-InfoAboutReplacedPatterns {
     param (
         [Parameter(Mandatory)]
-        [string[]]$patternsArray,
+        [string[]]$patternsPairs,
         [Parameter(Mandatory)]
         [long[][]]$foundPositions,
         [bool]$needMoreInfo = $false,
@@ -548,7 +548,7 @@ function Show-InfoAboutReplacedPatterns {
             Write-Host "Here details - <Pattern> : <occurrences>"
             
             for ($i = 0; $i -lt $numbersFoundOccurrences.Count; $i++) {
-                Write-Host "$($patternsArray[$i]) : $($numbersFoundOccurrences[$i])"
+                Write-Host "$($patternsPairs[$i]) : $($numbersFoundOccurrences[$i])"
             }
             Write-Host
             Write-Host "In file `"$filePathFull`""
@@ -560,10 +560,10 @@ function Show-InfoAboutReplacedPatterns {
             
             for ($i = 0; $i -lt $numbersFoundOccurrences.Count; $i++) {
                 if ($needShowPositionsDecimal) {
-                    Write-Host "$($patternsArray[$i]) : $($numbersFoundOccurrences[$i]) : $($foundPositions[$i] -join " ")"
+                    Write-Host "$($patternsPairs[$i]) : $($numbersFoundOccurrences[$i]) : $($foundPositions[$i] -join " ")"
                 }
                 if ($needShowPositionsHex) {
-                    Write-Host "$($patternsArray[$i]) : $($numbersFoundOccurrences[$i]) : $($foundPositions[$i] | ForEach-Object { $_.ToString("X") })"
+                    Write-Host "$($patternsPairs[$i]) : $($numbersFoundOccurrences[$i]) : $($foundPositions[$i] | ForEach-Object { $_.ToString("X") })"
                 }
             }
             Write-Host
@@ -580,7 +580,7 @@ function Show-InfoAboutReplacedPatterns {
             Write-Host "Here details - <Pattern> : <occurrences>"
             
             for ($i = 0; $i -lt $numbersFoundOccurrences.Count; $i++) {
-                Write-Host "$($patternsArray[$i]) : $($numbersFoundOccurrences[$i])"
+                Write-Host "$($patternsPairs[$i]) : $($numbersFoundOccurrences[$i])"
             }
             Write-Host
             Write-Host "In file `"$filePathFull`""
@@ -592,13 +592,13 @@ function Show-InfoAboutReplacedPatterns {
             
             for ($i = 0; $i -lt $numbersFoundOccurrences.Count; $i++) {
                 if ($needShowPositionsDecimal) {
-                    Write-Host "$($patternsArray[$i]) : $($numbersFoundOccurrences[$i]) : $($foundPositions[$i] -join " ")"
+                    Write-Host "$($patternsPairs[$i]) : $($numbersFoundOccurrences[$i]) : $($foundPositions[$i] -join " ")"
                 }
                 if ($needShowPositionsHex -and (($foundPositions[$i].Count -eq 1) -and ($foundPositions[$i] -eq -1))) {
-                    Write-Host "$($patternsArray[$i]) : $($numbersFoundOccurrences[$i]) : -1"
+                    Write-Host "$($patternsPairs[$i]) : $($numbersFoundOccurrences[$i]) : -1"
                 }
                 else {
-                    Write-Host "$($patternsArray[$i]) : $($numbersFoundOccurrences[$i]) : $($foundPositions[$i] | ForEach-Object { $_.ToString("X") })"
+                    Write-Host "$($patternsPairs[$i]) : $($numbersFoundOccurrences[$i]) : $($foundPositions[$i] | ForEach-Object { $_.ToString("X") })"
                 }
             }
             Write-Host
@@ -607,7 +607,7 @@ function Show-InfoAboutReplacedPatterns {
         else {
             for ($i = 0; $i -lt $numbersFoundOccurrences.Count; $i++) {
                 if ($numbersFoundOccurrences[$i] -eq 0) {
-                    $notFoundPatterns += ' ' + $patternsArray[$i]
+                    $notFoundPatterns += ' ' + $patternsPairs[$i]
                 }
     
                 Write-Host "Hex patterns" $notFoundPatterns.Trim() "- not found, but other given patterns found in $filePathFull" 
@@ -632,18 +632,18 @@ if ($isDirectExecution) {
     Write-Host ""
 
 
-    [string[]]$patternsExtracted = @()
+    [string[]]$patternsPairs = @()
     if ($patterns.Count -eq 1) {
         # Maybe all patterns written in 1 string in first array item and we need handle it
-        $patternsExtracted = ExtractPatterns $patterns[0]
+        $patternsPairs = ExtractPatterns $patterns[0]
     }
     else {
-        $patternsExtracted = $patterns
+        $patternsPairs = $patterns
     }
 
-    [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $filePathFull -patterns $patternsExtracted -needMakeBackup $makeBackup -isSearchOnly $onlyCheckOccurrences
+    [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $filePathFull -patternsPairs $patternsPairs -needMakeBackup $makeBackup -isSearchOnly $onlyCheckOccurrences
     
-    Show-InfoAboutReplacedPatterns $patternsExtracted $foundPositions $showMoreInfo -needShowPositionsDecimal $showFoundOffsetsInDecimal -needShowPositionsHex $showFoundOffsetsInHex
+    Show-InfoAboutReplacedPatterns $patternsPairs $foundPositions $showMoreInfo -needShowPositionsDecimal $showFoundOffsetsInDecimal -needShowPositionsHex $showFoundOffsetsInHex
 
     if (-not $skipStopwatch) {
         $watch.Stop()
