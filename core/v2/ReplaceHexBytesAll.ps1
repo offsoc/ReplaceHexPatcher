@@ -1,9 +1,7 @@
 ﻿# Example usage in Windows Powershell:
 # .\ReplaceHexBytesAll.ps1 -filePath "D:\TEMP\file.exe" -patterns "4883EC28BA2F????00??8D0DB0B7380A/11111111111111111111111111111111","C4 25 2A 0A 48 89 45 18 48 8D 55 18 48 8D 4D ?? /     1111 111111    111111 1111111111111111","\x45\xA8\x48\x8D\x55\xA8\x48\x8D\x4D\x68\xE8\x61\x8C\x1E\x05\xBA/\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11","??1FBA0E??????CD21B8014CCD21????/????????????????74C3" -makeBackup -showMoreInfo -skipStopwatch -showFoundOffsetsInDecimal
 
-# Main script
 param (
-    [Parameter(Mandatory)]
     [string]$filePath,
     [switch]$makeBackup = $false,
     [switch]$showMoreInfo = $false,
@@ -13,30 +11,35 @@ param (
     [switch]$skipStopwatch = $false,
     # One pattern is string with search/replace hex
     # like "AABB/1122" or "\xAA\xBB/\x11\x22" or "A A BB CC|1 12 233" or "?? AA BB CC??FF/112233445566" or "AABB??CC????11/??C3??????????"
-    [Parameter(Mandatory)]
     [string[]]$patterns
 )
 
-if (-not (Test-Path $filePath)) {
-    if (-not (Test-Path -LiteralPath $filePath)) {
-        Write-Error "File not found: $filePath"
+
+# Flag that mean file launched like a script and not imported like a library
+[bool]$isDirectExecution = [bool]$($MyInvocation.InvocationName -ne '.')
+
+if ($isDirectExecution) {
+    if (-not (Test-Path $filePath)) {
+        if (-not (Test-Path -LiteralPath $filePath)) {
+            Write-Error "File not found: $filePath"
+            exit 1
+        }
+    }
+
+    if ($patterns.Count -eq 0) {
+        Write-Error "No patterns given"
         exit 1
     }
-}
 
-if ($patterns.Count -eq 0) {
-    Write-Error "No patterns given"
-    exit 1
-}
+    if ($showFoundOffsetsInDecimal -and $showFoundOffsetsInHex) {
+        Write-Error "Choose 1 format offsets - decimal or hexademical and use only 1 argument for it"
+        exit 1
+    }
 
-if ($showFoundOffsetsInDecimal -and $showFoundOffsetsInHex) {
-    Write-Error "Choose 1 format offsets - decimal or hexademical and use only 1 argument for it"
-    exit 1
-}
-
-if ($onlyCheckOccurrences -and $makeBackup) {
-    Write-Error "When checking for pattern occurrences, the file is not modified in any way and there is no need to make file backup"
-    exit 1
+    if ($onlyCheckOccurrences -and $makeBackup) {
+        Write-Error "When checking for pattern occurrences, the file is not modified in any way and there is no need to make file backup"
+        exit 1
+    }
 }
 
 
@@ -60,11 +63,10 @@ $PSHost = If ($PSVersionTable.PSVersion.Major -le 5) { 'PowerShell' } Else { 'Pw
         return "-$($_.Key) `"$($_.Value)`""
     }) -join " "
 
-[string]$filePathFull_Unescaped = [System.IO.Path]::GetFullPath(($filePath -ireplace "``", ""))
-[string]$filePathFull = [System.Management.Automation.WildcardPattern]::Escape($filePathFull_Unescaped)
-
-# Flag that mean file launched like a script and not imported like a library
-[bool]$isDirectExecution = [bool]$($MyInvocation.InvocationName -ne '.')
+if ($isDirectExecution) {
+    [string]$filePathFull_Unescaped = [System.IO.Path]::GetFullPath(($filePath -ireplace "``", ""))
+    [string]$filePathFull = [System.Management.Automation.WildcardPattern]::Escape($filePathFull_Unescaped)
+}
 
 # C# code from HexHandler.cs minified using https://atifaziz.github.io/CSharpMinifierDemo/
 [string]$hexHandlerCodeMinified = @"
