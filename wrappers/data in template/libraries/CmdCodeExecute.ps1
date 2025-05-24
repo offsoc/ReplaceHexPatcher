@@ -53,7 +53,7 @@ function CmdCodeExecute {
             $processId = Start-Process @processArgs
             
             if ($processId.ExitCode -gt 0) {
-                Remove-Item -Path $nullFile -Force -ErrorAction Stop
+                Remove-Item -Path $nullFile -Force -ErrorAction SilentlyContinue
                 throw "Something happened wrong when execute CMD code from template. Exit code is $($processId.ExitCode)"
             }
 
@@ -66,7 +66,7 @@ function CmdCodeExecute {
             $processId = Start-Process @processArgs
         
             if ($processId.ExitCode -gt 0) {
-                Remove-Item -Path $nullFile -Force -ErrorAction Stop
+                Remove-Item -Path $nullFile -Force -ErrorAction SilentlyContinue
                 throw "Something happened wrong when execute CMD code from template. Exit code is $($processId.ExitCode)"
             }
         }

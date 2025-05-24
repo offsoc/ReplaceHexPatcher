@@ -1,7 +1,6 @@
 param (
     [Parameter(Mandatory)]
-    [string]$template,
-    [string]$patcherPath
+    [string]$template
 )
 
 
@@ -23,7 +22,7 @@ $templateDir = ''
 
 
 # Names loaded .ps1 files
-[string]$getPatcherScriptName = 'GetPatcher'
+[string]$coreScriptName = 'ReplaceHexBytesAll'
 [string]$detectFilesAndPatternsAndPatchScriptName = 'DetectFilesAndPatternsAndPatch'
 [string]$removeFromHostsScriptName = 'RemoveFromHosts'
 [string]$addToHostsScriptName = 'AddToHosts'
@@ -35,7 +34,7 @@ $templateDir = ''
 [string]$cmdCodeExecuteScriptName = 'CmdCodeExecute'
 
 # Backup direct links for loaded .ps1 files if they not placed in folder
-[string]$getPatcherScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/GetPatcher.ps1'
+[string]$coreScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/core/v2/ReplaceHexBytesAll.ps1'
 [string]$detectFilesAndPatternsAndPatchScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/DetectFilesAndPatternsAndPatch.ps1'
 [string]$removeFromHostsScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/RemoveFromHosts.ps1'
 [string]$addToHostsScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/AddToHosts.ps1'
@@ -454,14 +453,6 @@ try {
     # Get content from template file
 
     [string]$variablesContent = ExtractContent $cleanedTemplate "variables"
-    
-    [string]$patcherPathOrUrlContent = ExtractContent $cleanedTemplate "patcher_path_or_url"
-    # If path or URL for patcher will passed like script argument
-    # need check this argument first before check patchers lines from template  
-    if ((Test-Path variable:patcherPath) -and ($patcherPath.Length -gt 1)) {
-        $patcherPathOrUrlContent = $patcherPath + "`n" + $patcherPathOrUrlContent
-    }
-
     [string]$targetsAndPatternsContent = ExtractContent $cleanedTemplate "targets_and_patterns"
     [string]$hostsRemoveContent = ExtractContent $cleanedTemplate "hosts_remove"
     [string]$hostsAddContent = ExtractContent $cleanedTemplate "hosts_add"
@@ -506,25 +497,24 @@ try {
         Write-InfoMsg "Parsing template variables complete"
     }
     
-    if ($patcherPathOrUrlContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start patcher path..."
-        
-        # Import external Powershell-code
-        $getPatcherScriptNameFull = "$getPatcherScriptName.ps1"
-        if (Test-Path ".\$getPatcherScriptNameFull") {
-            . (Resolve-Path ".\$getPatcherScriptNameFull")
-        } elseif (Test-Path ".\libraries\$getPatcherScriptNameFull") {
-            . (Resolve-Path ".\libraries\$getPatcherScriptNameFull")
-        } else {
-            $tempPSFile = (DownloadPSScript -link $getPatcherScriptURL -fileName $getPatcherScriptNameFull)
-            [void]($tempFilesForRemove.Add($tempPSFile))
-            . $tempPSFile
-        }
-        
-        [string]$patcherFile, [string]$patcherFileTempFlag = GetPatcherFile $patcherPathOrUrlContent
-        Write-InfoMsg "Patcher received"
+    Write-Host
+    Write-InfoMsg "Start getting patcher core..."
+    
+    # Import external Powershell-code
+    $coreScriptNameFull = "$coreScriptName.ps1"
+    [string]$patcherFilePath = ''
+    if (Test-Path ".\$coreScriptNameFull") {
+        $patcherFilePath = (Resolve-Path ".\$coreScriptNameFull")
+    } elseif (Test-Path "..\..\core\v2\$coreScriptNameFull") {
+        $patcherFilePath = (Resolve-Path "..\..\core\v2\$coreScriptNameFull")
+    } elseif (Test-Path ".\libraries\$coreScriptNameFull") {
+        $patcherFilePath = (Resolve-Path ".\libraries\$coreScriptNameFull")
+    } else {
+        $patcherFilePath = (DownloadPSScript -link $coreScriptURL -fileName $coreScriptNameFull)
+        [void]($tempFilesForRemove.Add($patcherFilePath))
     }
+    
+    Write-InfoMsg "Patcher code received"
 
     if ($prePowershellCodeContent.Length -gt 0) {
         Write-Host
