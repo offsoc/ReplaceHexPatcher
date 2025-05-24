@@ -760,7 +760,7 @@ namespace HexHandler
                             {
                                 byte[] skippedBytes = CreateArrayFilledIdenticalBytes(skippedFromEnd, searchPattern[searchPattern.Length - 1]);
 
-                                if (!DoesStreamHaveSequenceInPosition(skippedBytes, foundPosition + searchPattern.Length + 1))
+                                if (!DoesStreamHaveSequenceInPosition(skippedBytes, foundPosition + searchPattern.Length))
                                 {
                                     match = false;
                                     index = foundIndex + searchPattern.Length + 1;
