@@ -13,7 +13,7 @@ $comments = @(';;', '#')
 # Here will stored parsed template variables
 [System.Collections.Hashtable]$variables = @{}
 
-$PSHost = If ($PSVersionTable.PSVersion.Major -le 5) {'PowerShell'} Else {'PwSh'}
+$PSHost = If ($PSVersionTable.PSVersion.Major -le 5) { 'PowerShell' } Else { 'PwSh' }
 $scriptDir = Split-Path $MyInvocation.MyCommand.Path -Parent
 $templateDir = ''
 
@@ -61,7 +61,8 @@ function DoWeHaveAdministratorPrivileges {
 
     if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
         return $false
-    } else {
+    }
+    else {
         return $true
     }
 }
@@ -112,7 +113,8 @@ function GetTypeEndLines {
     
     if ($content.IndexOf("`r`n") -gt 0) {
         return "`r`n"
-    } else {
+    }
+    else {
         return "`n"
     }
 }
@@ -148,9 +150,11 @@ function RemoveEmptyLines {
     # set type of end lines for result text
     if ($endLinesForResult -eq 'CRLF') {
         $endLinesResult = "`r`n"
-    } elseif ($endLinesForResult -eq 'LF') {
+    }
+    elseif ($endLinesForResult -eq 'LF') {
         $endLinesResult = "`n"
-    } else {
+    }
+    else {
         $endLinesResult = $endLinesCurrent
     }
 
@@ -192,12 +196,12 @@ function ExtractContent {
     
     # start position content between content tags (+1 mean not include in content \n after start tag)
     [int]$startSectionIndex = $cleanedTemplateContent.IndexOf($startSectionName)
-    [int]$startContentIndex = $startSectionIndex+$startSectionName.Length
+    [int]$startContentIndex = $startSectionIndex + $startSectionName.Length
     if ($cleanedTemplateContent[$startContentIndex] -eq "`n") {
-        $startContentIndex +=1
+        $startContentIndex += 1
     }
     if (($cleanedTemplateContent[$startContentIndex] -eq "`r") -and ($cleanedTemplateContent[$startContentIndex + 1] -eq "`n")) {
-        $startContentIndex +=2
+        $startContentIndex += 2
     }
 
     # end position content between content tags
@@ -211,7 +215,7 @@ function ExtractContent {
         exit 1
     }
 
-    return $cleanedTemplateContent.Substring($startContentIndex, $endContentIndex-$startContentIndex)
+    return $cleanedTemplateContent.Substring($startContentIndex, $endContentIndex - $startContentIndex)
 }
 
 
@@ -233,9 +237,10 @@ function GetVariables {
         $line = $line.Trim()
         if (-not ($line.Contains('='))) {
             continue
-        } else {
+        }
+        else {
             $tempSplitLine = $line.Split("=")
-            [void]$variables.Add($tempSplitLine[0].Trim(),$tempSplitLine[1].Trim())
+            [void]$variables.Add($tempSplitLine[0].Trim(), $tempSplitLine[1].Trim())
         }
     }
 
@@ -296,9 +301,9 @@ function TryDecodeIfBase64 {
         [string]$decodedText = [System.Text.Encoding]::UTF8.GetString($decodedData)
 
         [string]$tempFile = [System.IO.Path]::GetTempFileName()
-        Get-Process | Where-Object {$_.CPU -ge 1} | Out-File $tempFile
+        Get-Process | Where-Object { $_.CPU -ge 1 } | Out-File $tempFile
         $decodedText | Out-File -FilePath $tempFile -Encoding utf8 -Force
-        $renamedTempFile = ($tempFile.Substring(0, $tempFile.LastIndexOf("."))+".txt")
+        $renamedTempFile = ($tempFile.Substring(0, $tempFile.LastIndexOf(".")) + ".txt")
         Rename-Item $tempFile $renamedTempFile
 
         return (Get-ChildItem $renamedTempFile).FullName
@@ -344,12 +349,13 @@ function Get-TemplateFile {
         }
         
         return (Get-ChildItem $filePathFull).FullName
-    } elseif ($templateWay.StartsWith("http") -and ((Invoke-WebRequest -UseBasicParsing -Uri $templateWay).StatusCode -eq 200)) {
+    }
+    elseif ($templateWay.StartsWith("http") -and ((Invoke-WebRequest -UseBasicParsing -Uri $templateWay).StatusCode -eq 200)) {
         # case when template is URL
         [string]$tempFile = [System.IO.Path]::GetTempFileName()
-        Get-Process | Where-Object {$_.CPU -ge 1} | Out-File $tempFile
-        (New-Object System.Net.WebClient).DownloadFile($templateWay,$tempFile)
-        $renamedTempFile = ($tempFile.Substring(0, $tempFile.LastIndexOf("."))+".txt")
+        Get-Process | Where-Object { $_.CPU -ge 1 } | Out-File $tempFile
+        (New-Object System.Net.WebClient).DownloadFile($templateWay, $tempFile)
+        $renamedTempFile = ($tempFile.Substring(0, $tempFile.LastIndexOf(".")) + ".txt")
         Rename-Item $tempFile $renamedTempFile
         [void]($tempFilesList.Value.Add($renamedTempFile))
 
@@ -361,12 +367,13 @@ function Get-TemplateFile {
         }
         
         return (Get-ChildItem $renamedTempFile).FullName
-    } else {
+    }
+    else {
         # case when template is string
         [string]$tempFile = [System.IO.Path]::GetTempFileName()
-        Get-Process | Where-Object {$_.CPU -ge 1} | Out-File $tempFile
+        Get-Process | Where-Object { $_.CPU -ge 1 } | Out-File $tempFile
         $templateWay | Out-File -FilePath $tempFile -Encoding utf8 -Force
-        $renamedTempFile = ($tempFile.Substring(0, $tempFile.LastIndexOf("."))+".txt")
+        $renamedTempFile = ($tempFile.Substring(0, $tempFile.LastIndexOf(".")) + ".txt")
         Rename-Item $tempFile $renamedTempFile
         [void]($tempFilesList.Value.Add($renamedTempFile))
 
@@ -406,7 +413,7 @@ function DownloadPSScript {
             # TODO: Maybe need check if file is using and kill process for kill process using this file
         }
     
-        (New-Object System.Net.WebClient).DownloadFile($link,$filePathFull)
+        (New-Object System.Net.WebClient).DownloadFile($link, $filePathFull)
     }
     catch {
         Write-Error "Something wrong when download external Powershell-script. Error message is: $_.Exception.Message"
@@ -474,15 +481,15 @@ try {
 
     if ((($hostsRemoveContent.Length -gt 0) -or ($hostsAddContent.Length -gt 0) -or ($firewallBlockContent.Length -gt 0) -or ($firewallRemoveBlockContent.Length -gt 0) -or ($registryModifyContent.Length -gt 0)) -and (-not (DoWeHaveAdministratorPrivileges))) {
         $argumentsBound = ($PSBoundParameters.GetEnumerator() | ForEach-Object {
-            $valuePath = $_.Value
-            if ($_.Key -eq 'templatePath') {
-                $valuePath = $fullTemplatePath
-            }
-            if ($valuePath.StartsWith('.')) {
-                $valuePath = $valuePath | Resolve-Path
-            }
-            "-$($_.Key) `"$($valuePath)`""
-        }) -join " "
+                $valuePath = $_.Value
+                if ($_.Key -eq 'templatePath') {
+                    $valuePath = $fullTemplatePath
+                }
+                if ($valuePath.StartsWith('.')) {
+                    $valuePath = $valuePath | Resolve-Path
+                }
+                "-$($_.Key) `"$($valuePath)`""
+            }) -join " "
 
         Start-Process -Verb RunAs $PSHost ("-ExecutionPolicy Bypass -File `"$PSCommandPath`" $argumentsBound")
         break
@@ -505,11 +512,14 @@ try {
     [string]$patcherFilePath = ''
     if (Test-Path ".\$coreScriptNameFull") {
         $patcherFilePath = (Resolve-Path ".\$coreScriptNameFull")
-    } elseif (Test-Path "..\..\core\v2\$coreScriptNameFull") {
+    }
+    elseif (Test-Path "..\..\core\v2\$coreScriptNameFull") {
         $patcherFilePath = (Resolve-Path "..\..\core\v2\$coreScriptNameFull")
-    } elseif (Test-Path ".\libraries\$coreScriptNameFull") {
+    }
+    elseif (Test-Path ".\libraries\$coreScriptNameFull") {
         $patcherFilePath = (Resolve-Path ".\libraries\$coreScriptNameFull")
-    } else {
+    }
+    else {
         $patcherFilePath = (DownloadPSScript -link $coreScriptURL -fileName $coreScriptNameFull)
         [void]($tempFilesForRemove.Add($patcherFilePath))
     }
@@ -525,9 +535,11 @@ try {
         $powershellCodeExecuteScriptNameFull = "$powershellCodeExecuteScriptName.ps1"
         if (Test-Path ".\$powershellCodeExecuteScriptNameFull") {
             . (Resolve-Path ".\$powershellCodeExecuteScriptNameFull")
-        } elseif (Test-Path ".\libraries\$powershellCodeExecuteScriptNameFull") {
+        }
+        elseif (Test-Path ".\libraries\$powershellCodeExecuteScriptNameFull") {
             . (Resolve-Path ".\libraries\$powershellCodeExecuteScriptNameFull")
-        } else {
+        }
+        else {
             $tempPSFile = (DownloadPSScript -link $powershellCodeExecuteScriptURL -fileName $powershellCodeExecuteScriptNameFull)
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
@@ -546,9 +558,11 @@ try {
         $cmdCodeExecuteScriptNameFull = "$cmdCodeExecuteScriptName.ps1"
         if (Test-Path ".\$cmdCodeExecuteScriptNameFull") {
             . (Resolve-Path ".\$cmdCodeExecuteScriptNameFull")
-        } elseif (Test-Path ".\libraries\$cmdCodeExecuteScriptNameFull") {
+        }
+        elseif (Test-Path ".\libraries\$cmdCodeExecuteScriptNameFull") {
             . (Resolve-Path ".\libraries\$cmdCodeExecuteScriptNameFull")
-        } else {
+        }
+        else {
             $tempPSFile = (DownloadPSScript -link $cmdCodeExecuteScriptURL -fileName $cmdCodeExecuteScriptNameFull)
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
@@ -566,15 +580,17 @@ try {
         $detectFilesAndPatternsAndPatchScriptNameFull = "$detectFilesAndPatternsAndPatchScriptName.ps1"
         if (Test-Path ".\$detectFilesAndPatternsAndPatchScriptNameFull") {
             . (Resolve-Path ".\$detectFilesAndPatternsAndPatchScriptNameFull")
-        } elseif (Test-Path ".\libraries\$detectFilesAndPatternsAndPatchScriptNameFull") {
+        }
+        elseif (Test-Path ".\libraries\$detectFilesAndPatternsAndPatchScriptNameFull") {
             . (Resolve-Path ".\libraries\$detectFilesAndPatternsAndPatchScriptNameFull")
-        } else {
+        }
+        else {
             $tempPSFile = (DownloadPSScript -link $detectFilesAndPatternsAndPatchScriptURL -fileName $detectFilesAndPatternsAndPatchScriptNameFull)
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
         }
         
-        DetectFilesAndPatternsAndPatch -patcherFile $patcherFile -content $targetsAndPatternsContent
+        DetectFilesAndPatternsAndPatch -patcherFilePath $patcherFilePath -content $targetsAndPatternsContent
 
         Write-InfoMsg "Parsing patch targets and apply patches complete"    
     }
@@ -587,9 +603,11 @@ try {
         $removeFromHostsScriptNameFull = "$removeFromHostsScriptName.ps1"
         if (Test-Path ".\$removeFromHostsScriptNameFull") {
             . (Resolve-Path ".\$removeFromHostsScriptNameFull")
-        } elseif (Test-Path ".\libraries\$removeFromHostsScriptNameFull") {
+        }
+        elseif (Test-Path ".\libraries\$removeFromHostsScriptNameFull") {
             . (Resolve-Path ".\libraries\$removeFromHostsScriptNameFull")
-        } else {
+        }
+        else {
             $tempPSFile = (DownloadPSScript -link $removeFromHostsScriptURL -fileName $removeFromHostsScriptNameFull)
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
@@ -608,9 +626,11 @@ try {
         $addToHostsScriptNameFull = "$addToHostsScriptName.ps1"
         if (Test-Path ".\$addToHostsScriptNameFull") {
             . (Resolve-Path ".\$addToHostsScriptNameFull")
-        } elseif (Test-Path ".\libraries\$addToHostsScriptNameFull") {
+        }
+        elseif (Test-Path ".\libraries\$addToHostsScriptNameFull") {
             . (Resolve-Path ".\libraries\$addToHostsScriptNameFull")
-        } else {
+        }
+        else {
             $tempPSFile = (DownloadPSScript -link $addToHostsScriptURL -fileName $addToHostsScriptNameFull)
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
@@ -629,9 +649,11 @@ try {
         $deleteFilesOrFoldersScriptNameFull = "$deleteFilesOrFoldersScriptName.ps1"
         if (Test-Path ".\$deleteFilesOrFoldersScriptNameFull") {
             . (Resolve-Path ".\$deleteFilesOrFoldersScriptNameFull")
-        } elseif (Test-Path ".\libraries\$deleteFilesOrFoldersScriptNameFull") {
+        }
+        elseif (Test-Path ".\libraries\$deleteFilesOrFoldersScriptNameFull") {
             . (Resolve-Path ".\libraries\$deleteFilesOrFoldersScriptNameFull")
-        } else {
+        }
+        else {
             $tempPSFile = (DownloadPSScript -link $deleteFilesOrFoldersScriptURL -fileName $deleteFilesOrFoldersScriptNameFull)
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
@@ -648,14 +670,17 @@ try {
 
         if (Get-Command -Name CreateAllFilesFromText -ErrorAction SilentlyContinue) {
             CreateAllFilesFromText $createFilesFromTextContent
-        } else {
+        }
+        else {
             # Import external Powershell-code
             $createAllFilesFromTextOrBase64ScriptNameFull = "$createAllFilesFromTextOrBase64ScriptName.ps1"
             if (Test-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull") {
                 . (Resolve-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull")
-            } elseif (Test-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull") {
+            }
+            elseif (Test-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull") {
                 . (Resolve-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull")
-            } else {
+            }
+            else {
                 $tempPSFile = (DownloadPSScript -link $createAllFilesFromTextOrBase64ScriptURL -fileName $createAllFilesFromTextOrBase64ScriptNameFull)
                 [void]($tempFilesForRemove.Add($tempPSFile))
                 . $tempPSFile
@@ -673,14 +698,17 @@ try {
 
         if (Get-Command -Name CreateAllFilesFromBase64 -ErrorAction SilentlyContinue) {
             CreateAllFilesFromBase64 $createFilesFromBase64Content
-        } else {
+        }
+        else {
             # Import external Powershell-code
             $createAllFilesFromTextOrBase64ScriptNameFull = "$createAllFilesFromTextOrBase64ScriptName.ps1"
             if (Test-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull") {
                 . (Resolve-Path ".\$createAllFilesFromTextOrBase64ScriptNameFull")
-            } elseif (Test-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull") {
+            }
+            elseif (Test-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull") {
                 . (Resolve-Path ".\libraries\$createAllFilesFromTextOrBase64ScriptNameFull")
-            } else {
+            }
+            else {
                 $tempPSFile = (DownloadPSScript -link $createAllFilesFromTextOrBase64ScriptURL -fileName $createAllFilesFromTextOrBase64ScriptNameFull)
                 [void]($tempFilesForRemove.Add($tempPSFile))
                 . $tempPSFile
@@ -698,14 +726,17 @@ try {
 
         if (Get-Command -Name RemoveBlockFilesFromFirewall -ErrorAction SilentlyContinue) {
             RemoveBlockFilesFromFirewall $firewallRemoveBlockContent
-        } else {
+        }
+        else {
             # Import external Powershell-code
             $blockOrRemoveFilesFromFirewallScriptNameFull = "$blockOrRemoveFilesFromFirewallScriptName.ps1"
             if (Test-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull") {
                 . (Resolve-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull")
-            } elseif (Test-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull") {
+            }
+            elseif (Test-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull") {
                 . (Resolve-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull")
-            } else {
+            }
+            else {
                 $tempPSFile = (DownloadPSScript -link $blockOrRemoveFilesFromFirewallScriptURL -fileName $blockOrRemoveFilesFromFirewallScriptNameFull)
                 [void]($tempFilesForRemove.Add($tempPSFile))
                 . $tempPSFile
@@ -723,14 +754,17 @@ try {
 
         if (Get-Command -Name BlockFilesWithFirewall -ErrorAction SilentlyContinue) {
             BlockFilesWithFirewall $firewallBlockContent
-        } else {
+        }
+        else {
             # Import external Powershell-code
             $blockOrRemoveFilesFromFirewallScriptNameFull = "$blockOrRemoveFilesFromFirewallScriptName.ps1"
             if (Test-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull") {
                 . (Resolve-Path ".\$blockOrRemoveFilesFromFirewallScriptNameFull")
-            } elseif (Test-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull") {
+            }
+            elseif (Test-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull") {
                 . (Resolve-Path ".\libraries\$blockOrRemoveFilesFromFirewallScriptNameFull")
-            } else {
+            }
+            else {
                 $tempPSFile = (DownloadPSScript -link $blockOrRemoveFilesFromFirewallScriptURL -fileName $blockOrRemoveFilesFromFirewallScriptNameFull)
                 [void]($tempFilesForRemove.Add($tempPSFile))
                 . $tempPSFile
@@ -750,9 +784,11 @@ try {
         $registryFileApplyScriptNameFull = "$registryFileApplyScriptName.ps1"
         if (Test-Path ".\$registryFileApplyScriptNameFull") {
             . (Resolve-Path ".\$registryFileApplyScriptNameFull")
-        } elseif (Test-Path ".\libraries\$registryFileApplyScriptNameFull") {
+        }
+        elseif (Test-Path ".\libraries\$registryFileApplyScriptNameFull") {
             . (Resolve-Path ".\libraries\$registryFileApplyScriptNameFull")
-        } else {
+        }
+        else {
             $tempPSFile = (DownloadPSScript -link $registryFileApplyScriptURL -fileName $registryFileApplyScriptNameFull)
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
@@ -771,9 +807,11 @@ try {
         $powershellCodeExecuteScriptNameFull = "$powershellCodeExecuteScriptName.ps1"
         if (Test-Path ".\$powershellCodeExecuteScriptNameFull") {
             . (Resolve-Path ".\$powershellCodeExecuteScriptNameFull")
-        } elseif (Test-Path ".\libraries\$powershellCodeExecuteScriptNameFull") {
+        }
+        elseif (Test-Path ".\libraries\$powershellCodeExecuteScriptNameFull") {
             . (Resolve-Path ".\libraries\$powershellCodeExecuteScriptNameFull")
-        } else {
+        }
+        else {
             $tempPSFile = (DownloadPSScript -link $powershellCodeExecuteScriptURL -fileName $powershellCodeExecuteScriptNameFull)
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
@@ -792,9 +830,11 @@ try {
         $cmdCodeExecuteScriptNameFull = "$cmdCodeExecuteScriptName.ps1"
         if (Test-Path ".\$cmdCodeExecuteScriptNameFull") {
             . (Resolve-Path ".\$cmdCodeExecuteScriptNameFull")
-        } elseif (Test-Path ".\libraries\$cmdCodeExecuteScriptNameFull") {
+        }
+        elseif (Test-Path ".\libraries\$cmdCodeExecuteScriptNameFull") {
             . (Resolve-Path ".\libraries\$cmdCodeExecuteScriptNameFull")
-        } else {
+        }
+        else {
             $tempPSFile = (DownloadPSScript -link $cmdCodeExecuteScriptURL -fileName $cmdCodeExecuteScriptNameFull)
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
@@ -811,10 +851,12 @@ try {
     if ($patcherFileTempFlag -eq $fileIsTempFlag) {
         Remove-Item $patcherFile
     }
-} catch {
+}
+catch {
     Write-Error $_.Exception.Message
     exit 1
-} finally {
+}
+finally {
     # Delete all temp Powershell-script files
     $tempFilesForRemove | foreach { Remove-Item -Path $_ -Force }
 }

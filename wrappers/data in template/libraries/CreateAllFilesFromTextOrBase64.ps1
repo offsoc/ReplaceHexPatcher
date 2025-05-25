@@ -72,7 +72,8 @@ function CreateFilesFromData {
     if ($cleanedContentLines.Count -gt 1) {
         if ($cleanedContentLines[1].Trim() -eq 'CRLF') {
             $endLinesNeed = "`r`n"
-        } elseif ($cleanedContentLines[1].Trim() -eq 'LF') {
+        }
+        elseif ($cleanedContentLines[1].Trim() -eq 'LF') {
             $endLinesNeed = "`n"
         }
     }
@@ -80,7 +81,7 @@ function CreateFilesFromData {
     # if endLinesNeed settled - mean second line in content is tag for endLinesNeed and tag is not part future file content
     # else endLinesNeed var is empty - mean second line in content is start for future file content
     if ($isBase64) {
-        [string[]]$tempContentLines = $cleanedContentLines[1..($cleanedContentLines.Length-1)]
+        [string[]]$tempContentLines = $cleanedContentLines[1..($cleanedContentLines.Length - 1)]
         
         try {
             [byte[]]$targetContent = [Convert]::FromBase64String($tempContentLines)
@@ -88,13 +89,15 @@ function CreateFilesFromData {
         catch {
             throw "Cannot decode base64-code. Looks like provided base64-code is not valid."
         }
-    } elseif ($endLinesNeed -eq '') {
-        [string[]]$tempContentLines = $cleanedContentLines[1..($cleanedContentLines.Length-1)]
+    }
+    elseif ($endLinesNeed -eq '') {
+        [string[]]$tempContentLines = $cleanedContentLines[1..($cleanedContentLines.Length - 1)]
         
         $endLinesNeed = [System.Environment]::NewLine
         $targetContent = ($tempContentLines) -join $endLinesNeed
-    } else {
-        [string[]]$tempContentLines = $cleanedContentLines[2..($cleanedContentLines.Length-1)]
+    }
+    else {
+        [string[]]$tempContentLines = $cleanedContentLines[2..($cleanedContentLines.Length - 1)]
         
         $targetContent = ($tempContentLines) -join $endLinesNeed
     }
@@ -105,7 +108,8 @@ function CreateFilesFromData {
 
         if ($isBase64) {
             [System.IO.File]::WriteAllBytes($targetPath, $targetContent)
-        } else {
+        }
+        else {
             Set-Content -Value $targetContent -Path $targetPath -NoNewline -ErrorAction Stop
         }
     }

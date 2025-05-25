@@ -37,7 +37,8 @@ function Test-ReadOnlyAndWriteAccess {
             $isReadOnly = $true
             $needRunAs = $true
         }
-    } else {
+    }
+    else {
         $isReadOnly = $false
 
         if ($targetIsFile) {
@@ -47,10 +48,12 @@ function Test-ReadOnlyAndWriteAccess {
                 $stream = [System.IO.File]::Open($targetPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Write)
                 $stream.Close()
                 $needRunAs = $false
-            } catch {
+            }
+            catch {
                 $needRunAs = $true
             }
-        } else {
+        }
+        else {
             # if it folder
             # we check permissions for delete folder
             try {
@@ -157,7 +160,8 @@ function DeleteFilesOrFolders {
                 if (-not $isReadOnly) {
                     if ($needMoveToBin) {
                         Move-ToRecycleBin -targetPath $line
-                    } else {
+                    }
+                    else {
                         Remove-Item -Path $line -Recurse
                     }
                 }
@@ -165,12 +169,14 @@ function DeleteFilesOrFolders {
                     if ($needMoveToBin) {
                         # files with "readonly" attribute can be moved in Bin without problems without remove this attribute
                         Move-ToRecycleBin -targetPath $line
-                    } else {
+                    }
+                    else {
                         Set-ItemProperty -Path $line -Name Attributes -Value ($fileAttributes -bxor [System.IO.FileAttributes]::ReadOnly)
                         Remove-Item -Path $line -Recurse
                     }
                 }
-            } else {
+            }
+            else {
                 if ($needRunAS -and (-not $isReadOnly)) {
                     [void]$itemsDeleteWithAdminsPrivileges.Add($line)
                 }
@@ -180,7 +186,8 @@ function DeleteFilesOrFolders {
                 if (-not $isReadOnly) {
                     if ($needMoveToBin) {
                         Move-ToRecycleBin -targetPath $line
-                    } else {
+                    }
+                    else {
                         Remove-Item -Path $line -Recurse
                     }
                 }
@@ -188,13 +195,15 @@ function DeleteFilesOrFolders {
                     if ($needMoveToBin) {
                         # files with "readonly" attribute can be moved in Bin without problems without remove this attribute
                         Move-ToRecycleBin -targetPath $line
-                    } else {
+                    }
+                    else {
                         Set-ItemProperty -Path $line -Name Attributes -Value ($fileAttributes -bxor [System.IO.FileAttributes]::ReadOnly)
                         Remove-Item -Path $line -Recurse
                     }
                 }
             }
-        } else {
+        }
+        else {
             # If it is a folder, it is very difficult to determine in advance whether administrator rights are needed to delete it,
             #   because files and folders with different rights may be attached to it and deleting a folder
             #   with such files will require administrator rights.
@@ -236,7 +245,8 @@ foreach (`$itemForDelete in @($allItemsForMoveToBinInString)) {
     `$item.InvokeVerb('delete')
 }
 "@
-    } else {
+    }
+    else {
         if ($itemsDeleteWithAdminsPrivileges.Count -gt 0) {
             foreach ($item in $itemsDeleteWithAdminsPrivileges) {
                 $deleteCommand += "Remove-Item -Path '$item' -Recurse -Force`n"

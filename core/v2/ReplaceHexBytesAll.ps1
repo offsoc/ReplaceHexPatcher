@@ -114,7 +114,7 @@ function Test-ReadOnlyAndWriteAccess {
         $isReadOnly = $false
         
         try {
-            $stream = [System.IO.File]::Open(("$targetPath" -ireplace "``",""), [System.IO.FileMode]::Open, [System.IO.FileAccess]::Write)
+            $stream = [System.IO.File]::Open(("$targetPath" -ireplace "``", ""), [System.IO.FileMode]::Open, [System.IO.FileAccess]::Write)
             $stream.Close()
             $needRunAs = $false
         }
@@ -483,17 +483,31 @@ function KillExeTasks {
     }
 }
 
-function Test-AllZero([int[]] $array) {
+function Test-AllZero {
+    [OutputType([bool])]
+    param (
+        [Parameter(Mandatory)]
+        [int[]]$array
+    )
+
     for ($i = 0; $i -lt $array.Count; $i++) {
         if ($array[$i] -ne 0) { return $false }
     }
+
     return $true
 }
 
-function Test-AllNonZero([int[]] $array) {
+function Test-AllNonZero {
+    [OutputType([bool])]
+    param (
+        [Parameter(Mandatory)]
+        [int[]]$array
+    )
+
     for ($i = 0; $i -lt $array.Count; $i++) {
         if ($array[$i] -eq 0) { return $false }
     }
+    
     return $true
 }
 

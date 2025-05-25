@@ -35,11 +35,11 @@ function CmdCodeExecute {
         [string]$nullFile = [System.IO.Path]::GetTempFileName()
 
         [System.Collections.Hashtable]$processArgs = @{
-            FilePath = "cmd.exe"
+            FilePath     = "cmd.exe"
             ArgumentList = "/c `"$tempFile`""
-            NoNewWindow = $true
-            PassThru = $true
-            Wait = $true
+            NoNewWindow  = $true
+            PassThru     = $true
+            Wait         = $true
         }
 
         if ($needNewWindow) {
@@ -58,7 +58,8 @@ function CmdCodeExecute {
             }
 
             Remove-Item -Path $nullFile -Force -ErrorAction Stop
-        } else {
+        }
+        else {
             $processArgs.Verb = 'RunAs'
             # NoNewWindow parameter incompatible with "-Verb RunAs" - need remove it from args
             $processArgs.Remove('NoNewWindow')

@@ -36,7 +36,8 @@ function CombineLinesForHosts {
 
             $contentForAddToHosts += $line + "`r`n"
         }
-    } elseif ($templateContentLines[0].Trim().ToUpper().StartsWith($urlFlag)) {
+    }
+    elseif ($templateContentLines[0].Trim().ToUpper().StartsWith($urlFlag)) {
         # if there is a flag phrase at the beginning of the text "SEE_HERE_FIRST" and there is a link behind it...
         # and the link is indeed there and it is available for download, then add to hosts
         # the content downloaded from the link, not the rest of the lines in the add section
@@ -49,7 +50,7 @@ function CombineLinesForHosts {
                 $tempStatusCode = (Invoke-WebRequest -UseBasicParsing -Uri $urlText -ErrorAction Stop).StatusCode
             }
             catch {
-                CombineLinesForHosts ($content -replace "^SEE_HERE_FIRST.*[\r\n]+","")
+                CombineLinesForHosts ($content -replace "^SEE_HERE_FIRST.*[\r\n]+", "")
                 return ''
             }
             
@@ -57,21 +58,25 @@ function CombineLinesForHosts {
                 $urlContent = (Invoke-WebRequest -Uri $urlText -UseBasicParsing).Content
                 
                 $contentForAddToHosts += $urlContent
-            } else {
-                CombineLinesForHosts ($content -replace "^SEE_HERE_FIRST.*[\r\n]+","")
+            }
+            else {
+                CombineLinesForHosts ($content -replace "^SEE_HERE_FIRST.*[\r\n]+", "")
                 return ''
             }
         }
-    } else {
+    }
+    else {
         foreach ($line in $content -split "\n") {
             # Trim line is important because end line include \n
             $line = $line.Trim()
 
             if ($line.StartsWith($urlFlag)) {
                 continue
-            } elseif ($line.StartsWith('#') -OR $line.StartsWith($localhostIP)) {
+            }
+            elseif ($line.StartsWith('#') -OR $line.StartsWith($localhostIP)) {
                 $contentForAddToHosts += $line + "`r`n"
-            } else {
+            }
+            else {
                 $contentForAddToHosts += $zeroIP + ' ' + $line + "`r`n"
             }
         }
@@ -95,9 +100,11 @@ function isLastLineEmptyOrSpaces {
     
     if ($content -is [string]) {
         return (($content -split "`r`n|`n")[-1].Trim() -eq "")
-    } elseif ($content -is [array]) {
+    }
+    elseif ($content -is [array]) {
         return ($content[$content.Length - 1].Trim() -eq "")
-    } else {
+    }
+    else {
         Write-Error "Given variable is not string or array for detect last line"
         exit 1
     }
@@ -139,14 +146,16 @@ function AddToHosts {
         # and add indents from the last line hosts file to new content
         if (isLastLineEmptyOrSpaces ($hostsFileContent)) {
             $contentForAddToHosts = "`r`n" + $contentForAddToHosts
-        } else {
+        }
+        else {
             $contentForAddToHosts = "`r`n`r`n" + $contentForAddToHosts
         }
 
         # If file have attribute "read only" remove this attribute for made possible patch file
         if ($fileAttributes -band [System.IO.FileAttributes]::ReadOnly) {
             $needRemoveReadOnlyAttr = $true
-        } else {
+        }
+        else {
             $needRemoveReadOnlyAttr = $false
         }
 
@@ -162,7 +171,8 @@ function AddToHosts {
             }
 
             Clear-DnsClientCache
-        } else {
+        }
+        else {
             # IMPORTANT !!!
             # Do not formate this command and not re-write it
             # it need for add multiline string to Start-Process command
@@ -175,15 +185,16 @@ $contentForAddToHosts
                 # If hosts file have attribute "read only" we need remove this attribute before adding lines
                 # and restore "default state" (add this attribute to hosts file) after lines to hosts was added
                 $command = "Set-ItemProperty -Path '$hostsFilePath' -Name Attributes -Value ('$fileAttributes' -bxor [System.IO.FileAttributes]::ReadOnly)" `
-                + "`n" `
-                + $command `
-                + "`n" `
-                + "Set-ItemProperty -Path '$hostsFilePath' -Name Attributes -Value ('$fileAttributes' -bor [System.IO.FileAttributes]::ReadOnly)" `
-                + "Clear-DnsClientCache"
+                    + "`n" `
+                    + $command `
+                    + "`n" `
+                    + "Set-ItemProperty -Path '$hostsFilePath' -Name Attributes -Value ('$fileAttributes' -bor [System.IO.FileAttributes]::ReadOnly)" `
+                    + "Clear-DnsClientCache"
             }
             Start-Process $PSHost -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command `"$command`""
         }
-    } else {
+    }
+    else {
         $command = @"
 @'
 $contentForAddToHosts 

@@ -33,11 +33,13 @@ function GetPathsForExe {
             [string]$folderPath = $line.Replace("\$exeFilesPattern", '')
             [string[]]$filesFromFolder = Get-ChildItem $folderPath -Filter $exeFilesPattern | ForEach-Object { $_.FullName }
             $filesFromFolder | ForEach-Object { [void]($resultLines.Add($_)) }
-        } elseif ($line.EndsWith('\*')) {
+        }
+        elseif ($line.EndsWith('\*')) {
             [string]$folderPath = $line.Replace('\*', '')
             [string[]]$filesFromFolder = Get-ChildItem $folderPath -Filter $exeFilesPattern -Recurse | ForEach-Object { $_.FullName }
             $filesFromFolder | ForEach-Object { [void]($resultLines.Add($_)) }
-        } else {
+        }
+        else {
             [void]($resultLines.Add($line))
         }
     }
@@ -79,7 +81,8 @@ function RemoveBlockFilesFromFirewall {
     if ($temp -eq -1) {
         # no paths for files - no targets for remove in firewall
         return
-    } else {
+    }
+    else {
         [string[]]$exePaths = $temp
     }
 
@@ -104,7 +107,8 @@ function RemoveFilesFromFirewall {
     
     if ($exePaths.Count -eq 0) {
         return
-    } else {
+    }
+    else {
         try {
             [Microsoft.Management.Infrastructure.CimInstance[]]$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { $_.Program -in $exePaths } | Get-NetFirewallRule
             if ($existRulesForExes.Length -gt 0) {
@@ -150,7 +154,8 @@ function BlockFilesWithFirewall {
     if ($temp -eq -1) {
         # no paths for files - no targets for block in firewall
         return
-    } else {
+    }
+    else {
         [string[]]$exePaths = $temp
     }
 

@@ -32,16 +32,18 @@ function PowershellCodeExecute {
         if ((DoWeHaveAdministratorPrivileges) -or (-not $needRunAS)) {
             if ($hideExternalOutput) {
                 Invoke-Expression $cleanedContent *> $null
-            } else {
+            }
+            else {
                 Invoke-Expression $cleanedContent
             }
-        } else {
+        }
+        else {
             [string]$nullFile = [System.IO.Path]::GetTempFileName()
             [System.Collections.Hashtable]$processArgs = @{
                 ArgumentList = "-ExecutionPolicy Bypass -NoProfile -File `"$tempFile`""
-                Verb = "RunAs"
-                PassThru = $true
-                Wait = $true
+                Verb         = "RunAs"
+                PassThru     = $true
+                Wait         = $true
             }
 
             if ($hideExternalOutput) {

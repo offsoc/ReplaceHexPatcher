@@ -27,7 +27,7 @@ function RegistryFileApply {
 
     try {
         if ($endLinesContent -eq "`n") {
-            $cleanedContent = ($cleanedContent -replace "`n","`r`n")
+            $cleanedContent = ($cleanedContent -replace "`n", "`r`n")
         }
 
         if (-not ($cleanedContent.StartsWith($regFileStart))) {

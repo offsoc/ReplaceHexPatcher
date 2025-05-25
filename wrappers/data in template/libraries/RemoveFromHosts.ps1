@@ -60,8 +60,9 @@ function RemoveFromHosts {
             if (($line.StartsWith('#') -or ($line.StartsWith($localhostIP)) -or ($line.StartsWith($zeroIP)))) {
                 $tempMatchLine = $tempMatchLine -replace "\s+", '\s+'
                 $tempHostLine -notmatch $tempMatchLine 
-            } else {
-                $tempMatchLine = $tempMatchLine.Replace('*','.*')
+            }
+            else {
+                $tempMatchLine = $tempMatchLine.Replace('*', '.*')
                 $tempHostLine -notmatch "[^\.]\b$tempMatchLine\b"
             }
         }
@@ -82,7 +83,8 @@ function RemoveFromHosts {
         }
 
         Clear-DnsClientCache
-    } else {
+    }
+    else {
         # IMPORTANT !!!
         # Do not formate this command and not re-write it
         # it need for add multiline string to Start-Process command
@@ -96,11 +98,11 @@ $resultContent
             # If hosts file have attribute "read only" we need remove this attribute before adding lines
             # and restore "default state" (add this attribute to hosts file) after lines to hosts was added
             $command = "Set-ItemProperty -Path '$hostsFilePath' -Name Attributes -Value ('$fileAttributes' -bxor [System.IO.FileAttributes]::ReadOnly)" `
-            + "`n" `
-            + $command `
-            + "`n" `
-            + "Set-ItemProperty -Path '$hostsFilePath' -Name Attributes -Value ('$fileAttributes' -bor [System.IO.FileAttributes]::ReadOnly)" `
-            + "Clear-DnsClientCache"
+                + "`n" `
+                + $command `
+                + "`n" `
+                + "Set-ItemProperty -Path '$hostsFilePath' -Name Attributes -Value ('$fileAttributes' -bor [System.IO.FileAttributes]::ReadOnly)" `
+                + "Clear-DnsClientCache"
         }
         Start-Process $PSHost -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command `"$command`""
     }
