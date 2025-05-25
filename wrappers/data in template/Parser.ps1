@@ -426,6 +426,22 @@ function DownloadPSScript {
 
 <#
 .SYNOPSIS
+Write-Host given text with yellow prefix "[WARN]: "
+#>
+function Write-WarnMsg {
+    param (
+        [Parameter(Mandatory)]
+        [string]$text
+    )
+    
+    # TODO: change yellow to orange
+    Write-Host "[WARN]: " -ForegroundColor Yellow -NoNewline
+    Write-Host $text
+}
+
+
+<#
+.SYNOPSIS
 Write-Host given text with green prefix "[INFO]: "
 #>
 function Write-InfoMsg {
@@ -435,6 +451,21 @@ function Write-InfoMsg {
     )
     
     Write-Host "[INFO]: " -ForegroundColor Green -NoNewline
+    Write-Host $text
+}
+
+
+<#
+.SYNOPSIS
+Write-Host given text with red prefix "[PROBLEM]: "
+#>
+function Write-ProblemMsg {
+    param (
+        [Parameter(Mandatory)]
+        [string]$text
+    )
+    
+    Write-Host "[PROBLEM]: " -ForegroundColor Red -NoNewline
     Write-Host $text
 }
 
