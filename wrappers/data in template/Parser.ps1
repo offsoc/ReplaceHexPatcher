@@ -491,7 +491,7 @@ try {
     # Get content from template file
 
     [string]$variablesContent = ExtractContent $cleanedTemplate "variables"
-    [string]$targetsAndPatternsContent = ExtractContent $cleanedTemplate "targets_and_patterns"
+    [string]$patchBinContent = ExtractContent $cleanedTemplate "patch_bin"
     [string]$hostsRemoveContent = ExtractContent $cleanedTemplate "hosts_remove"
     [string]$hostsAddContent = ExtractContent $cleanedTemplate "hosts_add"
     [string]$deleteNeedContent = ExtractContent $cleanedTemplate "files_or_folders_delete"
@@ -603,7 +603,7 @@ try {
         Write-InfoMsg "Executing external pre-patch CMD code complete"
     }
     
-    if ($targetsAndPatternsContent.Length -gt 0) {
+    if ($patchBinContent.Length -gt 0) {
         Write-Host
         Write-InfoMsg "Start parsing patch targets and apply patches..."
         
@@ -621,7 +621,7 @@ try {
             . $tempPSFile
         }
         
-        DetectFilesAndPatternsAndPatch -patcherFilePath $patcherFilePath -content $targetsAndPatternsContent
+        DetectFilesAndPatternsAndPatch -patcherFilePath $patcherFilePath -content $patchBinContent
 
         Write-InfoMsg "Parsing patch targets and apply patches complete"    
     }

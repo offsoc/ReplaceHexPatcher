@@ -173,7 +173,7 @@ Now about the template. The template structure was made so that the data could b
        - `variables`
        - `pre_powershell_code`
        - `pre_cmd_code`
-       - `targets_and_patterns`
+       - `patch_bin`
        - `file_create_from_text`
        - `file_create_from_base64`
        - `hosts_add`
@@ -199,7 +199,7 @@ Now about the template. The template structure was made so that the data could b
     2. `pre_powershell_code`
     3. `pre_cmd_code`
     4. `patcher_path_or_url`
-    5. `targets_and_patterns`
+    5. `patch_bin`
     6. `hosts_remove`
     7. `hosts_add`
     8. `files_or_folders_delete`
@@ -260,7 +260,7 @@ The text from this section is also analyzed and variables are replaced with thei
 
 If an error occurs when executing this code, processing of other sections of the template will be stopped.
 
-5. `targets_and_patterns`
+5. `patch_bin`
 
 Here are the file paths and patterns for searching + replacing files. First comes the string - the absolute path to the file. The following lines are patterns for searching+replacing bytes. The pattern strings can be either a separate string with bytes to search and a separate string to replace, or the string can contain both patterns, but they must be separated by the same separator that is used when passing patterns as arguments to `ReplaceHexBytesAll.ps1`.
 In general, the file path string is searched first, and all the following lines are analyzed as hex patterns until the next file path string is found.

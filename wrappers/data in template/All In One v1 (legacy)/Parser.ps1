@@ -1554,7 +1554,7 @@ try {
         $patcherPathOrUrlContent = $patcherPath + "`n" + $patcherPathOrUrlContent
     }
 
-    [string]$targetsAndPatternsContent = ExtractContent $cleanedTemplate "targets_and_patterns"
+    [string]$patchBinContent = ExtractContent $cleanedTemplate "patch_bin"
     [string]$hostsRemoveContent = ExtractContent $cleanedTemplate "hosts_remove"
     [string]$hostsAddContent = ExtractContent $cleanedTemplate "hosts_add"
     [string]$deleteNeedContent = ExtractContent $cleanedTemplate "files_or_folders_delete"
@@ -1605,10 +1605,10 @@ try {
         Write-Host "Patcher received"
     }
 
-    if ($targetsAndPatternsContent.Length -gt 0) {
+    if ($patchBinContent.Length -gt 0) {
         Write-Host
         Write-Host "Start parsing patch targets and apply patches..."
-        DetectFilesAndPatternsAndPatch $patcherFile $targetsAndPatternsContent
+        DetectFilesAndPatternsAndPatch $patcherFile $patchBinContent
         Write-Host "Parsing patch targets and apply patches complete"    
     }
 
