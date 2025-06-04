@@ -1,11 +1,25 @@
 
 [string[]]$patternSplitters = @('/', '\', '|')
 
+# paths/files/targets for patches
 [System.Collections.Generic.List[string]]$paths = New-Object System.Collections.Generic.List[string]
+# arrays search patterns for each path/file
 [System.Collections.Generic.List[string[]]]$searchPatterns = New-Object System.Collections.Generic.List[string[]]
+# arrays replace patterns for each path/file
 [System.Collections.Generic.List[string[]]]$replacePatterns = New-Object System.Collections.Generic.List[string[]]
+# arrays found positions for each search pattern for each path/file
+# each path can have multiple search patterns + each search pattern can be found multiple times
 [System.Collections.Generic.List[long[][]]]$foundPositions_allPaths = New-Object System.Collections.Generic.List[long[][]]
-    
+
+
+function ClearStorageArrays {
+    $paths.Clear()
+    $searchPatterns.Clear()
+    $replacePatterns.Clear()
+    $foundPositions_allPaths.Clear()
+}
+
+
 <#
 .DESCRIPTION
 Check if string contain any element from array and return $true if contain
@@ -32,7 +46,14 @@ function DoesStringContainsOneItemArray {
 }
 
 
-function TryExtractPatterns {
+<#
+.DESCRIPTION
+Function try extract search pattern and replace pattern from 1 line string
+It simple check if string have one of patterns separator symbol and
+split string by separator symbol and return resulting array
+otherwise return $null 
+#>
+function TryExtractHexPatterns {
     [OutputType([string[]])]
     param (
         [Parameter(Mandatory)]
@@ -55,7 +76,7 @@ Function analyze given text and extract from the text paths
 and pairs search + replace hex-patterns for each path
 and add paths, search patterns and replace patterns in separated lists
 #>
-function ExtractPathsAndPatterns {
+function ExtractPathsAndHexPatterns {
     param (
         [Parameter(Mandatory)]
         [string]$content
@@ -140,7 +161,7 @@ function DetectFilesAndPatternsAndPatchBinary {
     [bool]$makeBackup = $false
     [bool]$onlyCheckOccurrences = $false
 
-    ExtractPathsAndPatterns -content $content
+    ExtractPathsAndHexPatterns -content $content
 
     if ($paths.Count -eq 0) {
         Write-ProblemMsg "None of the file paths specified for the hex patches were found"
@@ -161,8 +182,15 @@ function DetectFilesAndPatternsAndPatchBinary {
     }
 
     Show-PatchInfo $patternsPairs.ToArray() $foundPositions_allPaths.ToArray()
+
+    ClearStorageArrays
 }
 
+
+<#
+.SYNOPSIS
+Function check if all array items is 0
+#>
 function Test-AllZero_allPaths {
     [OutputType([bool])]
     param (
@@ -179,6 +207,11 @@ function Test-AllZero_allPaths {
     return $true
 }
 
+
+<#
+.SYNOPSIS
+Function check if all array items is non-0
+#>
 function Test-AllNonZero_allPaths {
     [OutputType([bool])]
     param (
@@ -196,6 +229,10 @@ function Test-AllNonZero_allPaths {
 }
 
 
+<#
+.DESCRIPTION
+Function calculate for each search pattern amount of found positions
+#>
 function CalculateNumbersFoundOccurrences_allPaths {
     [OutputType([int[][]])]
     param (
