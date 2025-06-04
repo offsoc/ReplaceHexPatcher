@@ -23,7 +23,7 @@ $templateDir = ''
 
 # Names loaded .ps1 files
 [string]$coreScriptName = 'ReplaceHexBytesAll'
-[string]$detectFilesAndPatternsAndPatchScriptName = 'DetectFilesAndPatternsAndPatch'
+[string]$detectFilesAndPatternsAndPatchBinaryScriptName = 'DetectFilesAndPatternsAndPatchBinary'
 [string]$removeFromHostsScriptName = 'RemoveFromHosts'
 [string]$addToHostsScriptName = 'AddToHosts'
 [string]$deleteFilesOrFoldersScriptName = 'DeleteFilesOrFolders'
@@ -35,7 +35,7 @@ $templateDir = ''
 
 # Backup direct links for loaded .ps1 files if they not placed in folder
 [string]$coreScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/core/v2/ReplaceHexBytesAll.ps1'
-[string]$detectFilesAndPatternsAndPatchScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/DetectFilesAndPatternsAndPatch.ps1'
+[string]$detectFilesAndPatternsAndPatchBinaryScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/DetectFilesAndPatternsAndPatchBinary.ps1'
 [string]$removeFromHostsScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/RemoveFromHosts.ps1'
 [string]$addToHostsScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/AddToHosts.ps1'
 [string]$deleteFilesOrFoldersScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/DeleteFilesOrFolders.ps1'
@@ -605,25 +605,25 @@ try {
     
     if ($patchBinContent.Length -gt 0) {
         Write-Host
-        Write-InfoMsg "Start parsing patch targets and apply patches..."
+        Write-InfoMsg "Start parsing binary patch targets and apply patches..."
         
         # Import external Powershell-code
-        $detectFilesAndPatternsAndPatchScriptNameFull = "$detectFilesAndPatternsAndPatchScriptName.ps1"
-        if (Test-Path ".\$detectFilesAndPatternsAndPatchScriptNameFull") {
-            . (Resolve-Path ".\$detectFilesAndPatternsAndPatchScriptNameFull")
+        $detectFilesAndPatternsAndPatchBinaryScriptNameFull = "$detectFilesAndPatternsAndPatchBinaryScriptName.ps1"
+        if (Test-Path ".\$detectFilesAndPatternsAndPatchBinaryScriptNameFull") {
+            . (Resolve-Path ".\$detectFilesAndPatternsAndPatchBinaryScriptNameFull")
         }
-        elseif (Test-Path ".\libraries\$detectFilesAndPatternsAndPatchScriptNameFull") {
-            . (Resolve-Path ".\libraries\$detectFilesAndPatternsAndPatchScriptNameFull")
+        elseif (Test-Path ".\libraries\$detectFilesAndPatternsAndPatchBinaryScriptNameFull") {
+            . (Resolve-Path ".\libraries\$detectFilesAndPatternsAndPatchBinaryScriptNameFull")
         }
         else {
-            $tempPSFile = (DownloadPSScript -link $detectFilesAndPatternsAndPatchScriptURL -fileName $detectFilesAndPatternsAndPatchScriptNameFull)
+            $tempPSFile = (DownloadPSScript -link $detectFilesAndPatternsAndPatchBinaryScriptURL -fileName $detectFilesAndPatternsAndPatchBinaryScriptNameFull)
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
         }
         
-        DetectFilesAndPatternsAndPatch -patcherFilePath $patcherFilePath -content $patchBinContent
+        DetectFilesAndPatternsAndPatchBinary -patcherFilePath $patcherFilePath -content $patchBinContent
 
-        Write-InfoMsg "Parsing patch targets and apply patches complete"    
+        Write-InfoMsg "Parsing patch targets and apply binary patches complete"    
     }
     
     if ($hostsRemoveContent.Length -gt 0) {

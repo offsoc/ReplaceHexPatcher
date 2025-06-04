@@ -1,9 +1,6 @@
 
 [string[]]$patternSplitters = @('/', '\', '|')
 
-# Text - flags in parse sections
-[string]$makeBackupFlag = 'MAKE BACKUP'
-
 [System.Collections.Generic.List[string]]$paths = New-Object System.Collections.Generic.List[string]
 [System.Collections.Generic.List[string[]]]$searchPatterns = New-Object System.Collections.Generic.List[string[]]
 [System.Collections.Generic.List[string[]]]$replacePatterns = New-Object System.Collections.Generic.List[string[]]
@@ -132,7 +129,7 @@ function ExtractPathsAndPatterns {
 }
 
 
-function DetectFilesAndPatternsAndPatch {
+function DetectFilesAndPatternsAndPatchBinary {
     param (
         [Parameter(Mandatory)]
         [string]$patcherFilePath,
