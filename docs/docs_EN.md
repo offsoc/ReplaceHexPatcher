@@ -170,7 +170,6 @@ Now about the template. The template structure was made so that the data could b
           - everything that is not inside any section will not be analyzed in any way, in fact, it can be considered comments on the template and sections, and you can write anything inside the sections
           - sections can be arranged in any sequence, this will not affect the order of their analysis. The order is set in the MAIN area in the parser
    1. There are such sections, more details about each will be further
-       - `patcher_path_or_url`
        - `variables`
        - `pre_powershell_code`
        - `pre_cmd_code`
@@ -200,7 +199,6 @@ Now about the template. The template structure was made so that the data could b
     1. `variables`
     2. `pre_powershell_code`
     3. `pre_cmd_code`
-    4. `patcher_path_or_url`
     5. `patch_bin`
     6. `patch_text`
     7. `hosts_remove`
@@ -235,13 +233,7 @@ Example
 
 Then the string is divided into 2 parts by the sign `=` and `Trim()` of both parts is performed, and then in each section the variable name will be searched and replaced with its value. Therefore, specify a unique name for the entire text in the template.
 
-2. `patcher_path_or_url`
-
-Here, each line indicates the path on the disk to the patcher script, or the URL for downloading it. Each line is checked and if the line is the path to an existing file on disk, then this is returned as the path to the patcher. If the string is an `http*` link to a file, the link availability is checked and the file is downloaded to the user's temporary folder and the path to this file from the temporary folder is returned, as well as the flag that the file is temporary (for subsequent deletion after the parser finishes working with the template). It turns out that you can specify several links to the parser, in case one of them does not work.
-
-The error will only occur if there is no path to an existing file on disk among all the lines or the URL is not available for downloading data. If there are lines with some text that is not a file path or link, these lines will simply be ignored.
-
-3. `pre_powershell_code`
+1. `pre_powershell_code`
 
 A block with Powershell code that is executed before applying hex patterns.
 
