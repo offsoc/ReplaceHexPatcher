@@ -175,6 +175,7 @@ Now about the template. The template structure was made so that the data could b
        - `pre_powershell_code`
        - `pre_cmd_code`
        - `patch_bin`
+       - `patch_text`
        - `file_create_from_text`
        - `file_create_from_base64`
        - `hosts_add`
@@ -201,16 +202,17 @@ Now about the template. The template structure was made so that the data could b
     3. `pre_cmd_code`
     4. `patcher_path_or_url`
     5. `patch_bin`
-    6. `hosts_remove`
-    7. `hosts_add`
-    8. `files_or_folders_delete`
-    9. `file_create_from_text`
-    10. `file_create_from_base64`
-    11. `firewall_remove_block`
-    12. `firewall_block`
-    13. `registry_file`
-    14. `post_powershell_code`
-    15. `post_cmd_code`
+    6. `patch_text`
+    7. `hosts_remove`
+    8. `hosts_add`
+    9. `files_or_folders_delete`
+    10. `file_create_from_text`
+    11. `file_create_from_base64`
+    12. `firewall_remove_block`
+    13. `firewall_block`
+    14. `registry_file`
+    15. `post_powershell_code`
+    16. `post_cmd_code`
 4. The first found section of each type will be used if one type (for example, `hosts_add`) has several sections in the template - all subsequent sections of this type, except the first one from above, will not be used.
     - The exception is the sections `file_create_from_text` and `file_create_from_base64`, because if you need to create multiple files, you need to place several such sections
 5. When using data extracted from each section, the data is first "cleaned" - `Trim()` software for the block with the entire text of the section, and then search and replace variables from the `variables` section
@@ -270,13 +272,20 @@ Well, don't forget that all this data (file paths and patterns) can be stored in
 
 There is a "flag" (indicator/switch) for this section - the phrase `MAKE BACKUP`. If this phrase is located in one of the following lines after the line with the path to the target file, then when executing `ReplaceHexBytesAll.ps1`, the `-makeBackup` flag will also be passed, which leads to the creation of a backup with the original file in the same folder. For more information about this flag, see the information about the main patch script.
 
-4. `hosts_remove`
+6. `patch_text`
+
+Here are the file paths and patterns for searching + replacing text in files. First comes the line - the absolute path to the file. The following lines are search+replace patterns. Each line in this section should contain one thing - either a path or a pattern/string/search text or a string to replace.
+It supports both regular expression and exact string matching, as well as case-sensitive and case-independent search for both variants.
+
+Well, don't forget that all this data (file paths and patterns) can be stored in variables and only variables can be written here.
+
+7. `hosts_remove`
 
 This specifies the strings or URLs that should be deleted from the `hosts` file. If the section line starts with the comment character `#` or with `127.0.0.1` or with `0.0.0.0`, then the exact same line will be searched, without taking into account the length of the spaces. Otherwise, it is assumed that the URL is specified (for example adobe.io), and lines containing such an address (such a word, that is, text and text borders will be spaces or line breaks) will be deleted.
 
 At the same time, you can specify the asterisk symbol `*` and this will mean the regular expression `.*` (up to the word boundaries). That is, you can write a line with `*adobe*` in the section and this will lead to the deletion of all lines containing the word `adobe` with any characters, but if there is a line `adobe` without stars in the section, then lines that contain exactly this word without any additional characters will be deleted. Alternatively, you can also specify `*adobe.io `and this will remove all rows with sub-domains `adobe.io `
 
-5. `hosts_add`
+8. `hosts_add`
 
 Here you can specify the lines that need to be added to the `hosts` file. Usually lines are added to block access to some URLs, so in this section you can simply write URLs (of course, each on a new line) and the string `0.0.0.0 <URL>` will be added to `hosts` and this will block access to the URL.
 
