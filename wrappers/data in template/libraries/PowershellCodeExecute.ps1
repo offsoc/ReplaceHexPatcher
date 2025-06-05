@@ -52,15 +52,13 @@ function PowershellCodeExecute {
             
             $processId = Start-Process @processArgs
         
+            Remove-Item -Path $nullFile -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path $tempFile -Force -ErrorAction Stop
+
             if ($processId.ExitCode -gt 0) {
-                Remove-Item -Path $nullFile -Force -ErrorAction SilentlyContinue
-                Remove-Item -Path $tempFile -Force -ErrorAction Stop
                 throw "Something happened wrong when execute Powershell code from template. Exit code is $($processId.ExitCode)"
             }
         }
-    
-        Remove-Item -Path $nullFile -Force -ErrorAction SilentlyContinue
-        Remove-Item -Path $tempFile -Force -ErrorAction Stop
     }
     catch {
         Write-Error "We have problems with executing Powershell script from template. Exit code is $($processId.ExitCode)"
