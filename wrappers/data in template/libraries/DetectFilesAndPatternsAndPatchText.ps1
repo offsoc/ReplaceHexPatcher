@@ -501,7 +501,7 @@ function DetectFilesAndPatternsAndPatchText {
         [System.Collections.Generic.HashSet[string]]$flags
     )
 
-    [bool]$onlyCheckOccurrences = $false
+    [bool]$checkOccurrencesOnly = $false
     [bool]$needMakeBackup = $false
     [bool]$isRegex = $false
     [bool]$isCaseSensitive = $true
@@ -518,6 +518,10 @@ function DetectFilesAndPatternsAndPatchText {
         $isCaseSensitive = $false
     }
 
+    if ($flags.Contains($CHECK_OCCURRENCES_ONLY_flag_text)) {
+        $checkOccurrencesOnly = $true
+    }
+
     ExtractPathsAndPatterns -content $content
 
     if ($paths.Count -eq 0) {
@@ -526,12 +530,12 @@ function DetectFilesAndPatternsAndPatchText {
     }
 
     for ($i = 0; $i -lt $paths.Count; $i++) {
-        [int[]]$matchesNumber = ApplyTextPatternsInTextFile -targetPath $paths[$i] -SearchTexts $searchPatterns[$i] -ReplaceTexts $replacePatterns[$i] -needMakeBackup $needMakeBackup -isRegex $isRegex -CaseSensitive $isCaseSensitive -isSearchOnly $onlyCheckOccurrences
+        [int[]]$matchesNumber = ApplyTextPatternsInTextFile -targetPath $paths[$i] -SearchTexts $searchPatterns[$i] -ReplaceTexts $replacePatterns[$i] -needMakeBackup $needMakeBackup -isRegex $isRegex -CaseSensitive $isCaseSensitive -isSearchOnly $checkOccurrencesOnly
         
         $foundMatches_allPaths.Add($matchesNumber)
     }
 
-    Show-TextPatchInfo $searchPatterns.ToArray() $foundMatches_allPaths.ToArray()
+    Show-TextPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundMatches $foundMatches_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
 
     ClearStorageArrays
 }
@@ -584,7 +588,8 @@ function Show-TextPatchInfo {
         [Parameter(Mandatory)]
         [string[][]]$searchPatternsLocal,
         [Parameter(Mandatory)]
-        [int[][]]$foundMatches
+        [int[][]]$foundMatches,
+        [bool]$isSearchOnly = $false
     )
 
     if (-not $flagsAll.Contains($VERBOSE_flag_text)) {
@@ -605,10 +610,20 @@ function Show-TextPatchInfo {
     }
     else {
         if ($isAllPatternsFound) {
-            Write-Msg "All text-patterns found!"
+            if ($isSearchOnly) {
+                Write-Msg "All text-patterns found!"
+            }
+            else {
+                Write-Msg "All text-patterns found and replaced!"
+            }
         }
         else {
-            Write-WarnMsg "Not all text-patterns was found!"
+            if ($isSearchOnly) {
+                Write-WarnMsg "Not all text-patterns was found!"
+            }
+            else {
+                Write-WarnMsg "Not all text-patterns was found! Only the found patterns were replaced."
+            }
         }
         Write-Msg
 

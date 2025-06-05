@@ -165,7 +165,7 @@ function DetectFilesAndPatternsAndPatchBinary {
     )
 
     [bool]$needMakeBackup = $false
-    [bool]$onlyCheckOccurrences = $false
+    [bool]$checkOccurrencesOnly = $false
     [bool]$isWildcard1QS = $false
 
     if ($flags.Contains($MAKE_BACKUPS_flag_text)) {
@@ -176,6 +176,10 @@ function DetectFilesAndPatternsAndPatchBinary {
         $isWildcard1QS = $true
     }
 
+    if ($flags.Contains($CHECK_OCCURRENCES_ONLY_flag_text)) {
+        $checkOccurrencesOnly = $true
+    }
+
     ExtractPathsAndHexPatterns -content $content -isWildcard1QS $isWildcard1QS
 
     if ($paths.Count -eq 0) {
@@ -183,6 +187,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         return
     }
 
+    
     . $patcherFilePath
 
     for ($i = 0; $i -lt $paths.Count; $i++) {
@@ -192,11 +197,11 @@ function DetectFilesAndPatternsAndPatchBinary {
             $patternsPairs.Add("$($searchPatterns[$i][$x])/$($replacePatterns[$i][$x])")
         }
 
-        [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $onlyCheckOccurrences
+        [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $checkOccurrencesOnly
         $foundPositions_allPaths.Add($foundPositions)
     }
 
-    Show-HexPatchInfo $searchPatterns.ToArray() $foundPositions_allPaths.ToArray()
+    Show-HexPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundPositions $foundPositions_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
 
     ClearStorageArrays
 }
@@ -282,7 +287,8 @@ function Show-HexPatchInfo {
         [Parameter(Mandatory)]
         [string[][]]$searchPatternsLocal,
         [Parameter(Mandatory)]
-        [long[][][]]$foundPositions
+        [long[][][]]$foundPositions,
+        [bool]$isSearchOnly = $false
     )
 
     if (-not $flagsAll.Contains($VERBOSE_flag_text)) {
@@ -305,10 +311,20 @@ function Show-HexPatchInfo {
     }
     else {
         if ($isAllPatternsFound) {
-            Write-Msg "All hex-patterns found!"
+            if ($isSearchOnly) {
+                Write-Msg "All hex-patterns found!"
+            }
+            else {
+                Write-Msg "All hex-patterns found and replaced!"
+            }
         }
         else {
-            Write-WarnMsg "Not all hex-patterns was found!"
+            if ($isSearchOnly) {
+                Write-WarnMsg "Not all hex-patterns was found!"
+            }
+            else {
+                Write-WarnMsg "Not all hex-patterns was found! Only the found patterns were replaced."
+            }
         }
         Write-Msg
 
