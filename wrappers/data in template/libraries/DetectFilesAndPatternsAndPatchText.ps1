@@ -592,30 +592,30 @@ function Show-TextPatchInfo {
 
     if ($isAllPatternsNotFound) {
         Write-ProblemMsg "No text-patterns was found!"
-        Write-Host
-        Write-Host "In files:"
+        Write-Msg
+        Write-Msg "In files:"
         
         for ($i = 0; $i -lt $paths.Count; $i++) {
-            Write-Host $paths[$i]
+            Write-Msg $paths[$i]
         }
     }
     else {
         if ($isAllPatternsFound) {
-            Write-Host "All text-patterns found!"
+            Write-Msg "All text-patterns found!"
         }
         else {
             Write-WarnMsg "Not all text-patterns was found!"
         }
-        Write-Host
+        Write-Msg
 
         for ($i = 0; $i -lt $paths.Count; $i++) {
-            Write-Host $paths[$i]
+            Write-Msg $paths[$i]
 
             for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
-                Write-Host $searchPatternsLocal[$i][$x].Trim() "|" $foundMatches[$i][$x]
+                Write-Msg $searchPatternsLocal[$i][$x].Trim() "|" $foundMatches[$i][$x]
             }
 
-            Write-Host
+            Write-Msg
         }
     }
 }

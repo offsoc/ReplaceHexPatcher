@@ -282,30 +282,30 @@ function Show-HexPatchInfo {
 
     if ($isAllPatternsNotFound) {
         Write-ProblemMsg "No hex-patterns was found!"
-        Write-Host
-        Write-Host "In files:"
+        Write-Msg
+        Write-Msg "In files:"
         
         for ($i = 0; $i -lt $paths.Count; $i++) {
-            Write-Host $paths[$i]
+            Write-Msg $paths[$i]
         }
     }
     else {
         if ($isAllPatternsFound) {
-            Write-Host "All hex-patterns found!"
+            Write-Msg "All hex-patterns found!"
         }
         else {
             Write-WarnMsg "Not all hex-patterns was found!"
         }
-        Write-Host
+        Write-Msg
 
         for ($i = 0; $i -lt $paths.Count; $i++) {
-            Write-Host $paths[$i]
+            Write-Msg $paths[$i]
 
             for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
-                Write-Host $searchPatternsLocal[$i][$x].Trim() "|" $numbersFoundOccurrences[$i][$x]
+                Write-Msg $searchPatternsLocal[$i][$x].Trim() "|" $numbersFoundOccurrences[$i][$x]
             }
 
-            Write-Host
+            Write-Msg
         }
     }
 }

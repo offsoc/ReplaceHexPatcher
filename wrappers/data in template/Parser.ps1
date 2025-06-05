@@ -504,9 +504,30 @@ function Write-WarnMsg {
         [Parameter(Mandatory)]
         [string]$text
     )
+
+    if (-not $flagsAll.Contains($VERBOSE_flag_text)) {
+        return
+    }
     
     # TODO: change yellow to orange
     Write-Host "[WARN]: " -ForegroundColor Yellow -NoNewline
+    Write-Host $text
+}
+
+
+<#
+.SYNOPSIS
+Write-Host given text without changes just with filter VERBOSE flag
+#>
+function Write-Msg {
+    param (
+        [string]$text = ''
+    )
+
+    if (-not $flagsAll.Contains($VERBOSE_flag_text)) {
+        return
+    }
+    
     Write-Host $text
 }
 
@@ -521,6 +542,10 @@ function Write-InfoMsg {
         [string]$text,
         [switch]$isHeader
     )
+
+    if (-not $flagsAll.Contains($VERBOSE_flag_text)) {
+        return
+    }
     
     if ($isHeader) {
         Write-Host
@@ -539,6 +564,10 @@ function Write-ProblemMsg {
         [Parameter(Mandatory)]
         [string]$text
     )
+
+    if (-not $flagsAll.Contains($VERBOSE_flag_text)) {
+        return
+    }
     
     Write-Host "[PROBLEM]: " -ForegroundColor Red -NoNewline
     Write-Host $text
