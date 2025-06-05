@@ -992,8 +992,6 @@ try {
         Write-InfoMsg "Executing external post-patch CMD code complete"
     }
 
-
-
     # Delete patcher or template files if it downloaded to temp file
 
     if ($patcherFileTempFlag -eq $fileIsTempFlag) {
@@ -1011,7 +1009,7 @@ finally {
 
 if ($flagsAll.Contains($SHOW_EXECUTION_TIME_flag_text)) {
     $watch.Stop() # stop timer
-    Write-InfoMsg "Script execution time is $($watch.Elapsed)" -isHeader # time of execution code
+    Write-Host "Script execution time is $($watch.Elapsed)" # time of execution code
 }
 
 # Pause before exit like in CMD
