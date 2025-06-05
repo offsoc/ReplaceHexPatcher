@@ -79,7 +79,8 @@ and add paths, search patterns and replace patterns in separated lists
 function ExtractPathsAndHexPatterns {
     param (
         [Parameter(Mandatory)]
-        [string]$content
+        [string]$content,
+        [bool]$isWildcard1QS = $false
     )
 
     [string]$cleanedContent = $content.Clone().Trim()
@@ -89,6 +90,10 @@ function ExtractPathsAndHexPatterns {
         $cleanedContent = $cleanedContent.Replace($key, $variables[$key])
     }
 
+    if ($isWildcard1QS) {
+        $cleanedContent = $cleanedContent.Replace('?', '??')
+    }
+    
     [System.Collections.Generic.List[string]]$searchPatternsLocal = New-Object System.Collections.Generic.List[string]
     [System.Collections.Generic.List[string]]$replacePatternsLocal = New-Object System.Collections.Generic.List[string]
     [bool]$searchPatternFound = $false
@@ -161,12 +166,17 @@ function DetectFilesAndPatternsAndPatchBinary {
 
     [bool]$needMakeBackup = $false
     [bool]$onlyCheckOccurrences = $false
+    [bool]$isWildcard1QS = $false
 
     if ($flags.Contains($MAKE_BACKUPS_flag_text)) {
         $needMakeBackup = $true
     }
 
-    ExtractPathsAndHexPatterns -content $content
+    if ($flags.Contains($WILDCARD_IS_1_Q_SYMBOL_flag_text)) {
+        $isWildcard1QS = $true
+    }
+
+    ExtractPathsAndHexPatterns -content $content -isWildcard1QS $isWildcard1QS
 
     if ($paths.Count -eq 0) {
         Write-ProblemMsg "None of the file paths specified for the hex patches were found"

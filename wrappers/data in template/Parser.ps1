@@ -210,7 +210,7 @@ function ExtractContent {
     if (-not $saveEmptyLines) {
         $cleanedTemplateContent = RemoveEmptyLines $cleanedTemplateContent
     }
-    
+
     # start position content between content tags (+1 mean not include in content \n after start tag)
     [int]$startSectionIndex = $cleanedTemplateContent.IndexOf($startSectionName)
     [int]$startContentIndex = $startSectionIndex + $startSectionName.Length
@@ -220,10 +220,10 @@ function ExtractContent {
     if (($cleanedTemplateContent[$startContentIndex] -eq "`r") -and ($cleanedTemplateContent[$startContentIndex + 1] -eq "`n")) {
         $startContentIndex += 2
     }
-
+    
     # end position content between content tags
     [int]$endContentIndex = $cleanedTemplateContent.IndexOf($endSectionName)
-
+    
     if (($startSectionIndex -eq -1) -or ($startSectionIndex -eq -1)) {
         return ''
     }
