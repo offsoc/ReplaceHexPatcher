@@ -586,6 +586,10 @@ function Show-TextPatchInfo {
         [Parameter(Mandatory)]
         [int[][]]$foundMatches
     )
+
+    if (-not $flagsAll.Contains($VERBOSE_flag_text)) {
+        return
+    }
     
     [bool]$isAllPatternsNotFound = Test-AllZero_allPaths $foundMatches
     [bool]$isAllPatternsFound = Test-AllNonZero_allPaths $foundMatches

@@ -275,6 +275,10 @@ function Show-HexPatchInfo {
         [long[][][]]$foundPositions
     )
 
+    if (-not $flagsAll.Contains($VERBOSE_flag_text)) {
+        return
+    }
+
     [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $foundPositions
     
     [bool]$isAllPatternsNotFound = Test-AllZero_allPaths $numbersFoundOccurrences
