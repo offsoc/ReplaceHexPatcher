@@ -517,9 +517,13 @@ Write-Host given text with green prefix "[INFO]: "
 function Write-InfoMsg {
     param (
         [Parameter(Mandatory)]
-        [string]$text
+        [string]$text,
+        [switch]$isHeader
     )
     
+    if ($isHeader) {
+        Write-Host
+    }
     Write-Host "[INFO]: " -ForegroundColor Green -NoNewline
     Write-Host $text
 }
@@ -599,9 +603,7 @@ try {
     }
 
     if ($flagsContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start checking template flags..."
-        Write-Host
+        Write-InfoMsg "Start checking template flags..." -isHeader
 
         HandleFlagsContent $flagsContent
         HandlePatcherFlags -flags $flagsAll
@@ -611,14 +613,12 @@ try {
     # Start use parsed data from template file
 
     if ($variablesContent.Length -gt 0) {
-        Write-Host
         Write-InfoMsg "Start parsing template variables..."
         $variables = GetVariables $variablesContent
         Write-InfoMsg "Parsing template variables complete"
     }
     
-    Write-Host
-    Write-InfoMsg "Start getting patcher core..."
+    Write-InfoMsg "Start getting patcher core..." -isHeader
     
     # Import external Powershell-code
     $coreScriptNameFull = "$coreScriptName.ps1"
@@ -640,9 +640,7 @@ try {
     Write-InfoMsg "Patcher code received"
 
     if ($prePowershellCodeContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start execute external pre-patch Powershell code..."
-        Write-Host
+        Write-InfoMsg "Start execute external pre-patch Powershell code..." -isHeader
 
         # Import external Powershell-code
         $powershellCodeExecuteScriptNameFull = "$powershellCodeExecuteScriptName.ps1"
@@ -663,9 +661,7 @@ try {
     }
 
     if ($preCmdCodeContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start execute external pre-patch CMD code..."
-        Write-Host
+        Write-InfoMsg "Start execute external pre-patch CMD code..." -isHeader
 
         # Import external Powershell-code
         $cmdCodeExecuteScriptNameFull = "$cmdCodeExecuteScriptName.ps1"
@@ -686,8 +682,7 @@ try {
     }
     
     if ($patchBinContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start parsing binary patch targets and apply patches..."
+        Write-InfoMsg "Start parsing binary patch targets and apply patches..." -isHeader
         
         # Import external Powershell-code
         $detectFilesAndPatternsAndPatchBinaryScriptNameFull = "$detectFilesAndPatternsAndPatchBinaryScriptName.ps1"
@@ -709,8 +704,7 @@ try {
     }
     
     if ($patchTextContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start parsing text patch targets and apply patches..."
+        Write-InfoMsg "Start parsing text patch targets and apply patches..." -isHeader
         
         # Import external Powershell-code
         $detectFilesAndPatternsAndPatchTextScriptNameFull = "$detectFilesAndPatternsAndPatchTextScriptName.ps1"
@@ -732,8 +726,7 @@ try {
     }
     
     if ($hostsRemoveContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start parsing lines for remove from hosts..."
+        Write-InfoMsg "Start parsing lines for remove from hosts..." -isHeader
 
         # Import external Powershell-code
         $removeFromHostsScriptNameFull = "$removeFromHostsScriptName.ps1"
@@ -755,8 +748,7 @@ try {
     }
 
     if ($hostsAddContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start parsing lines for add to hosts..."
+        Write-InfoMsg "Start parsing lines for add to hosts..." -isHeader
 
         # Import external Powershell-code
         $addToHostsScriptNameFull = "$addToHostsScriptName.ps1"
@@ -778,8 +770,7 @@ try {
     }
 
     if ($deleteNeedContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start parsing lines with paths for files and folders delete..."
+        Write-InfoMsg "Start parsing lines with paths for files and folders delete..." -isHeader
 
         # Import external Powershell-code
         $deleteFilesOrFoldersScriptNameFull = "$deleteFilesOrFoldersScriptName.ps1"
@@ -801,8 +792,7 @@ try {
     }
 
     if (($createFilesFromTextContent.Count -gt 0) -and ($createFilesFromTextContent[0].Length -gt 0)) {
-        Write-Host
-        Write-InfoMsg "Start parsing lines for create files..."
+        Write-InfoMsg "Start parsing lines for create files..." -isHeader
 
         if (Get-Command -Name CreateAllFilesFromText -ErrorAction SilentlyContinue) {
             CreateAllFilesFromText $createFilesFromTextContent
@@ -829,8 +819,7 @@ try {
     }
 
     if (($createFilesFromBase64Content.Count -gt 0) -and ($createFilesFromBase64Content[0].Length -gt 0)) {
-        Write-Host
-        Write-InfoMsg "Start parsing data for create files from base64..."
+        Write-InfoMsg "Start parsing data for create files from base64..." -isHeader
 
         if (Get-Command -Name CreateAllFilesFromBase64 -ErrorAction SilentlyContinue) {
             CreateAllFilesFromBase64 $createFilesFromBase64Content
@@ -857,8 +846,7 @@ try {
     }
 
     if ($firewallRemoveBlockContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start parsing lines paths for remove from firewall..."
+        Write-InfoMsg "Start parsing lines paths for remove from firewall..." -isHeader
 
         if (Get-Command -Name RemoveBlockFilesFromFirewall -ErrorAction SilentlyContinue) {
             RemoveBlockFilesFromFirewall $firewallRemoveBlockContent
@@ -885,8 +873,7 @@ try {
     }
 
     if ($firewallBlockContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start parsing lines paths for block in firewall..."
+        Write-InfoMsg "Start parsing lines paths for block in firewall..." -isHeader
 
         if (Get-Command -Name BlockFilesWithFirewall -ErrorAction SilentlyContinue) {
             BlockFilesWithFirewall $firewallBlockContent
@@ -913,8 +900,7 @@ try {
     }
 
     if ($registryModifyContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start parsing lines for modify registry..."
+        Write-InfoMsg "Start parsing lines for modify registry..." -isHeader
 
         # Import external Powershell-code
         $registryFileApplyScriptNameFull = "$registryFileApplyScriptName.ps1"
@@ -935,9 +921,7 @@ try {
     }
 
     if ($postPowershellCodeContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start execute external post-patch Powershell code..."
-        Write-Host
+        Write-InfoMsg "Start execute external post-patch Powershell code..." -isHeader
 
         # Import external Powershell-code
         $powershellCodeExecuteScriptNameFull = "$powershellCodeExecuteScriptName.ps1"
@@ -958,9 +942,7 @@ try {
     }
 
     if ($postCmdCodeContent.Length -gt 0) {
-        Write-Host
-        Write-InfoMsg "Start execute external post-patch CMD code..."
-        Write-Host
+        Write-InfoMsg "Start execute external post-patch CMD code..." -isHeader
 
         # Import external Powershell-code
         $cmdCodeExecuteScriptNameFull = "$cmdCodeExecuteScriptName.ps1"
