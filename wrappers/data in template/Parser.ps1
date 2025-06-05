@@ -12,6 +12,7 @@ $comments = @(';;', '#')
 
 # Here will stored parsed template variables
 [System.Collections.Hashtable]$variables = @{}
+[System.Collections.Generic.HashSet[string]]$flags = New-Object System.Collections.Generic.HashSet[string]
 
 $PSHost = If ($PSVersionTable.PSVersion.Major -le 5) { 'PowerShell' } Else { 'PwSh' }
 $scriptDir = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -19,6 +20,19 @@ $templateDir = ''
 
 # Other flags for code
 [string]$fileIsTempFlag = 'fileIsTemp'
+
+
+# Template flags
+[string]$MAKE_BACKUPS_flag_text='MAKE_BACKUPS'
+[string]$REMOVE_SIGN_PATCHED_PE_flag_text='REMOVE_SIGN_PATCHED_PE'
+[string]$EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST_flag_text='EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST'
+[string]$EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST_flag_text='EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST'
+[string]$CAN_USE_REGEXP_IN_PATCH_TEXT_flag_text='CAN_USE_REGEXP_IN_PATCH_TEXT'
+[string]$PATCH_TEXT_IS_CASEINSENSITIVE_flag_text='PATCH_TEXT_IS_CASEINSENSITIVE'
+[string]$WILDCARD_IS_1_Q_SYMBOL_flag_text='WILDCARD_IS_1_Q_SYMBOL'
+[string]$VERBOSE_flag_text='VERBOSE'
+[string]$CHECK_OCCURRENCES_ONLY_flag_text='CHECK_OCCURRENCES_ONLY'
+[string]$EXIT_IF_NO_ADMINS_RIGHTS_flag_text='EXIT_IF_NO_ADMINS_RIGHTS'
 
 
 # Names loaded .ps1 files
@@ -218,6 +232,56 @@ function ExtractContent {
     }
 
     return $cleanedTemplateContent.Substring($startContentIndex, $endContentIndex - $startContentIndex)
+}
+
+
+<#
+.DESCRIPTION
+Return True if current script have Admins privileges
+otherwise return false
+#>
+function Stop-ExecIfNotAdminsRights {
+    [bool]$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+    if (-not $isAdmin) {
+        Write-ProblemMsg "Need administrator privileges for handle given template!"
+        Write-ProblemMsg "Restart Powershell with admins rights and execute script again"
+        exit 1
+    }
+}
+
+
+<#
+.DESCRIPTION
+Analyze content-text with flags and
+add all flags to global hash set
+#>
+function HandleFlagsContent {
+    param (
+        [Parameter(Mandatory)]
+        [string]$content
+    )
+
+    foreach ($line in $content -split "\n") {
+        # Trim line is important because end line include \n
+        $line = $line.Trim()
+        [void]($flags.Add($line))
+    }
+}
+
+
+<#
+.DESCRIPTION
+Analyze hash-set with flags and apply global flags
+#>
+function HandlePatcherFlags {
+    if ($flags.Count -eq 0) {
+        return
+    }
+
+    if ($flags.Contains($EXIT_IF_NO_ADMINS_RIGHTS_flag_text)) {
+        Stop-ExecIfNotAdminsRights
+    }
 }
 
 
@@ -495,6 +559,7 @@ try {
     [string]$variablesContent = ExtractContent $cleanedTemplate "variables"
     [string]$patchBinContent = ExtractContent $cleanedTemplate "patch_bin"
     [string]$patchTextContent = ExtractContent $cleanedTemplate "patch_text"
+    [string]$flagsContent = ExtractContent $cleanedTemplate "flags"
     [string]$hostsRemoveContent = ExtractContent $cleanedTemplate "hosts_remove"
     [string]$hostsAddContent = ExtractContent $cleanedTemplate "hosts_add"
     [string]$deleteNeedContent = ExtractContent $cleanedTemplate "files_or_folders_delete"
@@ -527,6 +592,16 @@ try {
 
         Start-Process -Verb RunAs $PSHost ("-ExecutionPolicy Bypass -File `"$PSCommandPath`" $argumentsBound")
         break
+    }
+
+    if ($flagsContent.Length -gt 0) {
+        Write-Host
+        Write-InfoMsg "Start checking template flags..."
+        Write-Host
+
+        HandleFlagsContent $flagsContent
+        HandlePatcherFlags
+        Write-InfoMsg "End checking template flags"
     }
     
     # Start use parsed data from template file
