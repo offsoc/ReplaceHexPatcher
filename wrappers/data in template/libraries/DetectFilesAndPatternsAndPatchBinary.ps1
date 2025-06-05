@@ -112,7 +112,7 @@ function ExtractPathsAndHexPatterns {
             # if line is search+replace pattern - need extract search and extract replace patterns
             # and continue lines loop
             
-            $possiblePairPatterns = TryExtractPatterns $line
+            $possiblePairPatterns = TryExtractHexPatterns $line
 
             if ($possiblePairPatterns) {
                 if ($possiblePairPatterns.Length -eq 2) {
