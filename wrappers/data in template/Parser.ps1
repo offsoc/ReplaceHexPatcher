@@ -33,6 +33,7 @@ $templateDir = ''
 [string]$VERBOSE_flag_text='VERBOSE'
 [string]$CHECK_OCCURRENCES_ONLY_flag_text='CHECK_OCCURRENCES_ONLY'
 [string]$EXIT_IF_NO_ADMINS_RIGHTS_flag_text='EXIT_IF_NO_ADMINS_RIGHTS'
+[string]$SHOW_EXECUTION_TIME_flag_text='SHOW_EXECUTION_TIME'
 
 
 # Names loaded .ps1 files
@@ -613,7 +614,7 @@ try {
     # Start use parsed data from template file
 
     if ($variablesContent.Length -gt 0) {
-        Write-InfoMsg "Start parsing template variables..."
+        Write-InfoMsg "Start parsing template variables..." -isHeader
         $variables = GetVariables $variablesContent
         Write-InfoMsg "Parsing template variables complete"
     }
@@ -917,7 +918,7 @@ try {
         }
 
         RegistryFileApply $registryModifyContent
-        Write-Host "Modifying registry complete"
+        Write-InfoMsg "Modifying registry complete"
     }
 
     if ($postPowershellCodeContent.Length -gt 0) {
@@ -979,8 +980,10 @@ finally {
     $tempFilesForRemove | foreach { Remove-Item -Path $_ -Force }
 }
 
-$watch.Stop() # stop timer
-Write-Host "Script execution time is" $watch.Elapsed # time of execution code
+if ($flagsAll.Contains($SHOW_EXECUTION_TIME_flag_text)) {
+    $watch.Stop() # stop timer
+    Write-InfoMsg "Script execution time is $($watch.Elapsed)" -isHeader # time of execution code
+}
 
 # Pause before exit like in CMD
 Write-Host -NoNewLine 'Press any key to continue...';
