@@ -155,11 +155,16 @@ function DetectFilesAndPatternsAndPatchBinary {
         [Parameter(Mandatory)]
         [string]$patcherFilePath,
         [Parameter(Mandatory)]
-        [string]$content
+        [string]$content,
+        [System.Collections.Generic.HashSet[string]]$flags
     )
 
-    [bool]$makeBackup = $false
+    [bool]$needMakeBackup = $false
     [bool]$onlyCheckOccurrences = $false
+
+    if ($flags.Contains($MAKE_BACKUPS_flag_text)) {
+        $needMakeBackup = $true
+    }
 
     ExtractPathsAndHexPatterns -content $content
 
@@ -177,7 +182,7 @@ function DetectFilesAndPatternsAndPatchBinary {
             $patternsPairs.Add("$($searchPatterns[$i][$x])/$($replacePatterns[$i][$x])")
         }
 
-        [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $makeBackup -isSearchOnly $onlyCheckOccurrences
+        [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $onlyCheckOccurrences
         $foundPositions_allPaths.Add($foundPositions)
     }
 

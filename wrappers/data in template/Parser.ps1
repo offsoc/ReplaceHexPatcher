@@ -12,7 +12,7 @@ $comments = @(';;', '#')
 
 # Here will stored parsed template variables
 [System.Collections.Hashtable]$variables = @{}
-[System.Collections.Generic.HashSet[string]]$flags = New-Object System.Collections.Generic.HashSet[string]
+[System.Collections.Generic.HashSet[string]]$flagsAll = New-Object System.Collections.Generic.HashSet[string]
 
 $PSHost = If ($PSVersionTable.PSVersion.Major -le 5) { 'PowerShell' } Else { 'PwSh' }
 $scriptDir = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -265,7 +265,7 @@ function HandleFlagsContent {
     foreach ($line in $content -split "\n") {
         # Trim line is important because end line include \n
         $line = $line.Trim()
-        [void]($flags.Add($line))
+        [void]($flagsAll.Add($line))
     }
 }
 
@@ -275,6 +275,10 @@ function HandleFlagsContent {
 Analyze hash-set with flags and apply global flags
 #>
 function HandlePatcherFlags {
+    param (
+        [System.Collections.Generic.HashSet[string]]$flags
+    )
+
     if ($flags.Count -eq 0) {
         return
     }
@@ -600,7 +604,7 @@ try {
         Write-Host
 
         HandleFlagsContent $flagsContent
-        HandlePatcherFlags
+        HandlePatcherFlags -flags $flagsAll
         Write-InfoMsg "End checking template flags"
     }
     
@@ -699,7 +703,7 @@ try {
             . $tempPSFile
         }
         
-        DetectFilesAndPatternsAndPatchBinary -patcherFilePath $patcherFilePath -content $patchBinContent
+        DetectFilesAndPatternsAndPatchBinary -patcherFilePath $patcherFilePath -content $patchBinContent -flags $flagsAll
 
         Write-InfoMsg "Parsing patch targets and apply binary patches complete"    
     }
@@ -722,7 +726,7 @@ try {
             . $tempPSFile
         }
         
-        DetectFilesAndPatternsAndPatchText -content $patchTextContent
+        DetectFilesAndPatternsAndPatchText -content $patchTextContent -flags $flagsAll
 
         Write-InfoMsg "Parsing patch targets and apply text patches complete"    
     }

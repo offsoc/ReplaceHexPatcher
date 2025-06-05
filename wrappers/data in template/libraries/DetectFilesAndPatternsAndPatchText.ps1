@@ -497,12 +497,26 @@ Move-Item -Path '$backupTempAbsoluteName' -Destination '$backupAbsoluteName' -Fo
 function DetectFilesAndPatternsAndPatchText {
     param (
         [Parameter(Mandatory)]
-        [string]$content
+        [string]$content,
+        [System.Collections.Generic.HashSet[string]]$flags
     )
 
     [bool]$onlyCheckOccurrences = $false
-    [bool]$needMakeBackup = $true
-    [bool]$isRegex = $true
+    [bool]$needMakeBackup = $false
+    [bool]$isRegex = $false
+    [bool]$isCaseSensitive = $true
+
+    if ($flags.Contains($MAKE_BACKUPS_flag_text)) {
+        $needMakeBackup = $true
+    }
+
+    if ($flags.Contains($CAN_USE_REGEXP_IN_PATCH_TEXT_flag_text)) {
+        $isRegex = $true
+    }
+
+    if ($flags.Contains($PATCH_TEXT_IS_CASEINSENSITIVE_flag_text)) {
+        $isCaseSensitive = $false
+    }
 
     ExtractPathsAndPatterns -content $content
 
@@ -512,7 +526,7 @@ function DetectFilesAndPatternsAndPatchText {
     }
 
     for ($i = 0; $i -lt $paths.Count; $i++) {
-        [int[]]$matchesNumber = ApplyTextPatternsInTextFile -targetPath $paths[$i] -SearchTexts $searchPatterns[$i] -ReplaceTexts $replacePatterns[$i] -needMakeBackup $needMakeBackup -isRegex $isRegex -isSearchOnly $onlyCheckOccurrences
+        [int[]]$matchesNumber = ApplyTextPatternsInTextFile -targetPath $paths[$i] -SearchTexts $searchPatterns[$i] -ReplaceTexts $replacePatterns[$i] -needMakeBackup $needMakeBackup -isRegex $isRegex -CaseSensitive $isCaseSensitive -isSearchOnly $onlyCheckOccurrences
         
         $foundMatches_allPaths.Add($matchesNumber)
     }
