@@ -9,6 +9,7 @@ Language: [Русский](docs_RU.md) | English
     - [The "data inside" wrapper script](#the-data-inside-wrapper-script)
     - [The "data in template" wrapper script](#the-data-in-template-wrapper-script)
       - [Template template.txt](#template-templatetxt)
+  - [Known limitations](#known-limitations)
   - [Testing](#testing)
   - [Utilities](#utilities)
   - [Answers to possible questions](#answers-to-possible-questions)
@@ -338,6 +339,12 @@ The rest of the information is the same as in the `pre_powershell_code` section.
 A block with a CMD code that is executed after applying hex patterns.
 
 The rest of the information is the same as in the `pre_cmd_code` section.
+
+
+## Known limitations
+
+1. In the `patch_text` section, you cannot specify as a string/text/search pattern what can be recognized as an existing path in the `Test-Path` commandlet
+   - Even strings like `/Users` or `\/Users`, for more information, see the documentation on (Test-Path)[https://learn.microsoft.com/powershell/module/microsoft.powershell.management/test-path]
 
 
 ## Testing
