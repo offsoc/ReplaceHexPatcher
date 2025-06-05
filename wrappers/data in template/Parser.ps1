@@ -24,6 +24,7 @@ $templateDir = ''
 # Names loaded .ps1 files
 [string]$coreScriptName = 'ReplaceHexBytesAll'
 [string]$detectFilesAndPatternsAndPatchBinaryScriptName = 'DetectFilesAndPatternsAndPatchBinary'
+[string]$detectFilesAndPatternsAndPatchTextScriptName = 'DetectFilesAndPatternsAndPatchText'
 [string]$removeFromHostsScriptName = 'RemoveFromHosts'
 [string]$addToHostsScriptName = 'AddToHosts'
 [string]$deleteFilesOrFoldersScriptName = 'DeleteFilesOrFolders'
@@ -36,6 +37,7 @@ $templateDir = ''
 # Backup direct links for loaded .ps1 files if they not placed in folder
 [string]$coreScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/core/v2/ReplaceHexBytesAll.ps1'
 [string]$detectFilesAndPatternsAndPatchBinaryScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/DetectFilesAndPatternsAndPatchBinary.ps1'
+[string]$detectFilesAndPatternsAndPatchTextScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/DetectFilesAndPatternsAndPatchText.ps1'
 [string]$removeFromHostsScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/RemoveFromHosts.ps1'
 [string]$addToHostsScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/AddToHosts.ps1'
 [string]$deleteFilesOrFoldersScriptURL = 'https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data%20in%20template/libraries/DeleteFilesOrFolders.ps1'
@@ -492,6 +494,7 @@ try {
 
     [string]$variablesContent = ExtractContent $cleanedTemplate "variables"
     [string]$patchBinContent = ExtractContent $cleanedTemplate "patch_bin"
+    [string]$patchTextContent = ExtractContent $cleanedTemplate "patch_text"
     [string]$hostsRemoveContent = ExtractContent $cleanedTemplate "hosts_remove"
     [string]$hostsAddContent = ExtractContent $cleanedTemplate "hosts_add"
     [string]$deleteNeedContent = ExtractContent $cleanedTemplate "files_or_folders_delete"
@@ -624,6 +627,29 @@ try {
         DetectFilesAndPatternsAndPatchBinary -patcherFilePath $patcherFilePath -content $patchBinContent
 
         Write-InfoMsg "Parsing patch targets and apply binary patches complete"    
+    }
+    
+    if ($patchTextContent.Length -gt 0) {
+        Write-Host
+        Write-InfoMsg "Start parsing text patch targets and apply patches..."
+        
+        # Import external Powershell-code
+        $detectFilesAndPatternsAndPatchTextScriptNameFull = "$detectFilesAndPatternsAndPatchTextScriptName.ps1"
+        if (Test-Path ".\$detectFilesAndPatternsAndPatchTextScriptNameFull") {
+            . (Resolve-Path ".\$detectFilesAndPatternsAndPatchTextScriptNameFull")
+        }
+        elseif (Test-Path ".\libraries\$detectFilesAndPatternsAndPatchTextScriptNameFull") {
+            . (Resolve-Path ".\libraries\$detectFilesAndPatternsAndPatchTextScriptNameFull")
+        }
+        else {
+            $tempPSFile = (DownloadPSScript -link $detectFilesAndPatternsAndPatchTextScriptURL -fileName $detectFilesAndPatternsAndPatchTextScriptNameFull)
+            [void]($tempFilesForRemove.Add($tempPSFile))
+            . $tempPSFile
+        }
+        
+        DetectFilesAndPatternsAndPatchText -content $patchTextContent
+
+        Write-InfoMsg "Parsing patch targets and apply text patches complete"    
     }
     
     if ($hostsRemoveContent.Length -gt 0) {
