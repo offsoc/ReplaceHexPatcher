@@ -181,7 +181,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         $foundPositions_allPaths.Add($foundPositions)
     }
 
-    Show-PatchInfo $patternsPairs.ToArray() $foundPositions_allPaths.ToArray()
+    Show-HexPatchInfo $searchPatterns.ToArray() $foundPositions_allPaths.ToArray()
 
     ClearStorageArrays
 }
@@ -262,10 +262,10 @@ function CalculateNumbersFoundOccurrences_allPaths {
 }
 
 
-function Show-PatchInfo {
+function Show-HexPatchInfo {
     param (
         [Parameter(Mandatory)]
-        [string[][]]$patternsPairs,
+        [string[][]]$searchPatternsLocal,
         [Parameter(Mandatory)]
         [long[][][]]$foundPositions
     )
@@ -296,8 +296,8 @@ function Show-PatchInfo {
         for ($i = 0; $i -lt $paths.Count; $i++) {
             Write-Host $paths[$i]
 
-            for ($x = 0; $x -lt $searchPatterns[$i].Count; $x++) {
-                Write-Host $searchPatterns[$i][$x].Trim() "|" $numbersFoundOccurrences[$i][$x]
+            for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
+                Write-Host $searchPatternsLocal[$i][$x].Trim() "|" $numbersFoundOccurrences[$i][$x]
             }
 
             Write-Host
