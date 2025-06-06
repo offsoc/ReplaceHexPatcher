@@ -352,34 +352,6 @@ Remove-Item -Path '$backupAbsoluteName' -Force
 
 <#
 .SYNOPSIS
-Return index first bytes not matched with index wildcard
-#>
-function Get-IndexFirstTrueByte {
-    [OutputType([int])]
-    param (
-        [Parameter(Mandatory)]
-        [System.Collections.Generic.List[byte]]$hexBytes,
-        [Parameter(Mandatory)]
-        [System.Collections.Generic.List[int]]$wildcardsIndexes
-    )
-
-    if ($wildcardsIndexes.Count -eq 0) {
-        return 0
-    }
-
-    for ($i = 0; $i -lt $hexBytes.Count; $i++) {
-        if ($wildcardsIndexes.Contains($i)) {
-            continue
-        }
-        else {
-            return $i
-        }
-    }
-}
-
-
-<#
-.SYNOPSIS
 Function to search and replace (if need) hex patterns in a binary file
 
 .DESCRIPTION
