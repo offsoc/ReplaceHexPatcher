@@ -332,7 +332,7 @@ function Show-HexPatchInfo {
             Write-Msg $paths[$i]
 
             for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
-                Write-Msg $searchPatternsLocal[$i][$x].Trim() "|" $numbersFoundOccurrences[$i][$x]
+                Write-Msg "$($searchPatternsLocal[$i][$x].Trim()) | $($numbersFoundOccurrences[$i][$x])"
             }
 
             Write-Msg
