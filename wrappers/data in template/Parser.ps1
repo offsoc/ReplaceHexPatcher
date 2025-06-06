@@ -494,6 +494,37 @@ function DownloadPSScript {
 
 
 <#
+.DESCRIPTION
+Check all given arguments like paths to files
+and if any file not exist - write message about it and return false
+otherwise return true
+
+.INPUTS
+Array of strings-paths or each string-path in separate argument
+
+.OUTPUTS
+True if all files exist
+#>
+function Test-AllFilePaths {
+    if ($args[0] -is [array]) {
+        $args = $args[0]
+    }
+    
+    foreach ($path in $args) {
+        if (-not (Test-Path $path -PathType Leaf)) {
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                # throw [System.IO.FileNotFoundException]::new("File not found: $path")
+                Write-Host "File not found: $path"
+                return $false
+            }
+        }
+    }
+
+    return $true
+}
+
+
+<#
 .SYNOPSIS
 Write-Host given text with yellow prefix "[WARN]: "
 #>

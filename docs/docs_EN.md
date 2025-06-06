@@ -346,6 +346,9 @@ The rest of the information is the same as in the `pre_cmd_code` section.
 
 1. In the `patch_text` section, you cannot specify as a string/text/search pattern what can be recognized as an existing path in the `Test-Path` commandlet
    - Even strings like `/Users` or `\/Users`, for more information, see the documentation on (Test-Path)[https://learn.microsoft.com/powershell/module/microsoft.powershell.management/test-path]
+2. Paths to non-existent files cannot be specified in the `patch_txt` and `patch_bin` sections.
+   - This is due to the mechanism of dividing strings by belonging to a path or a search/replace pattern. All lines are iterated over one at a time, and if the text of the line is a valid path to the file, then it is used as a path, and all other lines are used as search/replace patterns until the next valid path is found. Accordingly, if a path to a non-existent file is specified, then a line with this path will be considered as a pattern and all further processing will be disrupted.
+   - To handle this situation (checking the existence of all files on the disk that need to be patched), I recommend pre-checking the presence of all paths by using the `Test-AllFilePaths` function in the `pre_powershell_code` section
 
 
 ## Testing
