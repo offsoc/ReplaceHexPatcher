@@ -154,6 +154,139 @@ function ExtractPathsAndHexPatterns {
     }
 }
 
+<#
+.SYNOPSIS
+Remove digital signatures from patched PE-files
+
+.DESCRIPTION
+Passing to the function array with paths and array with found patched positions
+and some other arguments.
+A check is underway to see if the file has been patched. If the file is patched, then the number of occurrences is greater than zero.
+Files that are not patched will not be affected - their signature will not be deleted.
+
+$skipPECheck - if this argument is enabled, it will not be checked whether the processed file is a PE file.
+This means that an attempt to delete the signature will be applied to all files, even archives, text files, etc.
+This shouldn't cause any errors, it's just that such files obviously don't have a signature and it won't be deleted.
+#>
+function Remove-SignatureInPatchedPE {
+    param (
+        [Parameter(Mandatory)]
+        [string[]]$filesPaths,
+        [Parameter(Mandatory)]
+        [long[][][]]$foundPositions,
+        [bool]$skipPECheck = $false,
+        [bool]$isVerbose = $false
+    )
+
+    if (-not $flagsAll.Contains($REMOVE_SIGN_PATCHED_PE_flag_text)) {
+        return
+    }
+
+    [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $foundPositions
+    
+    [bool]$isAllPatternsNotFound = Test-AllZero_allPaths $numbersFoundOccurrences
+
+    if ($isAllPatternsNotFound) {
+        return
+    }
+    
+    $signatureHandler = @"
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+
+public class SignatureRemover
+{
+    [DllImport("Imagehlp.dll", SetLastError = true)]
+    private static extern bool ImageRemoveCertificate(IntPtr FileHandle, uint Index);
+
+    public static bool RemoveSignature(string filePath)
+    {
+        using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
+        {
+            IntPtr fileHandle = fs.SafeFileHandle.DangerousGetHandle();
+            return ImageRemoveCertificate(fileHandle, 0);
+        }
+    }
+}
+"@
+
+    # if any class from C# code exist - C# already imported in the script and not need compile and import it again
+    if (-not ("SignatureRemover" -as [Type])) {
+        Add-Type -TypeDefinition $signatureHandler -Language CSharp
+    }
+
+    for ($i = 0; $i -lt $filesPaths.Count; $i++) {
+        # check if file is PE-file
+        if (-not $skipPECheck) {
+            try {
+                $stream = [System.IO.File]::Open(($filesPaths[$i] -ireplace "``", ""), [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite)
+            }
+            catch {
+                [void]($stream.Close())
+                throw "Cannot open file: $($filesPaths[$i])"
+            }
+
+            $BytesHandler = [HexHandler.BytesHandler]::new($stream)
+
+            if (-not $BytesHandler.IsFilePEFile()) {
+                if ($isVerbose) {
+                    Write-Host "File is not PE-file: $($filesPaths[$i])"
+                }
+
+                [void]($stream.Close())
+                continue
+            }
+
+            [void]($stream.Close())
+        }
+
+    [bool]$isAllPatternsNotFoundForFile = Test-AllZero $numbersFoundOccurrences[$i]
+    
+    if ($isAllPatternsNotFoundForFile) {
+            if ($isVerbose) {
+                Write-Host "File is not patched and signature will not remove: $($filesPaths[$i])"
+            }
+
+            continue
+        }
+
+        [string]$filePathFull_Unescaped = [System.IO.Path]::GetFullPath(($filesPaths[$i] -ireplace "``", ""))
+        [string]$filePathFull = [System.Management.Automation.WildcardPattern]::Escape($filePathFull_Unescaped)
+
+        [bool]$result = [SignatureRemover]::RemoveSignature($filePathFull_Unescaped)
+        
+        if ($result) {
+            if ($isVerbose) {
+                Write-Host "Digital signature has been successfully deleted in file: $($filesPaths[$i])"
+            }
+            
+            [int]$sizeKBWithoutSignature = (Get-ChildItem $filePathFull).Length / 1024
+            
+            if ($isVerbose) {
+                Write-Host "The file began to size less by $($sizeKBOriginal - $sizeKBWithoutSignature) KB"
+                Write-Host
+            }
+        } else {
+            [System.Management.Automation.Signature]$signature = Get-AuthenticodeSignature -FilePath $filePathFull
+
+            if (($signature.Status -eq "Valid") -or ($signature.Status -eq "HashMismatch") -or ($signature.Status -eq "NotTrusted")) {
+                if ($isVerbose) {
+                    Write-Host "File still have signature but something went wrong: $($filesPaths[$i])"
+                }
+            }
+            
+            if (($signature.Status -eq "UnknownError") -or ($signature.Status -eq "NotSigned") -or ($signature.Status -eq "NotSupportedFileFormat") -or ($signature.Status -eq "Incompatible")) {
+                if ($isVerbose) {
+                    Write-Host "File don't have signature: $($filesPaths[$i])"
+                }
+            }
+        }
+    }
+
+
+}
+
 
 function DetectFilesAndPatternsAndPatchBinary {
     param (
@@ -200,6 +333,8 @@ function DetectFilesAndPatternsAndPatchBinary {
         [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $checkOccurrencesOnly
         $foundPositions_allPaths.Add($foundPositions)
     }
+
+    Remove-SignatureInPatchedPE -filesPaths $paths -foundPositions $foundPositions_allPaths
 
     Show-HexPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundPositions $foundPositions_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
 
