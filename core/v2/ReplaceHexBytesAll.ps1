@@ -162,6 +162,24 @@ function ExtractPatterns {
     return $patternsString.Replace('"', "").Replace("'", "").Split(',')
 }
 
+<#
+.SYNOPSIS
+Smart remove all non-hex symbols
+
+.DESCRIPTION
+Normalize hex-string to string only with hex-symbols:
+Remove all spaces, hex start-symbols (\x and 0x) and replace [\x00-\xFF] to wildcard ??
+#>
+function CleanHexString {
+    [OutputType([string])]
+    param (
+        [Parameter(Mandatory)]
+        [string]$patternsString
+    )
+    
+    return $patternsString.Clone().Replace(" ", "").Replace("\x", "").Replace("0x", "").Replace("[\x00-\xFF]", "??").Replace("\", "/").Replace("|", "/").Replace("h", "").ToUpper()
+}
+
 
 <#
 .SYNOPSIS
@@ -191,7 +209,7 @@ function Separate-Patterns {
     # Separate pattern-string on search and replace strings
     foreach ($pattern in $patternsPairs) {
         # Clean and split string with search and replace hex patterns
-        [string[]]$temp = $pattern.Clone().Replace(" ", "").Replace("\", "/").Replace("|", "/").ToUpper().Split("/")
+        [string[]]$temp = $(CleanHexString $pattern).Split("/")
 
         if ((-not ($temp.Count -eq 2) -or $temp[1].Length -eq 0) -and (-not $possibleSearchPatternsOnly)) {
             throw "Search pattern $pattern not have replace pattern"
