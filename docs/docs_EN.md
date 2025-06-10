@@ -196,9 +196,10 @@ Now about the template. The template structure was made so that the data could b
 1. Search and replace all global variables in the template
 2. Checking for sections `hosts_remove`, `hosts_add`, `firewall_block`, `firewall_remove_block`, `registry_file`. If there are such sections and the parser is not running on behalf of the Administrator, we restart the parser with the arguments received on behalf of the Administrator, because when using data from these sections, 100% admin rights will be needed and in order not to request these rights in separate processes when processing data from each section, it is more convenient to restart the script with the necessary rights from the very beginning.
 3. Search for sections and extract data from them in this order
-    1. `variables`
-    2. `pre_powershell_code`
-    3. `pre_cmd_code`
+    1. `flags`
+    2. `variables`
+    3. `pre_powershell_code`
+    4. `pre_cmd_code`
     5. `patch_bin`
     6. `patch_text`
     7. `hosts_remove`
@@ -224,7 +225,36 @@ Now about the template. The template structure was made so that the data could b
 
 **Sections (blocks with rows/data)**
 
-1. `variables`
+1. `flags`
+
+There are key flags here for some configuration of the patch behavior, in particular for working with the `patch_bin` and `patch_text` sections.
+
+Each flag must be written on a new line. You can duplicate the flags, write them in any order, and specify any text at all - there will be no errors. In the end, only valid flags will remain and will be used (for which the appropriate code has been written).
+
+Flags:
+1. `MAKE_BACKUPS`
+   - create backup files for patched binary and text files from the `patch_bin` and `patch_text' sections
+2. `REMOVE_SIGN_PATCHED_PE`
+   - remove the signature of the patched binary files from the `patch_bin` section, after checking that the patched file is a PE file
+3. `CAN_USE_REGEXP_IN_PATCH_TEXT`
+   - all text/strings/search patterns in the `patch_text' section are treated as regular expressions
+4. `PATCH_TEXT_IS_CASEINSENSITIVE`
+   - case-independent search is used for text/strings/patterns in the `patch_text` section
+5. `WILDCARD_IS_1_Q_SYMBOL`
+   - indicates that wildcard is 1 character `?`, not 2 - `??`. This is necessary if all your patterns are focused on 010 Editor 14 and older versions
+6. `VERBOSE`
+   - output the patcher operation log to the Powershell window. Without this flag, messages will be displayed only from sections with Powershell and CMD code.
+7. `CHECK_OCCURRENCES_ONLY`
+   - only check for all search patterns for all files from the `patch_bin` and `patch_text` sections without performing a replacement. Other sections (except the section with variables for the template) will not be used.
+8. `CHECK_IF_ALREADY_PATCHED_ONLY`
+   - only check for all replacement patterns for all files from the `patch_bin` and `patch_text` sections without performing a replacement. That is, the specified files will be searched for replacement patterns, not search patterns. In this case, the replacement patterns will be "combined"/expanded to the length of the search patterns if they are less than the length, as well as wildcard characters in the patterns will be replaced with real characters from the search patterns. Other sections (except the section with variables for the template) will not be used.
+9. `EXIT_IF_NO_ADMINS_RIGHTS`
+   - at the very beginning of the patcher operation, check if the currently running patch script/process has administrator rights, and if it does not, complete the execution
+10. `SHOW_EXECUTION_TIME`
+   - show the time/duration of the patch at the end. This flag is "not subject" to the "VERBOSE" flag, and even if the "VERBOSE" flag is omitted, and this flag is specified, the work time will be displayed in the execution window.
+
+
+2. `variables`
 
 Here you can set variables if some piece of text (for example, a pattern or a file path) needs to be used several times further in the template. Each new variable is written from a new line, first the name of the variable, then the `=` sign, then the data associated with the variable.
 
@@ -233,7 +263,7 @@ Example
 
 Then the string is divided into 2 parts by the sign `=` and `Trim()` of both parts is performed, and then in each section the variable name will be searched and replaced with its value. Therefore, specify a unique name for the entire text in the template.
 
-1. `pre_powershell_code`
+3. `pre_powershell_code`
 
 A block with Powershell code that is executed before applying hex patterns.
 
@@ -287,7 +317,7 @@ The function for working with this section works correctly - if the `hosts` file
 
 There is a "flag" (indicator/switch) for this section - the phrase `NOT MODIFY IT`. If this phrase is at the very beginning of the section, all lines will be added to the `hosts` without changes. Only `Trim()` will be applied to strings.
 
-6. `files_or_folders_delete`
+9. `files_or_folders_delete`
 
 Here you can specify the absolute paths to the files and folders that you want to delete.
 
@@ -295,17 +325,17 @@ The function for working with this section works correctly - if the file has a "
 
 There is a "flag" (indicator/switch) for this section - the phrase `MOVE TO BIN'. If this phrase is at the very beginning of the section, all files and folders will be moved to the Trash, and not deleted from the system.
 
-7. `file_create_from_text`
+10. `file_create_from_text`
 
 Here you specify the data for creating a text file. The first line of the section is the path to the file that needs to be created and filled with data. The second line can be either a "flag" (see here below) or already the beginning of the text that needs to be placed in the created file. If such a file already exists, it will be deleted first. Next are the lines with the text that will be placed in the created file. Empty lines will not be deleted.
 
 There is a "flag" (indicator/switch) for this section - the phrase `CRLF` or `LF`. If this phrase is in the second line of the section, it will determine the type of line endings in the created text file. If this "flag" is not present, the line ending type will be the same as that used when working with text inside the script, that is, `LF'.
 
-8. `file_create_from_base64`
+11. `file_create_from_base64`
 
 Here you can specify the data for creating a file based on the decrypted base64 code. The first line of the section is the path to the file that needs to be created and filled with data. If the file specified in the path already exists, it will be deleted first. The second and subsequent lines are a single block of base64 code, and this code will be decrypted and its contents placed in a file (more precisely, the file will consist of the contents of the decrypted base64 code).
 
-9. `firewall_remove_block`
+12. `firewall_remove_block`
 
 Absolute file paths are specified here (obviously these should be `.exe` files) which must be removed from the Windows Firewall. It is assumed that this will be done to unlock Internet access for programs for which Internet access was previously blocked.All firewall rules for the specified paths will be deleted, although it may be worth adding some parameters so that only rules blocking Internet access are deleted.
 
@@ -313,7 +343,7 @@ If you need to apply the removal of rules to all `.exe` files in a folder and al
 
 To change the Windows Firewall settings, you definitely need administrator rights, and if for some reason the script does not have these rights when this function is running, there will be an error.
 
-10. `firewall_block`
+13. `firewall_block`
 
 Absolute file paths are specified here (obviously these should be `.exe` files) who need to block access to the network using Windows Firewall.
 
@@ -321,7 +351,7 @@ If you need to block access to all `.exe` files in a folder and all subfolders, 
 
 To change the Windows Firewall settings, you definitely need administrator rights, and if for some reason the script does not have these rights when this function is running, there will be an error.
 
-11. `registry_file`
+14. `registry_file`
 
 Here you can specify the data for modifying the Windows Registry. Absolutely the same lines that are written in the `.reg` files can (should) be written here.
 
@@ -329,13 +359,13 @@ You don't need to write the "title" in the form of the first line `Windows Regis
 
 If the script is run without Administrator rights, a `.reg` file will be created in the temporary folder in which this data will be written. Then a separate Powershell process will be launched with a request for administrator rights and in this process the command to import data from this file into the Windows registry will be executed.
 
-12. `post_powershell_code`
+15. `post_powershell_code`
 
 A block with Powershell code that is executed after applying hex patterns.
 
 The rest of the information is the same as in the `pre_powershell_code` section.
 
-13. `post_cmd_code`
+16. `post_cmd_code`
 
 A block with a CMD code that is executed after applying hex patterns.
 
