@@ -614,14 +614,42 @@ function Show-HexPatchInfo {
         }
         Write-Msg
 
-        for ($i = 0; $i -lt $paths.Count; $i++) {
-            Write-Msg $paths[$i]
+        if ($flags.Contains($SHOW_SPACES_IN_LOGGED_PATTERNS_flag_text)) {
+            for ($i = 0; $i -lt $paths.Count; $i++) {
+                Write-Msg $paths[$i]
 
-            for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
-                Write-Msg "$($searchPatternsLocal[$i][$x].Trim()) | $($numbersFoundOccurrences[$i][$x])"
+                for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
+                    $pattern = $($searchPatternsLocal[$i][$x].Trim() -replace '(.{2})', '$1 ')
+    
+                    Write-Msg "$pattern| $($numbersFoundOccurrences[$i][$x])"
+                }
+
+                Write-Msg
             }
+        }
+        elseif ($flags.Contains($REMOVE_SPACES_IN_LOGGED_PATTERNS_flag_text)) {
+            for ($i = 0; $i -lt $paths.Count; $i++) {
+                Write-Msg $paths[$i]
 
-            Write-Msg
+                for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
+                    $pattern = $($searchPatternsLocal[$i][$x].Trim() -replace '\s', '')
+    
+                    Write-Msg "$pattern | $($numbersFoundOccurrences[$i][$x])"
+                }
+
+                Write-Msg
+            }
+        }
+        else {
+            for ($i = 0; $i -lt $paths.Count; $i++) {
+                Write-Msg $paths[$i]
+
+                for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
+                    Write-Msg "$($searchPatternsLocal[$i][$x].Trim()) | $($numbersFoundOccurrences[$i][$x])"
+                }
+
+                Write-Msg
+            }
         }
     }
 }
