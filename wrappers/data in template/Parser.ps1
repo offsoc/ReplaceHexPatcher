@@ -8,7 +8,8 @@ param (
 # GLOBAL VARIABLES
 # =====
 
-$comments = @(';;', '#')
+[string[]]$comments = @(';;', '#')
+[bool]$needUsePatchSectionsOnly = $false
 
 # Here will stored parsed template variables
 [System.Collections.Hashtable]$variables = @{}
@@ -667,6 +668,10 @@ try {
 
         HandleFlagsContent $flagsContent
         HandlePatcherFlags -flags $flagsAll
+
+        if ($flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text) -or $flagsAll.Contains($CHECK_IF_ALREADY_PATCHED_ONLY_flag_text)) {
+            $needUsePatchSectionsOnly = $true
+        }
         Write-InfoMsg "End checking template flags"
     }
     
@@ -699,7 +704,7 @@ try {
     
     Write-InfoMsg "Patcher code received"
 
-    if (($prePowershellCodeContent.Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($prePowershellCodeContent.Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start execute external pre-patch Powershell code..." -isHeader
 
         # Import external Powershell-code
@@ -720,7 +725,7 @@ try {
         Write-InfoMsg "Executing external pre-patch Powershell code complete"
     }
 
-    if (($preCmdCodeContent.Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($preCmdCodeContent.Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start execute external pre-patch CMD code..." -isHeader
 
         # Import external Powershell-code
@@ -785,7 +790,7 @@ try {
         Write-InfoMsg "Parsing patch targets and apply text patches complete"    
     }
     
-    if (($hostsRemoveContent.Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($hostsRemoveContent.Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start parsing lines for remove from hosts..." -isHeader
 
         # Import external Powershell-code
@@ -807,7 +812,7 @@ try {
         Write-InfoMsg "Removing lines from hosts complete"
     }
 
-    if (($hostsAddContent.Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($hostsAddContent.Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start parsing lines for add to hosts..." -isHeader
 
         # Import external Powershell-code
@@ -829,7 +834,7 @@ try {
         Write-InfoMsg "Adding lines to hosts complete"
     }
 
-    if (($deleteNeedContent.Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($deleteNeedContent.Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start parsing lines with paths for files and folders delete..." -isHeader
 
         # Import external Powershell-code
@@ -851,7 +856,7 @@ try {
         Write-InfoMsg "Deleting files and folders complete"
     }
 
-    if (($createFilesFromTextContent.Count -gt 0) -and ($createFilesFromTextContent[0].Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($createFilesFromTextContent.Count -gt 0) -and ($createFilesFromTextContent[0].Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start parsing lines for create files..." -isHeader
 
         if (Get-Command -Name CreateAllFilesFromText -ErrorAction SilentlyContinue) {
@@ -878,7 +883,7 @@ try {
         Write-InfoMsg "Creating text files complete"
     }
 
-    if (($createFilesFromBase64Content.Count -gt 0) -and ($createFilesFromBase64Content[0].Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($createFilesFromBase64Content.Count -gt 0) -and ($createFilesFromBase64Content[0].Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start parsing data for create files from base64..." -isHeader
 
         if (Get-Command -Name CreateAllFilesFromBase64 -ErrorAction SilentlyContinue) {
@@ -905,7 +910,7 @@ try {
         Write-InfoMsg "Creating files from base64 complete"
     }
 
-    if (($firewallRemoveBlockContent.Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($firewallRemoveBlockContent.Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start parsing lines paths for remove from firewall..." -isHeader
 
         if (Get-Command -Name RemoveBlockFilesFromFirewall -ErrorAction SilentlyContinue) {
@@ -932,7 +937,7 @@ try {
         Write-InfoMsg "Remove rules from firewall complete"
     }
 
-    if (($firewallBlockContent.Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($firewallBlockContent.Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start parsing lines paths for block in firewall..." -isHeader
 
         if (Get-Command -Name BlockFilesWithFirewall -ErrorAction SilentlyContinue) {
@@ -959,7 +964,7 @@ try {
         Write-InfoMsg "Adding rules in firewall complete"
     }
 
-    if (($registryModifyContent.Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($registryModifyContent.Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start parsing lines for modify registry..." -isHeader
 
         # Import external Powershell-code
@@ -980,7 +985,7 @@ try {
         Write-InfoMsg "Modifying registry complete"
     }
 
-    if (($postPowershellCodeContent.Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($postPowershellCodeContent.Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start execute external post-patch Powershell code..." -isHeader
 
         # Import external Powershell-code
@@ -1001,7 +1006,7 @@ try {
         Write-InfoMsg "Executing external post-patch Powershell code complete"
     }
 
-    if (($postCmdCodeContent.Length -gt 0) -and (-not $flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text))) {
+    if (($postCmdCodeContent.Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start execute external post-patch CMD code..." -isHeader
 
         # Import external Powershell-code
