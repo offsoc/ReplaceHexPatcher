@@ -283,8 +283,155 @@ public class SignatureRemover
             }
         }
     }
+}
+
+<#
+.SYNOPSIS
+Supplement the replacement pattern to the length of the search pattern, if it is shorter
+
+.DESCRIPTION
+Character-by-character comparison of the received replacement pattern and the search pattern.
+In the wildcard replacement pattern, the symbols, as well as the void, are replaced by symbols from the search pattern.
+
+.NOTES
+search pattern
+replace pattern
+completed replace pattern
+
+example 1
+00 A4 32 02 00 00 00 00 E0 5E B4 00 00 10 00 00
+90 90 C3
+90 90 C3 02 00 00 00 00 E0 5E B4 00 00 10 00 00
+
+example 2
+00 A4 32 02 00 00 00 00 E0 5E B4 00 00 10 00 00
+?? 90 C3 ?? AA FF ??
+
+example 3
+00 A4 32 02 00 00 00 00 E0 ?? B4 ?? 00 10 00 00
+?? 90 C3 ?? AA FF ??
+00 90 C3 02 AA FF 00 00 E0 ?? B4 ?? 00 10 00 00
+
+.OUTPUTS
+Augmented/completed replacement pattern
+#>
+function Complete-ReplacePattern {
+    [OutputType([string])]
+    param (
+        [Parameter(Mandatory)]
+        [string]$searchPattern,
+        [Parameter(Mandatory)]
+        [string]$replacePattern
+    )
+    
+    [string]$searchPatternFixed = $searchPattern
+    [string]$replacePatternFixed = $replacePattern
+
+    [int]$length = 0
+
+    if ($searchPatternFixed.Length -gt $replacePatternFixed.Length) {
+        $length = $searchPatternFixed.Length
+    }
+    else {
+        $length = $replacePatternFixed.Length
+    }
+
+    [System.Collections.Generic.List[string]]$newPattern = New-Object System.Collections.Generic.List[string]
+
+    for ($i = 0; $i -lt $length; $i++) {
+        if ($searchPatternFixed[$i] -eq $replacePatternFixed[$i]) {
+            $newPattern.Add($searchPatternFixed[$i])
+        }
+        elseif ([string]::IsNullOrEmpty($searchPatternFixed[$i])) {
+            $newPattern.Add($replacePatternFixed[$i])
+        }
+        elseif ([string]::IsNullOrEmpty($replacePatternFixed[$i])) {
+            $newPattern.Add($searchPatternFixed[$i])
+        }
+        elseif ($replacePatternFixed[$i] -eq '?') {
+            $newPattern.Add($searchPatternFixed[$i])
+            $newPattern.Add($searchPatternFixed[$i+1])
+            $i=$i+1
+        }
+        else {
+            $newPattern.Add($replacePatternFixed[$i])
+        }
+    }
+
+    [string]$result = $($newPattern.ToArray() -join "")
+
+    return $result
+}
 
 
+<#
+.SYNOPSIS
+Complements all replacement patterns to the length of the search patterns, if they are shorter.
+
+.DESCRIPTION
+Compares all received search patterns and replacement patterns and completes the search patterns with symbols from the search patterns, where possible.
+Thus, we get a kind of "new search pattern" in which only the hex characters from the replacement pattern are changed.
+
+.NOTES
+search pattern
+replace pattern
+completed replace pattern
+
+example 1
+00 A4 32 02 00 00 00 00 E0 5E B4 00 00 10 00 00
+90 90 C3
+90 90 C3 02 00 00 00 00 E0 5E B4 00 00 10 00 00
+
+example 2
+00 A4 32 02 00 00 00 00 E0 5E B4 00 00 10 00 00
+?? 90 C3 ?? AA FF ??
+
+example 3
+00 A4 32 02 00 00 00 00 E0 ?? B4 ?? 00 10 00 00
+?? 90 C3 ?? AA FF ??
+00 90 C3 02 AA FF 00 00 E0 ?? B4 ?? 00 10 00 00
+
+.OUTPUTS
+List of array augmented/completed replacement patterns
+#>
+function Complete-AllReplacePatterns {
+    [OutputType([System.Collections.Generic.List[string[]]])]
+    param (
+        [Parameter(Mandatory)]
+        [string[][]]$searchPatternsArg,
+        [Parameter(Mandatory)]
+        [string[][]]$replacePatternsArg
+    )
+    
+    [System.Collections.Generic.List[string[]]]$result = New-Object System.Collections.Generic.List[string[]]
+
+    for ($i = 0; $i -lt $searchPatternsArg.Count; $i++) {
+        [System.Collections.Generic.List[string]]$temp = New-Object System.Collections.Generic.List[string]
+
+        for ($x = 0; $x -lt $searchPatternsArg[$i].Count; $x++) {
+            [string]$searchPatternCleaned = CleanHexString $searchPatternsArg[$i][$x]
+            [string]$replacePatternCleaned = CleanHexString $replacePatternsArg[$i][$x]
+
+            if (($searchPatternCleaned.Length -eq $replacePatternCleaned.Length) -and (-not $searchPatternCleaned.Contains('?')) -and (-not $replacePatternCleaned.Contains('?'))) {
+                # if search and replace pattern same length and both without wildcards
+                $temp.Add($replacePatternCleaned)
+            }
+            elseif (($replacePatternCleaned.Length -gt $searchPatternCleaned.Length) -and (-not $replacePatternCleaned.Contains('?'))) {
+                # if length replace pattern greater length search pattern and replace pattern without wildcards
+                $temp.Add($replacePatternCleaned)
+            }
+            else {
+                # if length replace pattern less length search pattern
+                [string]$newPattern = Complete-ReplacePattern -searchPattern $searchPatternCleaned -replacePattern $replacePatternCleaned
+                $temp.Add($newPattern)
+            }
+        }
+
+        [void]($result.Add($temp.ToArray()))
+        $temp.Clear()
+    }
+
+    return $result
 }
 
 
@@ -319,9 +466,13 @@ function DetectFilesAndPatternsAndPatchBinary {
         Write-ProblemMsg "None of the file paths specified for the hex patches were found"
         return
     }
-
     
     . $patcherFilePath
+
+    if ($flags.Contains($CHECK_IF_ALREADY_PATCHED_ONLY_flag_text)) {
+        $checkOccurrencesOnly = $true
+        $searchPatterns = [System.Collections.Generic.List[string[]]](Complete-AllReplacePatterns -searchPatternsArg $searchPatterns -replacePatternsArg $replacePatterns)
+    }
 
     for ($i = 0; $i -lt $paths.Count; $i++) {
         [System.Collections.Generic.List[string[]]]$patternsPairs = New-Object System.Collections.Generic.List[string[]]
@@ -333,7 +484,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $checkOccurrencesOnly
         $foundPositions_allPaths.Add($foundPositions)
     }
-
+    
     Remove-SignatureInPatchedPE -filesPaths $paths -foundPositions $foundPositions_allPaths
 
     Show-HexPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundPositions $foundPositions_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
