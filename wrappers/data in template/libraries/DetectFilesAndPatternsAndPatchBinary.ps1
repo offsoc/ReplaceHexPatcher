@@ -564,7 +564,7 @@ function CalculateNumbersFoundOccurrences_allPaths {
         $numbersLocal.Clear()
     }
 
-    return $numbersFoundOccurrences.ToArray()
+    return , $numbersFoundOccurrences.ToArray()
 }
 
 
@@ -582,7 +582,7 @@ function Show-HexPatchInfo {
     }
 
     [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $foundPositions
-    
+
     [bool]$isAllPatternsNotFound = Test-AllZero_allPaths $numbersFoundOccurrences
     [bool]$isAllPatternsFound = Test-AllNonZero_allPaths $numbersFoundOccurrences
 
