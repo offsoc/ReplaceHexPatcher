@@ -483,15 +483,47 @@ function DetectFilesAndPatternsAndPatchBinary {
         }
     }
 
-    for ($i = 0; $i -lt $paths.Count; $i++) {
-        [System.Collections.Generic.List[string[]]]$patternsPairs = New-Object System.Collections.Generic.List[string[]]
+    if ($flags.Contains($PATCH_ONLY_ALL_PATTERNS_EXIST_flag_text)) {
+        # only search all patterns for all files
+        for ($i = 0; $i -lt $paths.Count; $i++) {
+            [System.Collections.Generic.List[string[]]]$patternsPairs = New-Object System.Collections.Generic.List[string[]]
 
-        for ($x = 0; $x -lt $searchPatterns[$i].Count; $x++) {
-            $patternsPairs.Add("$($searchPatterns[$i][$x])/$($replacePatterns[$i][$x])")
+            for ($x = 0; $x -lt $searchPatterns[$i].Count; $x++) {
+                [void]($patternsPairs.Add("$($searchPatterns[$i][$x])/$($replacePatterns[$i][$x])"))
+            }
+
+            [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $true
+            [void]($foundPositions_allPaths.Add($foundPositions))
         }
+        
+        [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $foundPositions
+        [bool]$isAllPatternsFound = Test-AllNonZero_allPaths $numbersFoundOccurrences
 
-        [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $checkOccurrencesOnly
-        $foundPositions_allPaths.Add($foundPositions)
+        # if all patterns found/exist - apply all these patch-patterns
+        if ($isAllPatternsFound) {
+            for ($i = 0; $i -lt $paths.Count; $i++) {
+                [void](Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $false)
+            }
+        }
+        else {
+        # if NOT all patterns found/exist - show info about it and stop execute script
+            Write-ProblemMsg "Not all patterns was found but for current template need all patterns exist for start patch"
+            Show-HexPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundPositions $foundPositions_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
+            ClearStorageArrays
+            exit 1
+        }
+    }
+    else {
+        for ($i = 0; $i -lt $paths.Count; $i++) {
+            [System.Collections.Generic.List[string[]]]$patternsPairs = New-Object System.Collections.Generic.List[string[]]
+
+            for ($x = 0; $x -lt $searchPatterns[$i].Count; $x++) {
+                [void]($patternsPairs.Add("$($searchPatterns[$i][$x])/$($replacePatterns[$i][$x])"))
+            }
+
+            [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $checkOccurrencesOnly
+            [void]($foundPositions_allPaths.Add($foundPositions))
+        }
     }
 
     Remove-SignatureInPatchedPE -filesPaths $paths -foundPositions $foundPositions_allPaths.ToArray()
