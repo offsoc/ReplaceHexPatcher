@@ -23,7 +23,7 @@ Here is a list of functions that are specific and I may forget to implement them
 ### Template Parser
 
 - [ ] Implement pattern reading from the file in the patcher itself
-- [ ] Implement reading a template from the base64 code
+- [x] Implement reading a template from the base64 code
 - As in the case of a base64 file, there is an argument string.
 - [x] Add sections with `pre-cmd` and `pre-powershell` code and with `post-cmd` and `post-powershell` code
 - The code in the sections must be executed before and after the patch is executed according to the section names
@@ -40,7 +40,7 @@ Here is a list of functions that are specific and I may forget to implement them
 
 ### Search and replace core only
 
-- [ ] Rewrite the core in C#
+- [x] Rewrite the core in C#
 - [x] Implement overloads of all functions to which patterns are passed
   - So that patterns can be transmitted both as a string and as an array of bytes, as well as an array of bytes and an array mask for wildcard characters.
 - [x] Implement search support with wildcard `??` in patterns like in [AutoIt](https://www.autoitscript.com/autoit3/docs/functions/StringRegExp.htm) or in [010 Editor](https://www.sweetscape.com/010editor/manual/Find.htm) or in [Frida Memory scan](https://frida.re/docs/javascript-api/#memory)
