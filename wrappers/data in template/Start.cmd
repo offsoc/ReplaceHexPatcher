@@ -19,16 +19,30 @@ rem =====
 set "temp_filename_uniq="
 
 set "parser_name=Parser.ps1"
-set "parser_url_if_need=https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data in template/Parser.ps1"
+set "parser_url_if_need=https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/wrappers/data%20in%20template/Parser.ps1"
 rem WRITE FULL PATH or URL HERE !!!!!! vvv
 set "parser_path="
 
+
 set "template_name=template.txt"
-set "template_url_if_need=https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data in template/template.txt"
+rem set "template_url_if_need=https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data in template/template.txt"
 rem WRITE FULL PATH or URL HERE !!!!!! vvv
 set "template_path="
 
-set "patcher_path=https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/core/ReplaceHexBytesAll.ps1"
+if not "%~1"=="" (
+    set "template_path=%~1"
+) else if "%template_url_if_need%"=="" (
+    rem launch the file selection dialog
+    for /f "usebackq delims=" %%I in (`powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $openFileDialog = New-Object System.Windows.Forms.OpenFileDialog; $openFileDialog.Filter = 'Text files (*.txt)|*.txt'; $openFileDialog.Title = 'Select a template file'; if ($openFileDialog.ShowDialog() -eq 'OK') { Write-Output $openFileDialog.FileName }"`) do (
+        set "template_path=%%I"
+    )
+    
+    if not defined template_path (
+        echo ERROR: File not selected
+        pause
+        exit /b 1
+    )
+)
 
 set "current_dir=%~dp0"
 
@@ -72,6 +86,7 @@ rem =====
     rem which transfered as function argument
     if %1 == "" (
         echo Not transferred var for extract filename!
+        pause
         exit /b 1
     )
     set "file=%~f1"
@@ -98,10 +113,15 @@ rem =====
         call :set_filename "%current_dir%%parser_name%"
         set "parser_path=!file!"
         exit /b
-    ) else (
+    ) else if not "%parser_url_if_need%"=="" (
         call :get_temp_filename_uniq .ps1
         set "parser_path=!temp_filename_uniq!"
         powershell -ExecutionPolicy Bypass -Command "(New-Object System.Net.WebClient).DownloadFile('%parser_url_if_need%','!parser_path!')"
+    ) else (
+        echo ERROR: Parser script not found!
+        echo Place Parser.ps1 in same folder with .cmd-file or write direct URL to Parser.ps1 inside .cmd-file
+        pause
+        exit /b 1
     )
     exit /b
 
@@ -125,9 +145,5 @@ rem =====
 
 :parse_template
     rem Apply parser script and transfer template to it
-    if defined patcher_path (
-        powershell -noexit -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%parser_path%" "-templatePath" "!template_path!" "-patcherPath" "%patcher_path%"
-    ) else (
-        powershell -noexit -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%parser_path%" "-templatePath" "!template_path!"
-    )
+    powershell -noexit -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%parser_path%" "-template" "!template_path!"
     exit /b
