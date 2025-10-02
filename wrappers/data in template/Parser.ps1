@@ -86,6 +86,56 @@ function DoWeHaveAdministratorPrivileges {
     }
 }
 
+<#
+.DESCRIPTION
+Check whether we (the current script process) need administrator rights to change a file or folder
+
+.INPUTS
+Path to file or folder
+
+.OUTPUTS
+True if need admin rights for modify file/folder otherwise - false
+#>
+function Test-FileAdminRequired {
+    [OutputType([bool])]
+    param([string]$targetPath)
+    
+    if (-not (Test-Path $targetPath)) {
+        return $false
+    }
+    
+    try {
+        $acl = Get-Acl -Path $targetPath
+        $accessRules = $acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier])
+        
+        $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+        $principal = New-Object System.Security.Principal.WindowsPrincipal($currentUser)
+        
+        $hasWriteAccess = $false
+        
+        foreach ($rule in $accessRules) {
+            # Checking whether the rule applies to the current user or his groups
+            if ($principal.IsInRole($rule.IdentityReference) -or 
+                $rule.IdentityReference.Value -eq $currentUser.Name -or
+                $rule.IdentityReference.Value -eq "BUILTIN\Users" -or
+                $rule.IdentityReference.Value -eq "NT AUTHORITY\Authenticated Users") {
+                
+                if (($rule.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::Write) -eq [System.Security.AccessControl.FileSystemRights]::Write -and
+                    $rule.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Allow) {
+                    $hasWriteAccess = $true
+                    break
+                }
+            }
+        }
+        
+        return (-not $hasWriteAccess)
+    }
+    catch {
+        Write-ProblemMsg "Error during check wights for: $($_.Exception.Message)"
+        return $false
+    }
+}
+
 
 <#
 .DESCRIPTION

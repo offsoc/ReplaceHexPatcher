@@ -474,6 +474,15 @@ function DetectFilesAndPatternsAndPatchBinary {
         $searchPatterns = [System.Collections.Generic.List[string[]]](Complete-AllReplacePatterns -searchPatternsArg $searchPatterns -replacePatternsArg $replacePatterns)
     }
 
+    # check all files for require admin rights
+    for ($i = 0; $i -lt $paths.Count; $i++) {
+        if (Test-FileAdminRequired $paths[$i]) {
+            Write-ProblemMsg "Need admin rights for modify file: $($paths[$i])"
+            Write-ProblemMsg "Restart Powershell with admins rights and execute script again"
+            exit 1
+        }
+    }
+
     for ($i = 0; $i -lt $paths.Count; $i++) {
         [System.Collections.Generic.List[string[]]]$patternsPairs = New-Object System.Collections.Generic.List[string[]]
 
@@ -484,8 +493,8 @@ function DetectFilesAndPatternsAndPatchBinary {
         [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $checkOccurrencesOnly
         $foundPositions_allPaths.Add($foundPositions)
     }
-    
-    Remove-SignatureInPatchedPE -filesPaths $paths -foundPositions $foundPositions_allPaths
+
+    Remove-SignatureInPatchedPE -filesPaths $paths -foundPositions $foundPositions_allPaths.ToArray()
 
     Show-HexPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundPositions $foundPositions_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
 
