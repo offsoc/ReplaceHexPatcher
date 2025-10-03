@@ -19,14 +19,14 @@ rem =====
 set "temp_filename_uniq="
 
 set "parser_name=Parser.ps1"
-set "parser_url_if_need=https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/wrappers/data%20in%20template/Parser.ps1"
 rem WRITE FULL PATH or URL HERE !!!!!! vvv
+set "parser_url_if_need=https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/wrappers/data in template/Parser.ps1"
 set "parser_path="
 
 
 set "template_name=template.txt"
-rem set "template_url_if_need=https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data in template/template.txt"
 rem WRITE FULL PATH or URL HERE !!!!!! vvv
+rem set "template_url_if_need=https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/wrappers/data in template/template.txt"
 set "template_path="
 
 if not "%~1"=="" (
@@ -99,8 +99,6 @@ rem =====
 :get_temp_filename_uniq <extension>
     rem Get a unique full file name in the temporary folder
     set "temp_filename_uniq=%temp%\replacehex-%random%%1"
-    echo "temp_filename_uniq %temp_filename_uniq%"
-    if exist %temp_filename_uniq% goto :get_temp_filename_uniq
     exit /b
 
 
