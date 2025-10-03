@@ -17,9 +17,10 @@ rem Init variables
 rem =====
 
 set "patcher_name=ReplaceHexBytesAll.ps1"
-set "patcher_url_if_need=https://github.com/Drovosek01/ReplaceHexPatcher/raw/main/core/ReplaceHexBytesAll.ps1"
+set "patcher_url_if_need=https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/core/v2/ReplaceHexBytesAll.ps1"
 set "temp_filename_uniq="
 set "patcher_path="
+set "current_dir=%~dp0"
 
 rem =====
 rem files + patterns
@@ -167,25 +168,25 @@ rem =====
         rem Combine all the patterns into one line for use as an argument in powershell
         if %counter% leq !count_patches_f%file_number%! (
             set /a counter+=1
-            set "patterns_str=%patterns_str%\"!original_f%file_number%_%counter%!/!patched_f%file_number%_%counter%!\","
+            set "patterns_str=%patterns_str%!original_f%file_number%_%counter%!/!patched_f%file_number%_%counter%!,"
             goto :loop_concat_patterns
         )
         rem remove last symbol (comma)
         set "patterns_str=%patterns_str:~0,-1%"
-    powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "& %path_patcher% -filePath  \"!target_path_%file_number%!\" -patterns %patterns_str%"
+    powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "& %path_patcher% -filePath  \"!target_path_%file_number%!\" -patterns '%patterns_str%' -showMoreInfo"
     exit /b
 
 
 :check_or_get_patcher
     rem If the powershell script file is in the folder with the current script, use it
     rem otherwise download the script and use the downloaded one
-    if exist ".\%patcher_name%" (
-        call :set_filename ".\%patcher_name%"
+    if exist "%current_dir%%patcher_name%" (
+        call :set_filename "%current_dir%%patcher_name%"
         set "patcher_path=!file!"
         exit /b
-    ) else if exist "..\..\core\%patcher_name%" (
+    ) else if exist "%current_dir%..\..\core\v2\%patcher_name%" (
         rem patcher path in repository
-        call :set_filename "..\..\core\%patcher_name%"
+        call :set_filename "%current_dir%..\..\core\v2\%patcher_name%"
         set "patcher_path=!file!"
         exit /b
     ) else (
