@@ -28,7 +28,7 @@ Language: Русский | [English](README.md)
 
 В UNIX-системах поиск и замену байт в hex формате можно осуществить с помощью утилит `perl` и `sed` (и, наверное, каких-то еще инструментов) которые предустановлены в большинство GNU Linux дистрибутивов и в macOS тоже.
 
-В Windows предустановлены 3 "инструмента программирования" - CMD, Visual Basic Script, Powershell.
+В Windows предустановлены 4 "интерпретатора кода" - CMD, Visual Basic Script, Powershell, JavaScript.
 CMD слишком ограничен в возможностях. В Visual Basic Script я не нашел способа написать эффективный код для поиска и замены шаблона байт в файле любого объема. А вот Powershell это, очень грубо говоря, среда выполнения кода C#, а с помощью C# можно делать очень многие вещи и поэтому с помощью кода на Powershell вполне можно выполнить поиск и замену байт в hex формате.
 
 ## Альтернативы
@@ -156,6 +156,12 @@ CMD слишком ограничен в возможностях. В Visual Bas
 
 Запускаем Powershell от имени администратора и выполняем команду
 
+Для разового использования скрипта
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+```
+
+Для частого использования скрипта
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser
 ```

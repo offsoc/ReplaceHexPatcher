@@ -28,7 +28,7 @@ Native means it does not use third-party programs (only the tools included with 
 
 On UNIX systems, the search and replacement of bytes in hex format can be carried out using the utilities `perl` and `sed` (and probably some other tools) that are preinstalled in most GNU Linux distributions and in macOS too.
 
-3 "programming tools" are preinstalled in Windows - CMD, Visual Basic Script, Powershell.
+4 "code interpreters" are builtin in Windows - CMD, Visual Basic Script, Powershell, JavaScript.
 CMD is too limited in capabilities. In Visual Basic Script, I have not found a way to write effective code to find and replace a byte pattern in a file of any size. But Powershell is, very roughly speaking, a C# code execution environment, and with C# you can do a lot of things, and therefore using Powershell code it is quite possible to search and replace bytes in hex format.
 
 ## Alternatives
@@ -156,6 +156,12 @@ Configuring the Powershell Script Launch Policy (ExecutionPolicy) - [learn.micro
 
 Run Powershell as an administrator and run the command
 
+For one-time use of the script
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+```
+
+For frequent use of the script
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser
 ```

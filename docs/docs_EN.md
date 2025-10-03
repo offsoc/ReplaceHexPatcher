@@ -21,7 +21,7 @@ Initially, my goal was to create a 2-click native Windows solution for finding a
 
 That is, to solve the task (search and replace bytes), you need to use only what is available in Windows immediately after installation. No third-party files/programs should be downloaded and used.
 
-3 "programming tools" are preinstalled in Windows - CMD, Visual Basic Script, Powershell.
+4 "code interpreters" are builtin in Windows - CMD, Visual Basic Script, Powershell, JavaScript.
 CMD is too limited in capabilities. In Visual Basic Script, I have not found a way to write effective code to find and replace a byte pattern in a file of any size. But Powershell is, very roughly speaking, a C# code execution environment, and with C# you can do a lot of things, and therefore using Powershell code it is quite possible to search and replace bytes in hex format.
 
 I started looking for ways to do this on Powershell and first found [this one](https://stackoverflow.com/a/57339359) an example, but if I remember correctly, such byte search and replacement worked slowly for me. I couldn't find any other examples, so I turned to ChatGPT and it generated the necessary script for me. I tested and improved it and wrote additional wrapper scripts.
