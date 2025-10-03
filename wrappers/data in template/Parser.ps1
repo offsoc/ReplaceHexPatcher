@@ -712,7 +712,7 @@ try {
                 "-$($_.Key) `"$($valuePath)`""
             }) -join " "
 
-        Start-Process -Verb RunAs $PSHost ("-ExecutionPolicy Bypass -File `"$PSCommandPath`" $argumentsBound")
+        Start-Process -Verb RunAs $PSHost ("-NoExit -ExecutionPolicy Bypass -File `"$PSCommandPath`" $argumentsBound")
         break
     }
 
