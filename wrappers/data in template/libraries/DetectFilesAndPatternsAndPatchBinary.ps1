@@ -469,7 +469,7 @@ function DetectFilesAndPatternsAndPatchBinary {
     
     . $patcherFilePath
 
-    if ($flags.Contains($CHECK_IF_ALREADY_PATCHED_ONLY_flag_text)) {
+    if ($flags.Contains($CHECK_ALREADY_PATCHED_ONLY_flag_text)) {
         $checkOccurrencesOnly = $true
         $searchPatterns = [System.Collections.Generic.List[string[]]](Complete-AllReplacePatterns -searchPatternsArg $searchPatterns -replacePatternsArg $replacePatterns)
     }

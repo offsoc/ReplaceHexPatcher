@@ -31,7 +31,7 @@ $templateDir = ''
 [string]$WILDCARD_IS_1_Q_SYMBOL_flag_text='WILDCARD_IS_1_Q_SYMBOL'
 [string]$VERBOSE_flag_text='VERBOSE'
 [string]$CHECK_OCCURRENCES_ONLY_flag_text='CHECK_OCCURRENCES_ONLY'
-[string]$CHECK_IF_ALREADY_PATCHED_ONLY_flag_text='CHECK_IF_ALREADY_PATCHED_ONLY'
+[string]$CHECK_ALREADY_PATCHED_ONLY_flag_text='CHECK_ALREADY_PATCHED_ONLY'
 [string]$EXIT_IF_NO_ADMINS_RIGHTS_flag_text='EXIT_IF_NO_ADMINS_RIGHTS'
 [string]$SHOW_EXECUTION_TIME_flag_text='SHOW_EXECUTION_TIME'
 [string]$SHOW_SPACES_IN_LOGGED_PATTERNS_flag_text='SHOW_SPACES_IN_LOGGED_PATTERNS'
@@ -722,7 +722,7 @@ try {
         HandleFlagsContent $flagsContent
         HandlePatcherFlags -flags $flagsAll
 
-        if ($flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text) -or $flagsAll.Contains($CHECK_IF_ALREADY_PATCHED_ONLY_flag_text)) {
+        if ($flagsAll.Contains($CHECK_OCCURRENCES_ONLY_flag_text) -or $flagsAll.Contains($CHECK_ALREADY_PATCHED_ONLY_flag_text)) {
             $needUsePatchSectionsOnly = $true
         }
         Write-InfoMsg "End checking template flags"

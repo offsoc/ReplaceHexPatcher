@@ -246,8 +246,10 @@ Flags:
    - output the patcher operation log to the Powershell window. Without this flag, messages will be displayed only from sections with Powershell and CMD code.
 7. `CHECK_OCCURRENCES_ONLY`
    - only check for all search patterns for all files from the `patch_bin` and `patch_text` sections without performing a replacement. Other sections (except the section with variables for the template) will not be used.
-8. `CHECK_IF_ALREADY_PATCHED_ONLY`
-   - only check for all replacement patterns for all files from the `patch_bin` and `patch_text` sections without performing a replacement. That is, the specified files will be searched for replacement patterns, not search patterns. In this case, the replacement patterns will be "combined"/expanded to the length of the search patterns if they are less than the length, as well as wildcard characters in the patterns will be replaced with real characters from the search patterns. Other sections (except the section with variables for the template) will not be used.
+8. `CHECK_ALREADY_PATCHED_ONLY`
+   - only check for all replacement patterns for all files from the `patch_bin` and `patch_text` sections without performing a replacement
+   - that is, the specified files will be searched for replacement patterns, not search patterns. In this case, the replacement patterns will be "combined"/expanded to the length of the search patterns if they are less than the length, as well as wildcard characters in the patterns will be replaced with real characters from the search patterns
+   - other sections (except the section with variables for the template) will not be used.
 9. `EXIT_IF_NO_ADMINS_RIGHTS`
    - at the very beginning of the patcher operation, check if the currently running patch script/process has administrator rights, and if it does not, complete the execution
 10. `SHOW_EXECUTION_TIME`
