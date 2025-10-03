@@ -615,11 +615,11 @@ function Show-InfoAboutReplacedPatterns {
         else {
             for ($i = 0; $i -lt $numbersFoundOccurrences.Count; $i++) {
                 if ($numbersFoundOccurrences[$i] -eq 0) {
-                    $notFoundPatterns += ' ' + $patternsPairs[$i]
+                    $notFoundPatterns += ' | ' + $patternsPairs[$i]
+                }
                 }
     
                 Write-Host "Hex patterns" $notFoundPatterns.Trim() "- not found, but other given patterns found in $filePathFull" 
-            }
         }
     }
 }
