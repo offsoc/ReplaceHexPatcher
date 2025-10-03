@@ -122,6 +122,8 @@ echo =====
 echo Main procedure complete
 echo =====
 
+del !temp_filename_uniq!
+
 pause
 goto :eof
 
@@ -190,17 +192,16 @@ rem =====
         set "patcher_path=!file!"
         exit /b
     ) else (
-        call :get_temp_filename_uniq
+        call :get_temp_filename_uniq .ps1
         set "patcher_path=!temp_filename_uniq!"
         powershell -ExecutionPolicy Bypass -Command "(New-Object System.Net.WebClient).DownloadFile('%patcher_url_if_need%','!patcher_path!')"
     )
     exit /b
 
 
-:get_temp_filename_uniq
+:get_temp_filename_uniq <extension>
     rem Get a unique full file name in the temporary folder
-    set "temp_filename_uniq=%temp%\patcher-%random%.ps1"
-    if exist %temp_filename_uniq% goto :get_temp_filename_uniq
+    set "temp_filename_uniq=%temp%\replacehex-%random%%1"
     exit /b
 
 
