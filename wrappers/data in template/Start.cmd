@@ -70,6 +70,8 @@ echo =====
 echo Main procedure complete
 echo =====
 
+del !temp_filename_uniq!
+
 pause
 goto :eof
 
@@ -143,5 +145,5 @@ rem =====
 
 :parse_template
     rem Apply parser script and transfer template to it
-    powershell -noexit -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%parser_path%" "-template" "!template_path!"
+    powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%parser_path%" "-template" "!template_path!"
     exit /b
