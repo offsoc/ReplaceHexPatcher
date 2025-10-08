@@ -89,6 +89,9 @@ But it was not without drawbacks. And here they are:
   - And also, when comparing strings with the `-eq` operator, square brackets and other special characters are considered as part of the string, and not as part of the regular
   - **Therefore, in order to cover all use cases of paths** passed to the script as arguments, it is necessary to remove all escaping from the resulting path and in all cmdlets to which such a path is passed, do not forget to add the `-LiteralPath` argument. Or, on the contrary, save and use the escaped path, and in conditions and C# functions, pre-process the string with the path, removing the escaping from it.
   - This is a noticeable hemorrhoid and adds an additional "juggling layer"
+- Assigning attributes to a file may not work if it is done on pure Powershell, while on .NET - it works
+  - When executing the code `Set-ItemProperty -Path "$backupAbsoluteName" -Name Attributes -Value ($fileAttributesForBackup -bxor [System.IO.FileAttributes]::ReadOnly)` I was getting an error `Set-ItemProperty : The attribute cannot be set because attributes are not supported. Only the following attributes can be set: Archive, Hidden, Normal, ReadOnly, or System.`, but the file had attributes at that time `Archive, NoScrubData`
+  - When I started using the implementation on instead of that code .NET - `[System.IO.File]::SetAttributes($backupAbsoluteName, ($fileAttributesForBackup -bxor [System.IO.FileAttributes]::ReadOnly))`, then the error stopped appearing
 
 
 ## Usefulness

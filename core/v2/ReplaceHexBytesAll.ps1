@@ -330,7 +330,7 @@ function Apply-HexPatternInBinaryFile {
                 $fileAttributesForBackup = Get-Item -Path "$backupAbsoluteName" -Force | Select-Object -ExpandProperty Attributes
                 
                 # remove "Read Only" attribute from exist backuped file
-                Set-ItemProperty -Path "$backupAbsoluteName" -Name Attributes -Value ($fileAttributesForBackup -bxor [System.IO.FileAttributes]::ReadOnly)
+                [System.IO.File]::SetAttributes($backupAbsoluteName, ($fileAttributesForBackup -bxor [System.IO.FileAttributes]::ReadOnly))
                 Remove-Item -Path "$backupAbsoluteName" -Force
             }
             catch {
