@@ -570,12 +570,12 @@ function Test-AllNonZero_allPaths {
     [OutputType([bool])]
     param (
         [Parameter(Mandatory)]
-        [int[][]]$array
+        [int[][]]$arrayFoundOccurrences
     )
 
-    for ($i = 0; $i -lt $array.Count; $i++) {
-        for ($x = 0; $x -lt $array[$i].Count; $x++) {
-            if ($array[$i][$x] -eq 0) { return $false }
+    for ($i = 0; $i -lt $arrayFoundOccurrences.Count; $i++) {
+        for ($x = 0; $x -lt $arrayFoundOccurrences[$i].Count; $x++) {
+            if ($arrayFoundOccurrences[$i][$x] -eq 0) { return $false }
         }
     }
 

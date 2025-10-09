@@ -492,11 +492,11 @@ function DetectFilesAndPatternsAndPatchBinary {
                 [void]($patternsPairs.Add("$($searchPatterns[$i][$x])/$($replacePatterns[$i][$x])"))
             }
 
-            [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $([bool]!$checkOccurrencesOnly -and $needMakeBackup) -isSearchOnly $true
+            [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $false -isSearchOnly $true
             [void]($foundPositions_allPaths.Add($foundPositions))
         }
         
-        [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $foundPositions
+        [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $($foundPositions_allPaths.ToArray())
         [bool]$isAllPatternsFound = Test-AllNonZero_allPaths $numbersFoundOccurrences
 
         # if all patterns found/exist - apply all these patch-patterns
