@@ -222,7 +222,7 @@ function ReplaceTextsInFile {
     }
     
     [int[]]$occurrences = Find-TextsInFile -FilePath $FilePath -SearchTexts $SearchTexts -isRegex $isRegex -CaseSensitive $CaseSensitive
-    
+
     # if no text was found - no need modify file
     if (Test-AllZero $occurrences) {
         return $occurrences
@@ -631,7 +631,7 @@ function Show-TextPatchInfo {
             Write-Msg $paths[$i]
 
             for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
-                Write-Msg $searchPatternsLocal[$i][$x].Trim() "|" $foundMatches[$i][$x]
+                Write-Msg "$($searchPatternsLocal[$i][$x].Trim()) | $($foundMatches[$i][$x])"
             }
 
             Write-Msg
