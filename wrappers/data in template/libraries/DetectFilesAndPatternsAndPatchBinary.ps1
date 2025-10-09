@@ -492,7 +492,7 @@ function DetectFilesAndPatternsAndPatchBinary {
                 [void]($patternsPairs.Add("$($searchPatterns[$i][$x])/$($replacePatterns[$i][$x])"))
             }
 
-            [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $true
+            [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $([bool]!$checkOccurrencesOnly -and $needMakeBackup) -isSearchOnly $true
             [void]($foundPositions_allPaths.Add($foundPositions))
         }
         
@@ -502,7 +502,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         # if all patterns found/exist - apply all these patch-patterns
         if ($isAllPatternsFound) {
             for ($i = 0; $i -lt $paths.Count; $i++) {
-                [void](Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $false)
+                [void](Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $([bool]!$checkOccurrencesOnly -and $needMakeBackup) -isSearchOnly $false)
             }
         }
         else {
@@ -521,7 +521,7 @@ function DetectFilesAndPatternsAndPatchBinary {
                 [void]($patternsPairs.Add("$($searchPatterns[$i][$x])/$($replacePatterns[$i][$x])"))
             }
 
-            [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $needMakeBackup -isSearchOnly $checkOccurrencesOnly
+            [long[][]]$foundPositions = Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $([bool]!$checkOccurrencesOnly -and $needMakeBackup) -isSearchOnly $checkOccurrencesOnly
             [void]($foundPositions_allPaths.Add($foundPositions))
         }
     }

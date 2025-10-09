@@ -530,7 +530,7 @@ function DetectFilesAndPatternsAndPatchText {
     }
 
     for ($i = 0; $i -lt $paths.Count; $i++) {
-        [int[]]$matchesNumber = ApplyTextPatternsInTextFile -targetPath $paths[$i] -SearchTexts $searchPatterns[$i] -ReplaceTexts $replacePatterns[$i] -needMakeBackup $needMakeBackup -isRegex $isRegex -CaseSensitive $isCaseSensitive -isSearchOnly $checkOccurrencesOnly
+        [int[]]$matchesNumber = ApplyTextPatternsInTextFile -targetPath $paths[$i] -SearchTexts $searchPatterns[$i] -ReplaceTexts $replacePatterns[$i] -needMakeBackup $([bool]!$checkOccurrencesOnly -and $needMakeBackup) -isRegex $isRegex -CaseSensitive $isCaseSensitive -isSearchOnly $checkOccurrencesOnly
         
         $foundMatches_allPaths.Add($matchesNumber)
     }
