@@ -100,7 +100,7 @@ function Find-TextsInFile {
         
         if ($CaseSensitive) {
             for ($i = 0; $i -lt $SearchTexts.Count; $i++) {
-                Get-Content -Path $FilePath | ForEach-Object {
+                Get-Content -Path $FilePath -Encoding UTF8 | ForEach-Object {
                     if ($_.Contains($SearchTexts[$i])) {
                         $matchCount++
                     }
