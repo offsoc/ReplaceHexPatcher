@@ -322,6 +322,8 @@ The function for working with this section works correctly - if the `hosts` file
 
 There is a "flag" (indicator/switch) for this section - the phrase `NOT MODIFY IT`. If this phrase is at the very beginning of the section, all lines will be added to the `hosts` without changes. Only `Trim()` will be applied to strings.
 
+If the first line in the add section contains the text `SEE_HERE_FIRST`, and then a link to the list and the link is indeed there and it is available for download, then we add the content downloaded from the link to hosts, and not the rest of the lines in the add section. For example first line can be like `SEE_HERE_FIRST https://a.dove.isdumb.one/list.txt`
+
 9. `files_or_folders_delete`
 
 Here you can specify the absolute paths to the files and folders that you want to delete.

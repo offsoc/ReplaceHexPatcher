@@ -27,7 +27,7 @@ Working with a template:
   - So that these variables can be used in the text with paths when it is necessary to specify the path to files/folders located inside the user's folder.
 - Added support for comments with `#`
 - Added support for template processing if it is transmitted as a base64 code
-. This is convenient if the template needs to be placed on some public server and at least minimally hide what it does. If a pirated modification/patch of the program is used as a template, the template may be deleted, but the base64 text is less likely to be suspected.
+  - This is convenient if the template needs to be placed on some public server and at least minimally hide what it does. If a pirated modification/patch of the program is used as a template, the template may be deleted, but the base64 text is less likely to be suspected.
 - Removed support for the `BINARY DATA` flag for the base64 file creation section
 - the base64 code is decoded into bytes and a file is created from these bytes. There is no need to label the contents in encrypted base64 code.
 - Added new flags: `REMOVE_SIGN_PATCHED_PE`, `CHECK_OCCURRENCES_ONLY`, `CHECK_ALREADY_PATCHED_ONLY`, `EXIT_IF_NO_ADMINS_RIGHTS`, `SHOW_EXECUTION_TIME`, `SHOW_SPACES_IN_LOGGED_PATTERNS`, `REMOVE_SPACES_IN_LOGGED_PATTERNS`, ` PATCH_ONLY_ALL_PATTERNS_EXIST`
@@ -35,7 +35,7 @@ Working with a template:
 Other:
 - Added a native utility to remove the digital signature from PE files (.exe, .dll and others)
 - Added support for checking the link and downloading addresses from it to add to hosts
-  - if in the section to add, the first line contains the text `SEE_HERE_FIRST`, followed by a link to the list.
+  - if the first line in the add section contains the text `SEE_HERE_FIRST`, and then a link to the list and the link is indeed there and it is available for download, then we add the content downloaded from the link to hosts, and not the rest of the lines in the add section
 - Fixed various bugs
 - Optimization of some code has been performed
 - Fixed the starter script `Start.cmd`
