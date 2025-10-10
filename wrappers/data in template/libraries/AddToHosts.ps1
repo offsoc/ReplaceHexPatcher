@@ -80,7 +80,6 @@ function CombineLinesForHosts {
                 $contentForAddToHosts += $zeroIP + ' ' + $line + "`r`n"
             }
         }
-        $contentForAddToHosts = $contentForAddToHosts.Replace($localhostIP, $zeroIP)
     }
 
     return $contentForAddToHosts.Trim()
