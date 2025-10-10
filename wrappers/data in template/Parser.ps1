@@ -140,11 +140,10 @@ function Test-FileAdminRequired {
 
 <#
 .DESCRIPTION
-Remove comments from text template
-and replace template variables with text
+Replace template variables with text
 and return cleaned template content
 #>
-function CleanTemplate {
+function ReplaceGlobalVariables {
     [OutputType([string])]
     param (
         [Parameter(Mandatory)]
@@ -152,11 +151,6 @@ function CleanTemplate {
     )
 
     [string[]]$content = [System.IO.File]::ReadAllLines($filePath, [System.Text.Encoding]::UTF8)
-
-    # Remove lines with current template-comments tag
-    foreach ($comment in $comments) {
-        $content = $content | select-string -pattern $comment -notmatch
-    }
 
     # Replace $USER to current username
     $content = $content -ireplace '\$USER', $env:USERNAME
@@ -253,12 +247,20 @@ function ExtractContent {
         [string]$content,
         [Parameter(Mandatory)]
         [string]$sectionName,
+        [string]$commentExclusionItem,
         [switch]$saveEmptyLines = $false
     )
 
     [string]$cleanedTemplateContent = $content.Clone()
     [string]$startSectionName = "[start-$sectionName]"
     [string]$endSectionName = "[end-$sectionName]"
+
+    [string[]]$cleanedComments = $comments -ne $commentExclusionItem
+
+    # Remove lines with current template-comments tag
+    foreach ($comment in $cleanedComments) {
+        $content = $content | select-string -pattern $comment -notmatch
+    }
     
     if (-not $saveEmptyLines) {
         $cleanedTemplateContent = RemoveEmptyLines $cleanedTemplateContent
@@ -670,7 +672,7 @@ $watch.Start() # launch timer
 try {
     [System.Collections.Generic.List[string]]$tempFilesForRemove = New-Object System.Collections.Generic.List[string]
     [string]$fullTemplatePath = Get-TemplateFile -templateWay $template -tempFilesList ([ref]$tempFilesForRemove)
-    [string]$cleanedTemplate = CleanTemplate $fullTemplatePath
+    [string]$cleanedTemplate = ReplaceGlobalVariables $fullTemplatePath
     $templateDir = [System.IO.Path]::GetDirectoryName($fullTemplatePath)
 
     Set-Location $scriptDir
@@ -682,8 +684,8 @@ try {
     [string]$patchBinContent = ExtractContent $cleanedTemplate "patch_bin"
     [string]$patchTextContent = ExtractContent $cleanedTemplate "patch_text"
     [string]$flagsContent = ExtractContent $cleanedTemplate "flags"
-    [string]$hostsRemoveContent = ExtractContent $cleanedTemplate "hosts_remove"
-    [string]$hostsAddContent = ExtractContent $cleanedTemplate "hosts_add"
+    [string]$hostsRemoveContent = ExtractContent $cleanedTemplate "hosts_remove" -commentExclusionItem "#"
+    [string]$hostsAddContent = ExtractContent $cleanedTemplate "hosts_add" -commentExclusionItem "#"
     [string]$deleteNeedContent = ExtractContent $cleanedTemplate "files_or_folders_delete"
     [string]$createFilesFromTextContent = ExtractContent $cleanedTemplate "file_create_from_text" -saveEmptyLines
     [string]$createFilesFromBase64Content = ExtractContent $cleanedTemplate "file_create_from_base64" -saveEmptyLines
