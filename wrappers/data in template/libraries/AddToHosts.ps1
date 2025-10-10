@@ -209,6 +209,6 @@ Clear-DnsClientCache
 
     [int]$lineCountCurrent = (Get-Content $hostsFilePath).Count
     Write-Host "The hosts file contained lines: ${lineCountOriginal}"
-    Write-Host "Lines deleted: $($lineCountOriginal - $lineCountCurrent)"
+    Write-Host "Lines added: $($lineCountCurrent - $lineCountOriginal)"
     Write-Host "Now the hosts file contained lines: ${lineCountCurrent}"
 }
