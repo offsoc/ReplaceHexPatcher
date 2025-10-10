@@ -133,6 +133,8 @@ function AddToHosts {
     [string]$hostsFilePath = [System.Environment]::SystemDirectory + "\drivers\etc\hosts"
     $fileAttributes = Get-Item -Path $hostsFilePath | Select-Object -ExpandProperty Attributes
 
+    [int]$lineCountOriginal = (Get-Content $hostsFilePath).Count
+
     [string]$contentForAddToHosts = CombineLinesForHosts $cleanedContent
     [string]$hostsFileContent = [System.IO.File]::ReadAllText($hostsFilePath)
 
@@ -204,4 +206,9 @@ Clear-DnsClientCache
 "@
         Start-Process $PSHost -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command `"$command`""
     }
+
+    [int]$lineCountCurrent = (Get-Content $hostsFilePath).Count
+    Write-Host "The hosts file contained lines: ${lineCountOriginal}"
+    Write-Host "Lines deleted: $($lineCountOriginal - $lineCountCurrent)"
+    Write-Host "Now the hosts file contained lines: ${lineCountCurrent}"
 }
