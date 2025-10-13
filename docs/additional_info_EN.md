@@ -58,6 +58,11 @@ Naturally, comparing CMD and Powershell is stupid, these are completely differen
 But it was not without drawbacks. And here they are:
 - `.ps1` scripts cannot be run with a double click, unlike Unix Shell scripts on Unix systems and unlike `.cmd` or `.bat` or `.vbs` files in Windows. You will have to write a wrapper script `.cmd` to run `.ps1` if you need to run by double click.
 - The typing is fictitious - the interpreter does not check the correspondence of the variable to the specified type anywhere. It looks like typing is used only in the IDE for auto add-ons.
+- When working in a Powershell window/terminal running as an Administrator, relative paths may suddenly become relative to the System32 folder
+  - When testing wrappers like "data in template", I repeatedly ran the file [Parser.ps1](../wrappers/data%20in%20template/Parser.ps1), passing it test txt files that I created in the same folder. Sometimes I started Powershell as an administrator, went to the "data in template" folder with the command `cd "....../data in template"`, and then, as usual, executed the command `.\Parser.ps1 '.\template test.txt'`
+  - But I was getting an error with the text `\ReplaceHexPatcher\wrappers\data in template\Parser.ps1 : Exception when calling "ReadAllText" with "1" arguments: "File 'C:\Windows\system32\template test.txt' not found."`
+  - Although when executing the same commands in Powershell running NOT as an Administrator, everything is fine performed normally
+  - What the hell, when using Powershell as an Administrator, he considers the reference point not the folder in which he is located, but the folder `C:\Windows\system32` in relative paths inside quotation marks?!
 - There are no good IDEs (I haven't found any).
   - Windows Powershell ISE looks old-fashioned and clumsy, and personally I am not comfortable writing large code in it and there are not many convenient functions compared to Visual Studio Code.
   - Visual Studio Code at first seemed like a perfect alternative to "ISE" for writing Powershell code, but for some reason in VSC the auto-add-on works strangely (or does not work at all) at some points - when I start typing the words `break` or `continue`, the auto-completion does not prompt the continuation of these words, so there are others similar situations.
