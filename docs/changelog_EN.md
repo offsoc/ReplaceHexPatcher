@@ -2,6 +2,20 @@
 
 Language: [Русский](changelog_RU.md) | English
 
+### v2.1
+
+Added:
+- output information about the initial number of lines in the hosts file, the number of lines added/deleted, and the total number of lines in the updated hosts file
+  - when the `hosts_remove` and `hosts_add` sections are working
+
+Fixed:
+- working with the "Read-only" attribute for backup files in the "core"
+- removed the creation of backup files with the `CHECK_OCCURRENCES_ONLY` or `CHECK_ALREADY_PATCHED_ONLY` flag, because these flags are used only for counting, not for changing files.
+- deleted the text in the log stating that the found patterns were replaced when using the `PATCH_ONLY_ALL_PATTERNS_EXIST` flag when not all patterns were found
+- information about the found patterns in the `patch_text` section
+- comments for the hosts file in the `hosts_remove` and `hosts_add` sections were considered template comments and were deleted before the section was processed.
+- the replacement of the entire text `127.0.0.1` with `0.0.0.0` in the hosts file has been removed for any actions in the `hosts_remove` and `hosts_add` sections
+
 ### v2.0
 
 Working with bytes and hex patterns:
