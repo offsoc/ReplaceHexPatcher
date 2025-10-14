@@ -251,15 +251,17 @@ Flags:
    - that is, the specified files will be searched for replacement patterns, not search patterns. In this case, the replacement patterns will be "combined"/expanded to the length of the search patterns if they are less than the length, as well as wildcard characters in the patterns will be replaced with real characters from the search patterns
    - other sections (except the section with variables for the template) will not be used.
 9. `EXIT_IF_NO_ADMINS_RIGHTS`
-   - at the very beginning of the patcher operation, check if the currently running patch script/process has administrator rights, and if it does not, complete the execution
-10. `SHOW_EXECUTION_TIME`
+   - at the very beginning of the patcher, when reading the section with flags, check if the currently running patch script/process has administrator rights, and if it does not, complete the execution.
+10. `ASK_ADMINS_RIGHTS`
+   - at the very beginning of the patcher, when reading the section with flags, check if the current running patch script/process has administrator rights, and if it does not, start execution in a new process (with the same arguments passed to the current script) requesting administrator rights.
+11. `SHOW_EXECUTION_TIME`
    - show the time/duration of the patch at the end. This flag is "not subject" to the "VERBOSE" flag, and even if the "VERBOSE" flag is omitted, and this flag is specified, the work time will be displayed in the execution window.
-11. `SHOW_SPACES_IN_LOGGED_PATTERNS`
+12. `SHOW_SPACES_IN_LOGGED_PATTERNS`
    - when displaying information about hex patterns, separate each byte with a space (that is, every 2 hex characters) so that the pattern is displayed like this: 00 A4 32 02 00 00 00 00 E0 5E B4 00 00 10 00 00
-12. `REMOVE_SPACES_IN_LOGGED_PATTERNS`
+13. `REMOVE_SPACES_IN_LOGGED_PATTERNS`
    - when displaying information about hex patterns, remove all spaces in the pattern so that the pattern appears like this: 00A4320200000000E05EB40000100000
 
-2. `variables`
+14. `variables`
 
 Here you can set variables if some piece of text (for example, a pattern or a file path) needs to be used several times further in the template. Each new variable is written from a new line, first the name of the variable, then the `=` sign, then the data associated with the variable.
 

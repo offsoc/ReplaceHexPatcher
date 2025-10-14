@@ -18,6 +18,17 @@ param (
 $PSHost = If ($PSVersionTable.PSVersion.Major -le 5) { 'PowerShell' } Else { 'PwSh' }
 $scriptDir = Split-Path $MyInvocation.MyCommand.Path -Parent
 $templateDir = ''
+$argumentsBound = ($PSBoundParameters.GetEnumerator() | ForEach-Object {
+    $valuePath = $_.Value
+    if ($_.Key -eq 'templatePath') {
+        $valuePath = $fullTemplatePath
+    }
+    if ($valuePath.StartsWith('.')) {
+        $valuePath = $valuePath | Resolve-Path
+    }
+    "-$($_.Key) `"$($valuePath)`""
+}) -join " "
+
 
 # Other flags for code
 [string]$fileIsTempFlag = 'fileIsTemp'
@@ -33,6 +44,7 @@ $templateDir = ''
 [string]$CHECK_OCCURRENCES_ONLY_flag_text='CHECK_OCCURRENCES_ONLY'
 [string]$CHECK_ALREADY_PATCHED_ONLY_flag_text='CHECK_ALREADY_PATCHED_ONLY'
 [string]$EXIT_IF_NO_ADMINS_RIGHTS_flag_text='EXIT_IF_NO_ADMINS_RIGHTS'
+[string]$ASK_ADMINS_RIGHTS_flag_text='ASK_ADMINS_RIGHTS'
 [string]$SHOW_EXECUTION_TIME_flag_text='SHOW_EXECUTION_TIME'
 [string]$SHOW_SPACES_IN_LOGGED_PATTERNS_flag_text='SHOW_SPACES_IN_LOGGED_PATTERNS'
 [string]$REMOVE_SPACES_IN_LOGGED_PATTERNS_flag_text='REMOVE_SPACES_IN_LOGGED_PATTERNS'
@@ -341,6 +353,11 @@ function HandlePatcherFlags {
 
     if ($flags.Contains($EXIT_IF_NO_ADMINS_RIGHTS_flag_text)) {
         Stop-ExecIfNotAdminsRights
+    }
+
+    if ($flags.Contains($ASK_ADMINS_RIGHTS_flag_text) -and (-not (DoWeHaveAdministratorPrivileges))) {
+        Start-Process -Verb RunAs $PSHost ("-NoExit -ExecutionPolicy Bypass -File `"$PSCommandPath`" $argumentsBound")
+        break
     }
 }
 
@@ -703,17 +720,6 @@ try {
     # - we 100% need Administrator privileges for apply instructions for it
 
     if ((($hostsRemoveContent.Length -gt 0) -or ($hostsAddContent.Length -gt 0) -or ($firewallBlockContent.Length -gt 0) -or ($firewallRemoveBlockContent.Length -gt 0) -or ($registryModifyContent.Length -gt 0)) -and (-not (DoWeHaveAdministratorPrivileges))) {
-        $argumentsBound = ($PSBoundParameters.GetEnumerator() | ForEach-Object {
-                $valuePath = $_.Value
-                if ($_.Key -eq 'templatePath') {
-                    $valuePath = $fullTemplatePath
-                }
-                if ($valuePath.StartsWith('.')) {
-                    $valuePath = $valuePath | Resolve-Path
-                }
-                "-$($_.Key) `"$($valuePath)`""
-            }) -join " "
-
         Start-Process -Verb RunAs $PSHost ("-NoExit -ExecutionPolicy Bypass -File `"$PSCommandPath`" $argumentsBound")
         break
     }
