@@ -9,6 +9,14 @@ Language: [Русский](docs_RU.md) | English
     - [The "data inside" wrapper script](#the-data-inside-wrapper-script)
     - [The "data in template" wrapper script](#the-data-in-template-wrapper-script)
       - [Template template.txt](#template-templatetxt)
+        - [Template structure:](#template-structure)
+          - [Sections](#sections)
+          - [Comments](#comments)
+          - [Global variables](#global-variables)
+          - [Text outside the sections](#text-outside-the-sections)
+      - [The sequence of actions in the parser](#the-sequence-of-actions-in-the-parser)
+        - [Sections (in detail)](#sections-in-detail)
+          - [Flags:](#flags)
   - [Known limitations](#known-limitations)
   - [Testing](#testing)
   - [Utilities](#utilities)
@@ -160,39 +168,69 @@ I left a version of this file where all the code is inside, but it's not worth u
 
 Now about the template. The template structure was made so that the data could be easily filled in manually with the usual Ctrl+C and Ctrl+V, so the data templates are in the format `.json` and `.xml` are not suitable because it is easy to make mistakes and break the structure when filling them out.
 
-**Template structure:**
+##### Template structure:
 
-1. Sections (blocks with rows/data)
-   1. The template can contain different data and each data type must be located in its own section. The sections are separated by lines that contain the following text
-   - `[start-SECTION NAME]` - the line is the beginning of the section
-          - `[end-SECTION NAME]` - string end of section
-          - everything between these lines (that is, inside the section) is the data of the section and will be analyzed by the parser depending on the name of the section
-          - everything that is not inside any section will not be analyzed in any way, in fact, it can be considered comments on the template and sections, and you can write anything inside the sections
-          - sections can be arranged in any sequence, this will not affect the order of their analysis. The order is set in the MAIN area in the parser
-   1. There are such sections, more details about each will be further
-       - `variables`
-       - `pre_powershell_code`
-       - `pre_cmd_code`
-       - `patch_bin`
-       - `patch_text`
-       - `file_create_from_text`
-       - `file_create_from_base64`
-       - `hosts_add`
-       - `hosts_remove`
-       - `files_or_folders_delete`
-       - `firewall_block`
-       - `firewall_remove_block`
-       - `registry_file`
-       - `post_powershell_code`
-       - `post_cmd_code`
-2. Comments
-   - Everything that is not inside any section will not be analyzed in any way, in fact, we can consider it comments on the template and sections, and you can write anything inside the sections
-      - There may also be comments inside the sections. All lines containing this text `;;` are considered comments and will be deleted before further analysis
-3. Global variables
-    - The text `$USER` will be replaced with the name of the current Windows user everywhere in the template
+- sections
+- comments
+- global variables
+- content outside the sections
+
+###### Sections
+
+The template can contain different data, and each data type must be located in its own section. The sections are separated by lines that contain the following text
+
+- `[start-SECTION_NAME]` - the line is the beginning of the section
+- `[end-SECTION_NAME]` - string end of section
+- everything between these lines (that is, inside the section) is the data of the section and will be analyzed by the parser depending on the name of the section.
+- everything that is not inside any section will not be analyzed in any way, in fact, it can be considered comments on the template and sections, and you can write anything inside the sections.
+- the sections can be arranged in any sequence, this will not affect the order of their analysis. The order is set in the MAIN area in the parser
+
+There are many such sections, more details about each will be further.
+
+- `flags`
+- `variables`
+- `pre_powershell_code`
+- `pre_cmd_code`
+- `patch_bin`
+- `patch_text`
+- `file_create_from_text`
+- `file_create_from_base64`
+- `hosts_add`
+- `hosts_remove`
+- `files_or_folders_delete`
+- `firewall_block`
+- `firewall_remove_block`
+- `registry_file`
+- `post_powershell_code`
+- `post_cmd_code`
+
+###### Comments
+
+Everything that is not inside any section will not be analyzed in any way, in fact, it can be considered comments on the template and sections, and you can write anything inside the sections.
+
+There may also be comments inside the sections. All lines containing this text are:
+- `;;`
+- `#`
+
+They are considered comments and will be deleted before further analysis.
+
+###### Global variables
+
+When specifying file paths, the paths may contain dynamic data that depends on the system's "settings" - the user's name. Therefore, I decided to make some words as global variables for the entire text in all sections of the template:
+- `$USER` and `USERNAME_FIELD` will be replaced with the name of the current Windows user.
+- `USERPROFILE_FIELD` and `USERHOME_FIELD` will be replaced with the path to the home folder - the path to the Windows user folder
+
+###### Text outside the sections
+
+Everything that is outside the sections is not taken into account or analyzed in any way. Therefore, the spaces between sections can be used as an area with comments/notes/documentation. This is especially true if you have a lot of hex patterns.
+
+It also provides a certain opportunity to hide/obfuscate the template from a variety of "automatic analyzers". You can put the template sections/embed them in a large text file to reduce the suspicion that the text is somehow related to file modification.
+
+But hiding the data was not the goal or step in creating the utility. I just followed the strategy that there should be no strict data structure for the template, so that you can manually put lines with paths and patterns in any text editor...
 
 
-**The sequence of actions in the parser**
+#### The sequence of actions in the parser
+
 1. Search and replace all global variables in the template
 2. Checking for sections `hosts_remove`, `hosts_add`, `firewall_block`, `firewall_remove_block`, `registry_file`. If there are such sections and the parser is not running on behalf of the Administrator, we restart the parser with the arguments received on behalf of the Administrator, because when using data from these sections, 100% admin rights will be needed and in order not to request these rights in separate processes when processing data from each section, it is more convenient to restart the script with the necessary rights from the very beginning.
 3. Search for sections and extract data from them in this order
@@ -223,7 +261,8 @@ Now about the template. The template structure was made so that the data could b
 8. In each section, data is read and processed line by line
 9. After the parser is running, all temporary files are deleted, the duration of the parser is displayed and the line `Press any key to continue...` is displayed, then pressing any key it closes.
 
-**Sections (blocks with rows/data)**
+
+##### Sections (in detail)
 
 1. `flags`
 
@@ -231,7 +270,10 @@ There are key flags here for some configuration of the patch behavior, in partic
 
 Each flag must be written on a new line. You can duplicate the flags, write them in any order, and specify any text at all - there will be no errors. In the end, only valid flags will remain and will be used (for which the appropriate code has been written).
 
-Flags:
+---
+
+###### Flags:
+
 1. `MAKE_BACKUPS`
    - create backup files for patched binary and text files from the `patch_bin` and `patch_text' sections
 2. `REMOVE_SIGN_PATCHED_PE`
@@ -259,9 +301,15 @@ Flags:
 12. `SHOW_SPACES_IN_LOGGED_PATTERNS`
    - when displaying information about hex patterns, separate each byte with a space (that is, every 2 hex characters) so that the pattern is displayed like this: 00 A4 32 02 00 00 00 00 E0 5E B4 00 00 10 00 00
 13. `REMOVE_SPACES_IN_LOGGED_PATTERNS`
-   - when displaying information about hex patterns, remove all spaces in the pattern so that the pattern appears like this: 00A4320200000000E05EB40000100000
+   - when displaying information about hex patterns, remove all spaces in the pattern so that the pattern appears like this: `00A4320200000000E05EB40000100000`
+14. `PATCH_ONLY_ALL_PATTERNS_EXIST`
+   - first, check that all the patterns are in the specified files and only then replace them.
+   - if at least 1 pattern is not found, not a single file will be modified.
+   - at the same time, the search for patterns is actually performed 2 times, and this can be critical if the files are heavy and on slow HDDs.
 
-14. `variables`
+---
+
+4. `variables`
 
 Here you can set variables if some piece of text (for example, a pattern or a file path) needs to be used several times further in the template. Each new variable is written from a new line, first the name of the variable, then the `=` sign, then the data associated with the variable.
 
