@@ -243,7 +243,7 @@ function Get-UniqTempFileName {
     )
     
     [string]$tempFilePath = "$targetPath.temp"
-    while (-not (Test-Path $tempFilePath)) {
+    while (Test-Path $tempFilePath) {
         if (-not (Test-Path $tempFilePath)) {
             break
         }
