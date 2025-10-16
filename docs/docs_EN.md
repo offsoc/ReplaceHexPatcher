@@ -276,6 +276,8 @@ Each flag must be written on a new line. You can duplicate the flags, write them
 
 1. `MAKE_BACKUPS`
    - create backup files for patched binary and text files from the `patch_bin` and `patch_text' sections
+   - if the byte pattern search and replacement mode is performed (rather than just searching), then files with the extension .bak are created for files from the `patch_bin` and `patch_text` sections in which search patterns are found before modification (before replacement patterns are inserted)
+   - if the files have an extension .bak already exist - they will be overwritten
 2. `REMOVE_SIGN_PATCHED_PE`
    - remove the signature of the patched binary files from the `patch_bin` section, after checking that the patched file is a PE file
 3. `CAN_USE_REGEXP_IN_PATCH_TEXT`
@@ -306,10 +308,18 @@ Each flag must be written on a new line. You can duplicate the flags, write them
    - first, check that all the patterns are in the specified files and only then replace them.
    - if at least 1 pattern is not found, not a single file will be modified.
    - at the same time, the search for patterns is actually performed 2 times, and this can be critical if the files are heavy and on slow HDDs.
+15. `EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST`
+   - when processing the `patch_bin` section, all lines in this section will be checked first, and for each line that looks like the file path, the file's existence on disk will be checked.
+   - if at least 1 file does not exist - the template processing will be completed with an error
+   - if all files exist on the disk - the standard processing of this and all subsequent sections will continue
+16. `EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST`
+   - when processing the `patch_text` section, all lines in this section will be checked first, and for each line that looks like the file path, the file's existence on disk will be checked.
+   - if at least 1 file does not exist - the template processing will be completed with an error
+   - if all files exist on the disk - the standard processing of this and all subsequent sections will continue
 
 ---
 
-4. `variables`
+1. `variables`
 
 Here you can set variables if some piece of text (for example, a pattern or a file path) needs to be used several times further in the template. Each new variable is written from a new line, first the name of the variable, then the `=` sign, then the data associated with the variable.
 
@@ -345,16 +355,33 @@ If an error occurs when executing this code, processing of other sections of the
 Here are the file paths and patterns for searching + replacing files. First comes the string - the absolute path to the file. The following lines are patterns for searching+replacing bytes. The pattern strings can be either a separate string with bytes to search and a separate string to replace, or the string can contain both patterns, but they must be separated by the same separator that is used when passing patterns as arguments to `ReplaceHexBytesAll.ps1`.
 In general, the file path string is searched first, and all the following lines are analyzed as hex patterns until the next file path string is found.
 
-Well, don't forget that all this data (file paths and patterns) can be stored in variables and only variables can be written here.
+When processing this section, each row is analyzed line by line, and the row in this section can be:
+- the path to the file
+- search pattern
+- replacement pattern
+- search + replace pattern
 
-There is a "flag" (indicator/switch) for this section - the phrase `MAKE BACKUP`. If this phrase is located in one of the following lines after the line with the path to the target file, then when executing `ReplaceHexBytesAll.ps1`, the `-makeBackup` flag will also be passed, which leads to the creation of a backup with the original file in the same folder. For more information about this flag, see the information about the main patch script.
+First comes the file path string, and then the pattern strings. Accordingly, after the line analyzed in the section is determined as the path to the file, all other lines are considered patterns and are "assigned" to this file (that is, these patterns will need to be applied to this file) until the next line is found - the path to the file. In general, the file path string is searched first, and all the following lines are analyzed as hex patterns until the next file path string is found.
+
+All this data (file paths and patterns) can be stored in variables and only variables can be written here.
+
+If any file from the section is not on the disk, then the processing of this file and the patterns for it is skipped without any errors and the section is analyzed further. But if the template has the `EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST` or `PATCH_ONLY_ALL_PATTERNS_EXIST` flag, then if at least 1 file is not on disk, then processing of the entire template will end.
 
 6. `patch_text`
 
 Here are the file paths and patterns for searching + replacing text in files. First comes the line - the absolute path to the file. The following lines are search+replace patterns. Each line in this section should contain one thing - either a path or a pattern/string/search text or a string to replace.
 It supports both regular expression and exact string matching, as well as case-sensitive and case-independent search for both variants.
 
-Well, don't forget that all this data (file paths and patterns) can be stored in variables and only variables can be written here.
+When processing this section, each row is analyzed line by line, and the row in this section can be:
+- the path to the file
+- search pattern
+- replacement pattern
+
+First comes the file path string, and then the pattern strings. Accordingly, after the line analyzed in the section is determined as the path to the file, all other lines are considered patterns and are "assigned" to this file (that is, these patterns will need to be applied to this file) until the next line is found - the path to the file. In general, the file path string is searched first, and all the following lines are analyzed as hex patterns until the next file path string is found.
+
+All this data (file paths and patterns) can be stored in variables and only variables can be written here.
+
+If any file from the section is not on the disk, then the processing of this file and the patterns for it is skipped without any errors and the section is analyzed further. But if the template has the `EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST` flag, then if at least 1 file is not on disk, then processing of the entire template will end.
 
 7. `hosts_remove`
 
