@@ -2,6 +2,20 @@
 
 Language: [Русский](changelog_RU.md) | English
 
+### v2.2
+
+Added:
+- added template flags `EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST` and `EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST`
+
+Fixed:
+- in the core script: a backup file is not created if the search patterns were not found
+- in the core script: the algorithm for creating a temporary file when searching for patch patterns has been fixed, now the file is created truly unique (with a unique name) and does not overwrite any existing file
+- when processing the `patch_bin` section, now the character `?` being replaced `??` only in patterns (when using the `WILDCARD_IS_1_Q_SYMBOL` flag), and not in the text of the entire section
+  - it will this prevent damage to paths that contain the `?` symbol
+
+Improved:
+- in the core script, `,` and all kinds of indentation are now removed from hex patterns, not just spaces.
+
 ### v2.1
 
 Added:
