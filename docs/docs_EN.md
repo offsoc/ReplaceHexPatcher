@@ -460,9 +460,8 @@ The rest of the information is the same as in the `pre_cmd_code` section.
 
 1. In the `patch_text` section, you cannot specify as a string/text/search pattern what can be recognized as an existing path in the `Test-Path` commandlet
    - Even strings like `/Users` or `\/Users`, for more information, see the documentation on (Test-Path)[https://learn.microsoft.com/powershell/module/microsoft.powershell.management/test-path]
-2. Paths to non-existent files cannot be specified in the `patch_txt` and `patch_bin` sections.
-   - This is due to the mechanism of dividing strings by belonging to a path or a search/replace pattern. All lines are iterated over one at a time, and if the text of the line is a valid path to the file, then it is used as a path, and all other lines are used as search/replace patterns until the next valid path is found. Accordingly, if a path to a non-existent file is specified, then a line with this path will be considered as a pattern and all further processing will be disrupted.
-   - To handle this situation (checking the existence of all files on the disk that need to be patched), I recommend pre-checking the presence of all paths by using the `Test-AllFilePaths` function in the `pre_powershell_code` section
+2. The code in sections `pre_powershell_code` and `post_powershell_code` is completely isolated and does not have access to the functions of external/parent scripts.
+   - This is due to the scoping mechanism in Powershell, and in order for the Powershell code to see external variables and functions, you will have to somehow insert the environment/context into this code, and I have not found easy ways to implement this.
 
 
 ## Testing
@@ -500,6 +499,7 @@ I think the file names clearly say what these scripts do. The text/strings/data 
     - I tried to add various checks (for example, for the existence of a file path or something) wherever I thought it was necessary, and this is a lot of places. Probably, these checks are not needed everywhere. Especially if you think over the architecture of the project and bring it back to normal.
     - I had a desire (although, most likely, this is a personal sporting interest) to make the script possible to run and execute without administrator rights and these rights were requested only when they are needed. Because of this, we had to add and process checks to see if administrator rights were needed for this operation and run separate Powershell code (including multi-line) in separate processes requesting administrator rights. If you remove all these checks and check for rights only at the very beginning, the code will probably lose 1/5 of its weight.
 2. Why is the template not in JSON or XML format?
+    - - Because I started from the idea that I could just write the path in a text file and insert hex patterns from the patch notes of this file below.
     - Because these types of file structures have a fairly strict markup format and when filling out a file manually, it would be difficult to write and format text in a JSON or XML structure. I made the template structure such that it forgives errors and is less strict, unlike JSON and XML.
 3. Is it possible to use byte search and replace to delete a sequence of bytes?
     - Yes, but it requires a little modification of the code. It in TODO-list in Readme.
@@ -515,3 +515,10 @@ I think the file names clearly say what these scripts do. The text/strings/data 
     - In fact, such `Replace()` functions find sections that match the search patterns and in these sections, starting from the first byte, insert bytes from the replacement pattern with byte overwriting (that is, not inserting bytes between others, but with overwriting). This is not a byte swap.
     - Therefore, it is semantically correct to call such functions as "search for addresses of search patterns with insertion of replacement patterns with overwriting." Simply put - `OverwriteBytesAtPatternPositions()`
     - Why then does the word "Replace" appear in the name of the project and it is often said about replacing bytes rather than inserting and overwriting them into the found positions? Because the phrase "byte search and replacement", in my opinion, is a historically well-established expression and most hex patch tools do exactly byte search and replacement (for example, `perl` or `sed`) and in most cases they do this only if the search and replacement patterns are the same length.
+6. If I only have search patterns and I want to check if they are in certain files, can I do this using this utility?
+    - Yes, but since the tools presented are designed to work with search + replace patterns, you will need to add replacement patterns to your search patterns. hex replacement patterns in this case can be absolutely any, for example, just the hex value `00`.
+    - Of course, you will also need to use the appropriate argument or template flag. If you only need to search using the core script `ReplaceHexBytesAll.ps1`, then use the `-onlyCheckOccurrences` argument, and if you use a wrapper like "data in template", then add the `CHECK_OCCURRENCES_ONLY` flag to the template
+7. Why do I need the `build.cmd` file? Do I need to compile something?
+    - You don't need to compile anything, and you don't need to build or install dependencies either. The `build.cmd` file is only needed when testing the code written in the `HexHandler.cs` - C# file.
+    - If you run `build.cmd`, it will compile the files `Launcher.cs` and `HexHandler.cs` in the same folder into a file `HexTool.exe`. If the compilation has occurred and the exe file has been created, then there are no errors in the C# code.
+    - In other words, this file is used exclusively to check for errors in the C# code by compiling it.
