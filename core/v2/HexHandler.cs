@@ -35,6 +35,7 @@ namespace HexHandler
             string hexStringCleaned = hexString.Replace(" ", string.Empty)
                                                 .Replace("\\x", string.Empty)
                                                 .Replace("0x", string.Empty)
+                                                .Replace("h", string.Empty)
                                                 .Replace(",", string.Empty)
                                                 .Normalize()
                                                 .Trim();
@@ -74,6 +75,7 @@ namespace HexHandler
                                                 .Replace(wildcardInRegExp, wildcardExample)
                                                 .Replace("\\x", string.Empty)
                                                 .Replace("0x", string.Empty)
+                                                .Replace("h", string.Empty)
                                                 .Replace(",", string.Empty)
                                                 .Normalize()
                                                 .Trim();
