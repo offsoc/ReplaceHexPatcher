@@ -91,10 +91,6 @@ function ExtractPathsAndHexPatterns {
     foreach ($key in $variables.Keys) {
         $cleanedContent = $cleanedContent.Replace($key, $variables[$key])
     }
-
-    if ($isWildcard1QS) {
-        $cleanedContent = $cleanedContent.Replace('?', '??')
-    }
     
     [System.Collections.Generic.List[string]]$searchPatternsLocal = New-Object System.Collections.Generic.List[string]
     [System.Collections.Generic.List[string]]$replacePatternsLocal = New-Object System.Collections.Generic.List[string]
@@ -130,8 +126,14 @@ function ExtractPathsAndHexPatterns {
         else {
             # if line is search+replace pattern - need extract search and extract replace patterns
             # and continue lines loop
+
+            [string]$cleanedLine = $line
+
+            if ($isWildcard1QS) {
+                [string]$cleanedLine = $cleanedLine.Replace('?', '??')
+            }
             
-            $possiblePairPatterns = TryExtractHexPatterns $line
+            $possiblePairPatterns = TryExtractHexPatterns $cleanedLine
 
             if ($possiblePairPatterns) {
                 if ($possiblePairPatterns.Length -eq 2) {
@@ -141,7 +143,7 @@ function ExtractPathsAndHexPatterns {
                 }
 
                 if (($possiblePairPatterns.Length -gt 2) -or ($possiblePairPatterns.Length -eq 1)) {
-                    throw "Wrong patterns format in line $line`nOr file no exist on given path"
+                    throw "Wrong patterns format in line $cleanedLine`nOr file no exist on given path"
                 }
 
                 if ($possiblePairPatterns.Length -eq 0) {
@@ -150,11 +152,11 @@ function ExtractPathsAndHexPatterns {
             }
 
             if ($searchPatternFound) {
-                $replacePatternsLocal.Add($line)
+                $replacePatternsLocal.Add($cleanedLine)
                 $searchPatternFound = $false
             }
             else {
-                $searchPatternsLocal.Add($line)
+                $searchPatternsLocal.Add($cleanedLine)
                 $searchPatternFound = $true
             }
         }
