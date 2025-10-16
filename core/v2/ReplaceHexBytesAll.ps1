@@ -256,6 +256,27 @@ function Get-UniqTempFileName {
 
 
 <#
+.SYNOPSIS
+Function check if all array items is -1
+#>
+function Test-AllPositionsNotFound {
+    [OutputType([bool])]
+    param (
+        [Parameter(Mandatory)]
+        [long[][]]$array
+    )
+
+    for ($i = 0; $i -lt $array.Count; $i++) {
+        for ($x = 0; $x -lt $array[$i].Count; $x++) {
+            if ($array[$i][$x] -ne -1) { return $false }
+        }
+    }
+
+    return $true
+}
+
+
+<#
 .DESCRIPTION
 Check attribute and permission for target file and handle search + replace (if need) patterns
 
@@ -319,7 +340,11 @@ function Apply-HexPatternInBinaryFile {
         }
     }
 
-
+    # if all search patterns not found - no need create backup file
+    if (Test-AllPositionsNotFound $foundPositions) {
+        Remove-Item -Path "$backupTempAbsoluteName" -Force
+        return $foundPositions
+    }
 
     # if target file patched we need rename temp backuped file to "true" backuped file
     # and restore attributes and permissions
