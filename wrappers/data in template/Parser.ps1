@@ -49,6 +49,8 @@ $argumentsBound = ($PSBoundParameters.GetEnumerator() | ForEach-Object {
 [string]$SHOW_SPACES_IN_LOGGED_PATTERNS_flag_text='SHOW_SPACES_IN_LOGGED_PATTERNS'
 [string]$REMOVE_SPACES_IN_LOGGED_PATTERNS_flag_text='REMOVE_SPACES_IN_LOGGED_PATTERNS'
 [string]$PATCH_ONLY_ALL_PATTERNS_EXIST_flag_text='PATCH_ONLY_ALL_PATTERNS_EXIST'
+[string]$EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST_flag_text='EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST'
+[string]$EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST_flag_text='EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST'
 
 
 # Names loaded .ps1 files
@@ -600,6 +602,42 @@ function Test-AllFilePaths {
 
 <#
 .SYNOPSIS
+They will check whether the string looks like the path to a folder or file in Windows (fle system path)
+
+.DESCRIPTION
+If we have lines of text (hex patterns and paths) that contain paths to existing and non-existing files, how do we check that the string being processed is the path to the file, but the file is not on disk?
+We can assume that...
+
+Here are examples of file paths in Windows:
+C:\Windows\System32\notepad.exe
+..\Pictures\photo.jpg
+%USERPROFILE%\Desktop
+\\MyServer\SharedData\file.doc
+\\?\D:\...\file.txt
+
+Based on these examples, the function implements the calculation of the assumption that the string passed to the function is the path to a file or folder in Windows.
+#>
+function DoesItLooksLikeFSPath {
+    [OutputType([bool])]
+    param (
+        [Parameter(Mandatory)]
+        [string]$text
+    )
+
+    if ($text -eq $null -or $text -eq "") {
+        return $false
+    }
+    
+    if ($text.Contains(":\") -or $text.Contains("\\") -or ($text -match '%[^%]+%') -or $text.StartsWith("..\") -or $text.StartsWith(".\")) {
+        return $true
+    }
+
+    return $false
+}
+
+
+<#
+.SYNOPSIS
 Write-Host given text with yellow prefix "[WARN]: "
 #>
 function Write-WarnMsg {
@@ -823,7 +861,7 @@ try {
             [void]($tempFilesForRemove.Add($tempPSFile))
             . $tempPSFile
         }
-        
+
         DetectFilesAndPatternsAndPatchBinary -patcherFilePath $patcherFilePath -content $patchBinContent -flags $flagsAll
 
         Write-InfoMsg "Parsing patch targets and apply binary patches complete"    

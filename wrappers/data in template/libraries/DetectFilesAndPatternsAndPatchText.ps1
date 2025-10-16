@@ -1,6 +1,8 @@
 
 # paths/files/targets for patches
 [System.Collections.Generic.List[string]]$paths = New-Object System.Collections.Generic.List[string]
+# list flags mean file from list $paths exist on disk
+[System.Collections.Generic.List[bool]]$paths_exist_mask = New-Object System.Collections.Generic.List[bool]
 # arrays search patterns for each path/file
 [System.Collections.Generic.List[string[]]]$searchPatterns = New-Object System.Collections.Generic.List[string[]]
 # arrays replace patterns for each path/file
@@ -270,6 +272,18 @@ function ExtractPathsAndPatterns {
 
         if ((Test-Path $line 2>$null) -or (Test-Path -LiteralPath $line 2>$null)) {
             $paths.Add($line)
+            $paths_exist_mask.Add($true)
+            
+            if ($searchPatternsLocal.Count -gt 0) {
+                $searchPatterns.Add($searchPatternsLocal.ToArray())
+                $searchPatternsLocal.Clear()
+                $replacePatterns.Add($replacePatternsLocal.ToArray())
+                $replacePatternsLocal.Clear()
+            }
+        }
+        elseif (DoesItLooksLikeFSPath $line) {
+            $paths.Add($line)
+            $paths_exist_mask.Add($true)
             
             if ($searchPatternsLocal.Count -gt 0) {
                 $searchPatterns.Add($searchPatternsLocal.ToArray())
@@ -529,7 +543,20 @@ function DetectFilesAndPatternsAndPatchText {
         return
     }
 
+    if ($flags.Contains($EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST_flag_text)) {
+        if ($paths_exist_mask.ToArray() -contains $false) {
+            Write-ProblemMsg "Not all files from section patch_text exists!"
+            Write-ProblemMsg "With current template need that all target files exist"
+            Write-ProblemMsg "Check for files and run the template again"
+            exit 1
+        }
+    }
+
     for ($i = 0; $i -lt $paths.Count; $i++) {
+        # if the file is not exist on the disk, then we do not apply patterns to it
+        if (-not $paths_exist_mask[$i]) {
+            continue
+        }
         [int[]]$matchesNumber = ApplyTextPatternsInTextFile -targetPath $paths[$i] -SearchTexts $searchPatterns[$i] -ReplaceTexts $replacePatterns[$i] -needMakeBackup $([bool]!$checkOccurrencesOnly -and $needMakeBackup) -isRegex $isRegex -CaseSensitive $isCaseSensitive -isSearchOnly $checkOccurrencesOnly
         
         $foundMatches_allPaths.Add($matchesNumber)
@@ -596,8 +623,22 @@ function Show-TextPatchInfo {
         return
     }
     
+    [bool]$isAllPathsExist = ($paths_exist_mask.ToArray() -notcontains  $false)
+
     [bool]$isAllPatternsNotFound = Test-AllZero_allPaths $foundMatches
     [bool]$isAllPatternsFound = Test-AllNonZero_allPaths $foundMatches
+        
+    if (-not $isAllPathsExist) {
+        Write-Msg
+        Write-WarnMsg "These files not exist on disk (not found):"
+        
+        for ($i = 0; $i -lt $paths.Count; $i++) {
+            if (-not $paths_exist_mask[$i]) {
+                Write-Host ($paths[$i])
+            }
+        }
+        Write-Msg
+    }
 
     if ($isAllPatternsNotFound) {
         Write-ProblemMsg "No text-patterns was found!"
@@ -605,11 +646,15 @@ function Show-TextPatchInfo {
         Write-Msg "In files:"
         
         for ($i = 0; $i -lt $paths.Count; $i++) {
+            # if the file is not exist on the disk, then we do not applied patterns to it
+            if (-not $paths_exist_mask[$i]) {
+                continue
+            }
             Write-Msg $paths[$i]
         }
     }
     else {
-        if ($isAllPatternsFound) {
+        if ($isAllPatternsFound -and $isAllPathsExist) {
             if ($isSearchOnly) {
                 Write-Msg "All text-patterns found!"
             }
@@ -628,6 +673,10 @@ function Show-TextPatchInfo {
         Write-Msg
 
         for ($i = 0; $i -lt $paths.Count; $i++) {
+            # if the file is not exist on the disk, then we do not applied patterns to it
+            if (-not $paths_exist_mask[$i]) {
+                continue
+            }
             Write-Msg $paths[$i]
 
             for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {

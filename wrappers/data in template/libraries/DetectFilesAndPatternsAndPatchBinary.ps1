@@ -3,6 +3,8 @@
 
 # paths/files/targets for patches
 [System.Collections.Generic.List[string]]$paths = New-Object System.Collections.Generic.List[string]
+# list flags mean file from list $paths exist on disk
+[System.Collections.Generic.List[bool]]$paths_exist_mask = New-Object System.Collections.Generic.List[bool]
 # arrays search patterns for each path/file
 [System.Collections.Generic.List[string[]]]$searchPatterns = New-Object System.Collections.Generic.List[string[]]
 # arrays replace patterns for each path/file
@@ -105,6 +107,18 @@ function ExtractPathsAndHexPatterns {
 
         if ((Test-Path $line 2>$null) -or (Test-Path -LiteralPath $line 2>$null)) {
             $paths.Add($line)
+            $paths_exist_mask.Add($true)
+            
+            if ($searchPatternsLocal.Count -gt 0) {
+                $searchPatterns.Add($searchPatternsLocal.ToArray())
+                $searchPatternsLocal.Clear()
+                $replacePatterns.Add($replacePatternsLocal.ToArray())
+                $replacePatternsLocal.Clear()
+            }
+        }
+        elseif (DoesItLooksLikeFSPath $line) {
+            $paths.Add($line)
+            $paths_exist_mask.Add($false)
             
             if ($searchPatternsLocal.Count -gt 0) {
                 $searchPatterns.Add($searchPatternsLocal.ToArray())
@@ -466,6 +480,15 @@ function DetectFilesAndPatternsAndPatchBinary {
         Write-ProblemMsg "None of the file paths specified for the hex patches were found"
         return
     }
+
+    if ($flags.Contains($EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST_flag_text) -or $flags.Contains($PATCH_ONLY_ALL_PATTERNS_EXIST_flag_text)) {
+        if ($paths_exist_mask.ToArray() -contains $false) {
+            Write-ProblemMsg "Not all files from section patch_bin exists!"
+            Write-ProblemMsg "With current template need that all target files exist"
+            Write-ProblemMsg "Check for files and run the template again"
+            exit 1
+        }
+    }
     
     . $patcherFilePath
 
@@ -515,6 +538,11 @@ function DetectFilesAndPatternsAndPatchBinary {
     }
     else {
         for ($i = 0; $i -lt $paths.Count; $i++) {
+            # if the file is not exist on the disk, then we do not apply patterns to it
+            if (-not $paths_exist_mask[$i]) {
+                continue
+            }
+
             [System.Collections.Generic.List[string[]]]$patternsPairs = New-Object System.Collections.Generic.List[string[]]
 
             for ($x = 0; $x -lt $searchPatterns[$i].Count; $x++) {
@@ -622,10 +650,24 @@ function Show-HexPatchInfo {
         return
     }
 
+    [bool]$isAllPathsExist = ($paths_exist_mask.ToArray() -notcontains  $false)
+
     [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $foundPositions
 
     [bool]$isAllPatternsNotFound = Test-AllZero_allPaths $numbersFoundOccurrences
     [bool]$isAllPatternsFound = Test-AllNonZero_allPaths $numbersFoundOccurrences
+        
+    if (-not $isAllPathsExist) {
+        Write-Msg
+        Write-WarnMsg "These files not exist on disk (not found):"
+        
+        for ($i = 0; $i -lt $paths.Count; $i++) {
+            if (-not $paths_exist_mask[$i]) {
+                Write-Host ($paths[$i])
+            }
+        }
+        Write-Msg
+    }
 
     if ($isAllPatternsNotFound) {
         Write-ProblemMsg "No hex-patterns was found!"
@@ -633,11 +675,15 @@ function Show-HexPatchInfo {
         Write-Msg "In files:"
         
         for ($i = 0; $i -lt $paths.Count; $i++) {
+            # if the file is not exist on the disk, then we do not applied patterns to it
+            if (-not $paths_exist_mask[$i]) {
+                continue
+            }
             Write-Msg $paths[$i]
         }
     }
     else {
-        if ($isAllPatternsFound) {
+        if ($isAllPatternsFound -and $isAllPathsExist) {
             if ($isSearchOnly) {
                 Write-Msg "All hex-patterns found!"
             }
@@ -654,9 +700,13 @@ function Show-HexPatchInfo {
             }
         }
         Write-Msg
-
+        
         if ($flags.Contains($SHOW_SPACES_IN_LOGGED_PATTERNS_flag_text)) {
             for ($i = 0; $i -lt $paths.Count; $i++) {
+                # if the file is not exist on the disk, then we do not applied patterns to it
+                if (-not $paths_exist_mask[$i]) {
+                    continue
+                }
                 Write-Msg $paths[$i]
 
                 for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
@@ -670,6 +720,10 @@ function Show-HexPatchInfo {
         }
         elseif ($flags.Contains($REMOVE_SPACES_IN_LOGGED_PATTERNS_flag_text)) {
             for ($i = 0; $i -lt $paths.Count; $i++) {
+                # if the file is not exist on the disk, then we do not applied patterns to it
+                if (-not $paths_exist_mask[$i]) {
+                    continue
+                }
                 Write-Msg $paths[$i]
 
                 for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
@@ -683,6 +737,10 @@ function Show-HexPatchInfo {
         }
         else {
             for ($i = 0; $i -lt $paths.Count; $i++) {
+                # if the file is not exist on the disk, then we do not applied patterns to it
+                if (-not $paths_exist_mask[$i]) {
+                    continue
+                }
                 Write-Msg $paths[$i]
 
                 for ($x = 0; $x -lt $searchPatternsLocal[$i].Count; $x++) {
