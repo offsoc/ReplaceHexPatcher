@@ -10,6 +10,7 @@ Language: [Русский](README_RU.md) | English
     - [The main patcher script](#the-main-patcher-script)
     - [Wrapper script with all the data inside](#wrapper-script-with-all-the-data-inside)
     - [Wrapper script with data processing from template.txt](#wrapper-script-with-data-processing-from-templatetxt)
+  - [What gives nativity](#what-gives-nativity)
   - [Where to start](#where-to-start)
   - [Documentation](#documentation)
   - [ToDo](#todo)
@@ -53,13 +54,15 @@ In this case, the alternative option is not a native method.:
 
 Main:
 - Search and replace all found hex-byte sequences
+- Only searching (counting occurrences) of hex byte sequences
+- Output of an array of found positions for each search pattern in decimal or hexadecimal formats
 - The possibility of using wildcard characters "??" in patterns
 - Creating backups of files if hex patterns are found
 - Several possible formats of transmitted hex values
 - Requests administrator rights only if necessary
 
 Together with the wrappers:
-- Byte substitution in multiple files
+- Byte substitution in multiple files or checking that they have already been patched
 - Deleting files and folders
 - Adding lines to the `hosts` file
 - Deleting specific text and addresses from the `hosts` file
@@ -79,7 +82,7 @@ For more information, see [documentation](./docs/docs_EN.md)
 
 ### The main patcher script
 
-```
+```powershell
 .\ReplaceHexBytesAll.ps1 -filePath "<path to file>" -patterns "<hex search pattern>/<hex replacement pattern>",
 ```
 - `hex pattern` has no strict format.
@@ -94,8 +97,8 @@ Here is an example:
 1. Start Powershell
 2. Use `cd <path>` to go to the folder with the file `ReplaceHexBytesAll.ps1`
 3. In the Powershell window, run:
-```
-.\ReplaceHexBytesAll.ps1 -filePath "D:\TEMP\file.exe" -patterns "48 83EC2 8BA2F 000000 488A/202 0EB1 1111 11111 111111","C42518488D4D68\90909011111175","45A8488D55A8|75EB88909090","\xAA\x7F\xBB\x08\xE3\x4D|\xBB\x90\xB1\xE8\x99\x4D" -makeBackup
+```powershell
+.\ReplaceHexBytesAll.ps1 -filePath "D:\TEMP\file.exe" -patterns "48 83EC2 8BA2F 000000 488A/202 0EB1 1111 11111 111111","C42518488D4D68\90909011111175","45A8488D55A8|75EB88909090","\xAA\x7F\xBB\x08\xE3\x4D|\xBB\x90\xB1\xE8\x99\x4D" -makeBackup -showMoreInfo -showFoundOffsetsInHex
 ```
 
 ### Wrapper script with all the data inside
@@ -108,15 +111,49 @@ Inside the file there is a memo of what needs to be done/filled in inside the fi
 
 The `wrappers` folder contains the `data inside` folder and the files `Start.cmd`, `Parser.ps1`, `template.txt`
 
-Necessary:
-1. Fill in the form `template.txt` depending on what you need to do
-2. If all 3 files are in 1 folder, just run `Start.cmd`
-3. If all files are located separately, in `Start.cmd` fill in the paths to them or URL links to download them and run with a double click
-4. Either run `Parser.ps1` directly through Powershell and pass it the path or a link to the template as an argument:
-``
-\.Parser.ps1 -templatePath"D:\path к\template.txt "
-``
-you can also use the second argument to pass the path to the patch script `-patcherPath "C:\path to\ReplaceHexBytesAll.ps1"` and it will take precedence over those specified in the template
+An approximate algorithm:
+1. Fill in the form `template.txt` or any other txt file, depending on what you need to do.
+2. Run `Start.cmd` and select the written txt file
+3. Or use Powershell to directly run `Parser.ps1` and pass it the path or template link as an argument.:
+```powershell
+\.Parser.ps1 -templatePath "D:\path к\template.txt "
+```
+
+
+## What gives nativity
+
+When implementing the idea, the emphasis was also on making the tool completely, absolutely native to the system in which it is executed (that is, for Windows in this case). So that you don't have to download and install any dependencies, libraries, runtime, etc. So that everything is done solely by the system itself, that is, by what it has "out of the box".
+
+There are no binary files in the project in any form and they are not needed for the utility to work. Only the text code.
+
+Due to this, you can not download anything, but simply execute such a command in the Powershell window to apply hex patterns.:
+```powershell
+irm "https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/core/v2/ReplaceHexBytesAll.ps1" -OutFile $env:TEMP\t.ps1; & $env:TEMP\t.ps1 -filePath "C:\Program Files\Adobe\Adobe Photoshop 2025\DaVinci Remote Monitor.exe" -patterns "B9000000/11111111", "0F 31 89 C2 44 29 C0 41 89 D0 44 39 C8 41 89 C1/11", "EF C4 66 41 0F 6F 22 66/778899" -showMoreInfo -makeBackup -showFoundOffsetsInHex; ri $env:TEMP\t.ps1
+```
+or
+```powershell
+irm "https://github.com/Drovosek01/ReplaceHexPatcher/raw/refs/heads/main/wrappers/data%20in%20template/Parser.ps1" -OutFile $env:TEMP\t.ps1; & $env:TEMP\t.ps1 '[start-flags]
+MAKE_BACKUPS
+VERBOSE
+[end-flags]
+
+
+[start-patch_bin]
+C:\Users\USERNAME_FIELD\Desktop\hextests\DaVinci Remote Monitor.exe
+7B 58 5D D9 80 DF 5F D8 52 69 63 68 81 DF 5F D8
+112233
+
+FF FF EF BF
+AA 11 BB 22
+
+
+C:\Users\USERNAME_FIELD\Desktop\hextests\CorelCAD.21.2.1.3523 Win 64bit.rar
+00 00 3F 73
+CC CC CC CC
+2B 77 4D CE E9 B1 6D 92 89 BD 3B C3 3F A4 98 CC
+2B 77 4D CE E9 B1 6D 92 89 BD 3B C3 3F A4 98 33
+[end-patch_bin]'; ri $env:TEMP\t.ps1
+```
 
 ## Where to start
 
