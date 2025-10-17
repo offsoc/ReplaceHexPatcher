@@ -233,6 +233,11 @@ public class SignatureRemover
     }
 
     for ($i = 0; $i -lt $filesPaths.Count; $i++) {
+        # if the file is not exist on the disk, then we do not remove signature from it
+        if (-not $paths_exist_mask[$i]) {
+            continue
+        }
+
         # check if file is PE-file
         if (-not $skipPECheck) {
             try {

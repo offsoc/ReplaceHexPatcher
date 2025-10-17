@@ -116,7 +116,7 @@ An approximate algorithm:
 2. Run `Start.cmd` and select the written txt file
 3. Or use Powershell to directly run `Parser.ps1` and pass it the path or template link as an argument.:
 ```powershell
-\.Parser.ps1 -templatePath "D:\path к\template.txt "
+.\Parser.ps1 -templatePath "D:\path к\template.txt "
 ```
 
 

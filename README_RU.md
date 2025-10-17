@@ -116,7 +116,7 @@ CMD слишком ограничен в возможностях. В Visual Bas
 2. Запустить `Start.cmd` и выбрать написанный txt-файл
 3. Либо через Powershell напрямую запустить `Parser.ps1` и передать ему путь или ссылку на шаблон в качестве аргумента:
 ```powershell
-\.Parser.ps1 -templatePath "D:\путь к\template.txt"
+.\Parser.ps1 -templatePath "D:\путь к\template.txt"
 ```
 
 
