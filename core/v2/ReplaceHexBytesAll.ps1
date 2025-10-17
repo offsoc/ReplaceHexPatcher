@@ -177,7 +177,7 @@ function CleanHexString {
         [string]$patternsString
     )
     
-    return ($patternsString.Clone() -replace '\s', '').Replace("\x", "").Replace("0x", "").Replace("[\x00-\xFF]", "??").Replace("\", "/").Replace("|", "/").Replace("h", "").Replace(",", "").ToUpper()
+    return ($patternsString.Clone() -replace '\s', '').Replace("\x", "").Replace("0x", "").Replace("[\x00-\xFF]", "??").Replace("\", "/").Replace("|", "/").Replace("h", "").Replace(",", "").Replace("`"", "").Replace("'", "").ToUpper()
 }
 
 
