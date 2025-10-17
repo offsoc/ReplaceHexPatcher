@@ -2,6 +2,14 @@
 
 Language: [Русский](changelog_RU.md) | English
 
+### v2.2.1
+
+Added:
+- removing single and double quotes when clearing hex patterns
+
+Fixed:
+- an attempt to remove a digital signature from files that are not on the disk from the section was prevented `patch_bin`
+
 ### v2.2
 
 Added:
