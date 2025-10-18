@@ -32,7 +32,7 @@ Here is a list of functions that are specific and I may forget to implement them
 - [ ] Add support for working with relative paths
 - Meaning the file paths in the template
 - [ ] In the section for deleting files and folders, add support for deleting only all attached data or attached files according to some pattern (for example, `\*exe`), although this is probably globbing.
-- [ ] It may be worth adding the logic of running `.ps1` files as an administrator in the parser script.
+- [x] It may be worth adding the logic of running `.ps1` files as an administrator in the parser script.
    - This means files created from the code in the template
 - [ ] Replace the current method of restarting the patch with a request for administrator rights
   - The current method is noticeably cumbersome and adds a lot of difficult-to-read code

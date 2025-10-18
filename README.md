@@ -58,7 +58,8 @@ Main:
 - Output of an array of found positions for each search pattern in decimal or hexadecimal formats
 - The possibility of using wildcard characters "??" in patterns
 - Creating backups of files if hex patterns are found
-- Several possible formats of transmitted hex values
+- Non-strict format of hex values (omnivorous data)
+- Independent length of replacement patterns
 - Requests administrator rights only if necessary
 
 Together with the wrappers:
