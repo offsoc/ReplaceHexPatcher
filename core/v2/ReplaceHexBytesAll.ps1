@@ -342,7 +342,7 @@ function Apply-HexPatternInBinaryFile {
 
     # if all search patterns not found - no need create backup file
     if (Test-AllPositionsNotFound $foundPositions) {
-        Remove-Item -Path "$backupTempAbsoluteName" -Force
+        Remove-Item -Path "$backupTempAbsoluteName" -Force 2>$null
         return $foundPositions
     }
 
