@@ -398,8 +398,8 @@ function GetVariables {
             if ($_ -eq $key) {
                 return
             }
-
-            $cleanedVariables[$key] = $cleanedVariables[$key].Replace($_, $variables[$_])
+            
+            $cleanedVariables[$key] = $cleanedVariables[$key].Replace($_, $cleanedVariables[$_])
         }
     }
 
