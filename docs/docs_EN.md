@@ -297,29 +297,29 @@ Each flag must be written on a new line. You can duplicate the flags, write them
 9. `EXIT_IF_NO_ADMINS_RIGHTS`
    - at the very beginning of the patcher, when reading the section with flags, check if the currently running patch script/process has administrator rights, and if it does not, complete the execution.
 10. `ASK_ADMINS_RIGHTS`
-   - at the very beginning of the patcher, when reading the section with flags, check if the current running patch script/process has administrator rights, and if it does not, start execution in a new process (with the same arguments passed to the current script) requesting administrator rights.
+    - at the very beginning of the patcher, when reading the section with flags, check if the current running patch script/process has administrator rights, and if it does not, start execution in a new process (with the same arguments passed to the current script) requesting administrator rights.
 11. `SHOW_EXECUTION_TIME`
-   - show the time/duration of the patch at the end. This flag is "not subject" to the "VERBOSE" flag, and even if the "VERBOSE" flag is omitted, and this flag is specified, the work time will be displayed in the execution window.
+    - show the time/duration of the patch at the end. This flag is "not subject" to the "VERBOSE" flag, and even if the "VERBOSE" flag is omitted, and this flag is specified, the work time will be displayed in the execution window.
 12. `SHOW_SPACES_IN_LOGGED_PATTERNS`
-   - when displaying information about hex patterns, separate each byte with a space (that is, every 2 hex characters) so that the pattern is displayed like this: 00 A4 32 02 00 00 00 00 E0 5E B4 00 00 10 00 00
+    - when displaying information about hex patterns, separate each byte with a space (that is, every 2 hex characters) so that the pattern is displayed like this: 00 A4 32 02 00 00 00 00 E0 5E B4 00 00 10 00 00
 13. `REMOVE_SPACES_IN_LOGGED_PATTERNS`
-   - when displaying information about hex patterns, remove all spaces in the pattern so that the pattern appears like this: `00A4320200000000E05EB40000100000`
+    - when displaying information about hex patterns, remove all spaces in the pattern so that the pattern appears like this: `00A4320200000000E05EB40000100000`
 14. `PATCH_ONLY_ALL_PATTERNS_EXIST`
-   - first, check that all the patterns are in the specified files and only then replace them.
-   - if at least 1 pattern is not found, not a single file will be modified.
-   - at the same time, the search for patterns is actually performed 2 times, and this can be critical if the files are heavy and on slow HDDs.
+    - first, check that all the patterns are in the specified files and only then replace them.
+    - if at least 1 pattern is not found, not a single file will be modified.
+    - at the same time, the search for patterns is actually performed 2 times, and this can be critical if the files are heavy and on slow HDDs.
 15. `EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST`
-   - when processing the `patch_bin` section, all lines in this section will be checked first, and for each line that looks like the file path, the file's existence on disk will be checked.
-   - if at least 1 file does not exist - the template processing will be completed with an error
-   - if all files exist on the disk - the standard processing of this and all subsequent sections will continue
+    - when processing the `patch_bin` section, all lines in this section will be checked first, and for each line that looks like the file path, the file's existence on disk will be checked.
+    - if at least 1 file does not exist - the template processing will be completed with an error
+    - if all files exist on the disk - the standard processing of this and all subsequent sections will continue
 16. `EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST`
-   - when processing the `patch_text` section, all lines in this section will be checked first, and for each line that looks like the file path, the file's existence on disk will be checked.
-   - if at least 1 file does not exist - the template processing will be completed with an error
-   - if all files exist on the disk - the standard processing of this and all subsequent sections will continue
+    - when processing the `patch_text` section, all lines in this section will be checked first, and for each line that looks like the file path, the file's existence on disk will be checked.
+    - if at least 1 file does not exist - the template processing will be completed with an error
+    - if all files exist on the disk - the standard processing of this and all subsequent sections will continue
 
 ---
 
-1. `variables`
+2. `variables`
 
 Here you can set variables if some piece of text (for example, a pattern or a file path) needs to be used several times further in the template. Each new variable is written from a new line, first the name of the variable, then the `=` sign, then the data associated with the variable.
 
