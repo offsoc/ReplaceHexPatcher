@@ -2,6 +2,12 @@
 
 Language: [Русский](changelog_RU.md) | English
 
+### v2.2.2
+
+Fixed:
+- hidden error output when trying to delete a non-existent backup file
+- assigning values to variables whose values also contain variables in the `variables` section of the template
+
 ### v2.2.1
 
 Added:
