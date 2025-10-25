@@ -627,7 +627,7 @@ function Show-InfoAboutReplacedPatterns {
                 if ($needShowPositionsDecimal) {
                     Write-Host "$($patternsPairs[$i]) : $($numbersFoundOccurrences[$i]) : $($foundPositions[$i] -join " ")"
                 }
-                if ($needShowPositionsHex -and (($foundPositions[$i].Count -eq 1) -and ($foundPositions[$i] -eq -1))) {
+                elseif ($needShowPositionsHex -and (($foundPositions[$i].Count -eq 1) -and ($foundPositions[$i] -eq -1))) {
                     Write-Host "$($patternsPairs[$i]) : $($numbersFoundOccurrences[$i]) : -1"
                 }
                 else {
@@ -643,10 +643,10 @@ function Show-InfoAboutReplacedPatterns {
                     if ($notFoundPatterns.Length -eq 0) {
                         $notFoundPatterns += $patternsPairs[$i]
                     } else {
-                    $notFoundPatterns += ' | ' + $patternsPairs[$i]
+                        $notFoundPatterns += ' | ' + $patternsPairs[$i]
                     }
                 }
-                }
+            }
     
                 Write-Host "Hex patterns" $notFoundPatterns.Trim() "- not found, but other given patterns found in $filePathFull" 
         }
