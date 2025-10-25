@@ -640,7 +640,11 @@ function Show-InfoAboutReplacedPatterns {
         else {
             for ($i = 0; $i -lt $numbersFoundOccurrences.Count; $i++) {
                 if ($numbersFoundOccurrences[$i] -eq 0) {
+                    if ($notFoundPatterns.Length -eq 0) {
+                        $notFoundPatterns += $patternsPairs[$i]
+                    } else {
                     $notFoundPatterns += ' | ' + $patternsPairs[$i]
+                    }
                 }
                 }
     
