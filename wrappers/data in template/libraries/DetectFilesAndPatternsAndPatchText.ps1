@@ -562,7 +562,18 @@ function DetectFilesAndPatternsAndPatchText {
         $foundMatches_allPaths.Add($matchesNumber)
     }
 
-    Show-TextPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundMatches $foundMatches_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
+    if ($foundMatches_allPaths.ToArray().Count -ne 0) {
+        Show-TextPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundMatches $foundMatches_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
+    }
+    else {
+        Write-ProblemMsg "No files were found on the disk:"
+        
+        for ($i = 0; $i -lt $paths.Count; $i++) {
+            if (-not $paths_exist_mask[$i]) {
+                Write-Host ($paths[$i])
+            }
+        }
+    }
 
     ClearStorageArrays
 }

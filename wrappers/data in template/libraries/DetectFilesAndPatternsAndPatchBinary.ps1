@@ -492,7 +492,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         if ($paths_exist_mask.ToArray() -contains $false) {
             Write-ProblemMsg "Not all files from section patch_bin exists!"
             Write-ProblemMsg "With current template need that all target files exist"
-            Write-ProblemMsg "Check for files and run the template again"
+            Write-ProblemMsg "Check files paths and run the template again"
             exit 1
         }
     }
@@ -561,9 +561,22 @@ function DetectFilesAndPatternsAndPatchBinary {
         }
     }
 
-    Remove-SignatureInPatchedPE -filesPaths $paths -foundPositions $foundPositions_allPaths.ToArray()
-
-    Show-HexPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundPositions $foundPositions_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
+    if ($foundPositions_allPaths.ToArray().Count -ne 0) {
+        Remove-SignatureInPatchedPE -filesPaths $paths -foundPositions $foundPositions_allPaths.ToArray()
+    }
+    
+    if ($foundPositions_allPaths.ToArray().Count -ne 0) {
+        Show-HexPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundPositions $foundPositions_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
+    }
+    else {
+        Write-ProblemMsg "No files were found on the disk:"
+        
+        for ($i = 0; $i -lt $paths.Count; $i++) {
+            if (-not $paths_exist_mask[$i]) {
+                Write-Host ($paths[$i])
+            }
+        }
+    }
 
     ClearStorageArrays
 }
