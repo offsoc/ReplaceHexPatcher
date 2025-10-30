@@ -265,15 +265,17 @@ function ExtractContent {
         [switch]$saveEmptyLines = $false
     )
 
-    [string]$cleanedTemplateContent = $content.Clone()
+    [string]$cleanedTemplateContent = ""
     [string]$startSectionName = "[start-$sectionName]"
     [string]$endSectionName = "[end-$sectionName]"
 
     [string[]]$cleanedComments = $comments -ne $commentExclusionItem
+    $pattern = ($cleanedComments | ForEach-Object { [regex]::Escape($_) }) -join '|'
+    $cleanedTemplateContent = ($content.Clone() -split "`r?`n" | Where-Object { $_ -notmatch $pattern }) -join "`n"
 
     # Remove lines with current template-comments tag
     foreach ($comment in $cleanedComments) {
-        $content = $content | select-string -pattern $comment -notmatch
+        $cleanedTemplateContent = $cleanedTemplateContent | select-string -pattern $comment -notmatch
     }
     
     if (-not $saveEmptyLines) {
