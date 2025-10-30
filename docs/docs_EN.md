@@ -363,7 +363,9 @@ When processing this section, each row is analyzed line by line, and the row in 
 
 First comes the file path string, and then the pattern strings. Accordingly, after the line analyzed in the section is determined as the path to the file, all other lines are considered patterns and are "assigned" to this file (that is, these patterns will need to be applied to this file) until the next line is found - the path to the file. In general, the file path string is searched first, and all the following lines are analyzed as hex patterns until the next file path string is found.
 
-All this data (file paths and patterns) can be stored in variables and only variables can be written here.
+All this data (file paths and patterns) can be stored in template variables and only variables can be written here.
+
+The file paths may contain Windows environment variables, such as `%temp%` or `%programfiles%` or `%appdata%`, etc. These variables will be processed correctly.
 
 If any file from the section is not on the disk, then the processing of this file and the patterns for it is skipped without any errors and the section is analyzed further. But if the template has the `EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST` or `PATCH_ONLY_ALL_PATTERNS_EXIST` flag, then if at least 1 file is not on disk, then processing of the entire template will end.
 
@@ -379,7 +381,9 @@ When processing this section, each row is analyzed line by line, and the row in 
 
 First comes the file path string, and then the pattern strings. Accordingly, after the line analyzed in the section is determined as the path to the file, all other lines are considered patterns and are "assigned" to this file (that is, these patterns will need to be applied to this file) until the next line is found - the path to the file. In general, the file path string is searched first, and all the following lines are analyzed as hex patterns until the next file path string is found.
 
-All this data (file paths and patterns) can be stored in variables and only variables can be written here.
+All this data (file paths and patterns) can be stored in template variables and only variables can be written here.
+
+The file paths may contain Windows environment variables, such as `%temp%` or `%programfiles%` or `%appdata%`, etc. These variables will be processed correctly.
 
 If any file from the section is not on the disk, then the processing of this file and the patterns for it is skipped without any errors and the section is analyzed further. But if the template has the `EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST` flag, then if at least 1 file is not on disk, then processing of the entire template will end.
 
