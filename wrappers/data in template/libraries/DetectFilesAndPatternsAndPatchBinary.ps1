@@ -99,7 +99,7 @@ function ExtractPathsAndHexPatterns {
     
     foreach ($line in $cleanedContent -split "\n") {
         # Trim line is important because end line include \n
-        $line = $line.Trim()
+        $line = [Environment]::ExpandEnvironmentVariables($line.Trim())
 
         if ((Test-Path $line 2>$null) -or (Test-Path -LiteralPath $line 2>$null)) {
             $paths.Add($line)
