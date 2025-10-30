@@ -555,6 +555,7 @@ function DetectFilesAndPatternsAndPatchText {
     for ($i = 0; $i -lt $paths.Count; $i++) {
         # if the file is not exist on the disk, then we do not apply patterns to it
         if (-not $paths_exist_mask[$i]) {
+            $foundMatches_allPaths.Add(@(0))
             continue
         }
         [int[]]$matchesNumber = ApplyTextPatternsInTextFile -targetPath $paths[$i] -SearchTexts $searchPatterns[$i] -ReplaceTexts $replacePatterns[$i] -needMakeBackup $([bool]!$checkOccurrencesOnly -and $needMakeBackup) -isRegex $isRegex -CaseSensitive $isCaseSensitive -isSearchOnly $checkOccurrencesOnly

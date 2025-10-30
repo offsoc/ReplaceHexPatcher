@@ -193,15 +193,15 @@ function Remove-SignatureInPatchedPE {
         [bool]$skipPECheck = $false,
         [bool]$isVerbose = $false
     )
-
+    
     if (-not $flagsAll.Contains($REMOVE_SIGN_PATCHED_PE_flag_text)) {
         return
     }
-
+    
     [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $foundPositions
     
     [bool]$isAllPatternsNotFound = Test-AllZero_allPaths $numbersFoundOccurrences
-
+    
     if ($isAllPatternsNotFound) {
         return
     }
@@ -262,9 +262,9 @@ public class SignatureRemover
             [void]($stream.Close())
         }
 
-    [bool]$isAllPatternsNotFoundForFile = Test-AllZero $numbersFoundOccurrences[$i]
+        [bool]$isAllPatternsNotFoundForFile = Test-AllZero $numbersFoundOccurrences[$i]
     
-    if ($isAllPatternsNotFoundForFile) {
+        if ($isAllPatternsNotFoundForFile) {
             if ($isVerbose) {
                 Write-Host "File is not patched and signature will not remove: $($filesPaths[$i])"
             }
@@ -547,6 +547,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         for ($i = 0; $i -lt $paths.Count; $i++) {
             # if the file is not exist on the disk, then we do not apply patterns to it
             if (-not $paths_exist_mask[$i]) {
+                [void]($foundPositions_allPaths.Add(@(@(-1))))
                 continue
             }
 
@@ -563,9 +564,6 @@ function DetectFilesAndPatternsAndPatchBinary {
 
     if ($foundPositions_allPaths.ToArray().Count -ne 0) {
         Remove-SignatureInPatchedPE -filesPaths $paths -foundPositions $foundPositions_allPaths.ToArray()
-    }
-    
-    if ($foundPositions_allPaths.ToArray().Count -ne 0) {
         Show-HexPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundPositions $foundPositions_allPaths.ToArray() -isSearchOnly $checkOccurrencesOnly
     }
     else {
@@ -634,7 +632,7 @@ function CalculateNumbersFoundOccurrences_allPaths {
         [Parameter(Mandatory)]
         [long[][][]]$foundPositions
     )
-    
+
     [System.Collections.Generic.List[int[]]]$numbersFoundOccurrences = New-Object System.Collections.Generic.List[int[]]
 
     for ($i = 0; $i -lt $foundPositions.Count; $i++) {
