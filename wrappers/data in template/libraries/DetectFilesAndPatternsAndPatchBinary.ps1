@@ -655,6 +655,31 @@ function CalculateNumbersFoundOccurrences_allPaths {
 }
 
 
+<#
+.DESCRIPTION
+Function calculate sum of occurrences all patterns positions
+#>
+function Get-OccurrencesSum {
+    [OutputType([int[][]])]
+    param(
+        [Parameter(Mandatory)]
+        [int[][]]$occurrences
+    )
+    
+    [int]$sum = 0
+
+    foreach ($row in $occurrences) {
+        foreach ($element in $row) {
+            if ($element -gt 0) {
+                $sum += $element
+            }
+        }
+    }
+
+    return $sum
+}
+
+
 function Show-HexPatchInfo {
     param (
         [Parameter(Mandatory)]
@@ -668,14 +693,28 @@ function Show-HexPatchInfo {
         return
     }
 
-    [bool]$isAllPathsExist = ($paths_exist_mask.ToArray() -notcontains  $false)
+    [bool]$isAllPathsExist = ($paths_exist_mask.ToArray() -notcontains $false)
+    [bool]$isAllPathsNotExist = ($paths_exist_mask.ToArray() -notcontains $true)
 
     [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $foundPositions
+    [int]$occurrencesSum = Get-OccurrencesSum $numbersFoundOccurrences
 
     [bool]$isAllPatternsNotFound = Test-AllZero_allPaths $numbersFoundOccurrences
     [bool]$isAllPatternsFound = Test-AllNonZero_allPaths $numbersFoundOccurrences
         
-    if (-not $isAllPathsExist) {
+    if ($isAllPathsNotExist) {
+        Write-ProblemMsg "No files were found!"
+        Write-Msg
+        Write-Msg "Here is a list of the files we are looking for:"
+        
+        for ($i = 0; $i -lt $paths.Count; $i++) {
+            if (-not $paths_exist_mask[$i]) {
+                Write-Host ($paths[$i])
+            }
+        }
+        Write-Msg
+        return
+    } elseif (-not $isAllPathsExist) {
         Write-Msg
         Write-WarnMsg "These files not exist on disk (not found):"
         
@@ -768,5 +807,7 @@ function Show-HexPatchInfo {
                 Write-Msg
             }
         }
+        
+        Write-Msg "The total number of occurrences of all patterns: $occurrencesSum"
     }
 }
