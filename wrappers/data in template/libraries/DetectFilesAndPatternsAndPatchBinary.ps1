@@ -532,6 +532,12 @@ function DetectFilesAndPatternsAndPatchBinary {
         # if all patterns found/exist - apply all these patch-patterns
         if ($isAllPatternsFound) {
             for ($i = 0; $i -lt $paths.Count; $i++) {
+                [System.Collections.Generic.List[string[]]]$patternsPairs = New-Object System.Collections.Generic.List[string[]]
+
+                for ($x = 0; $x -lt $searchPatterns[$i].Count; $x++) {
+                    [void]($patternsPairs.Add("$($searchPatterns[$i][$x])/$($replacePatterns[$i][$x])"))
+                }
+
                 [void](Apply-HexPatternInBinaryFile -targetPath $paths[$i] -patternsPairs $patternsPairs.ToArray() -needMakeBackup $([bool]!$checkOccurrencesOnly -and $needMakeBackup) -isSearchOnly $false)
             }
         }
