@@ -252,7 +252,7 @@ public class SignatureRemover
 
             if (-not $BytesHandler.IsFilePEFile()) {
                 if ($isVerbose) {
-                    Write-Host "File is not PE-file: $($filesPaths[$i])"
+                    Write-Msg "File is not PE-file: $($filesPaths[$i])"
                 }
 
                 [void]($stream.Close())
@@ -266,7 +266,7 @@ public class SignatureRemover
     
         if ($isAllPatternsNotFoundForFile) {
             if ($isVerbose) {
-                Write-Host "File is not patched and signature will not remove: $($filesPaths[$i])"
+                Write-Msg "File is not patched and signature will not remove: $($filesPaths[$i])"
             }
 
             continue
@@ -279,27 +279,27 @@ public class SignatureRemover
         
         if ($result) {
             if ($isVerbose) {
-                Write-Host "Digital signature has been successfully deleted in file: $($filesPaths[$i])"
+                Write-Msg "Digital signature has been successfully deleted in file: $($filesPaths[$i])"
             }
             
             [int]$sizeKBWithoutSignature = (Get-ChildItem $filePathFull).Length / 1024
             
             if ($isVerbose) {
-                Write-Host "The file began to size less by $($sizeKBOriginal - $sizeKBWithoutSignature) KB"
-                Write-Host
+                Write-Msg "The file began to size less by $($sizeKBOriginal - $sizeKBWithoutSignature) KB"
+                Write-Msg
             }
         } else {
             [System.Management.Automation.Signature]$signature = Get-AuthenticodeSignature -FilePath $filePathFull
 
             if (($signature.Status -eq "Valid") -or ($signature.Status -eq "HashMismatch") -or ($signature.Status -eq "NotTrusted")) {
                 if ($isVerbose) {
-                    Write-Host "File still have signature but something went wrong: $($filesPaths[$i])"
+                    Write-Msg "File still have signature but something went wrong: $($filesPaths[$i])"
                 }
             }
             
             if (($signature.Status -eq "UnknownError") -or ($signature.Status -eq "NotSigned") -or ($signature.Status -eq "NotSupportedFileFormat") -or ($signature.Status -eq "Incompatible")) {
                 if ($isVerbose) {
-                    Write-Host "File don't have signature: $($filesPaths[$i])"
+                    Write-Msg "File don't have signature: $($filesPaths[$i])"
                 }
             }
         }
@@ -571,7 +571,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         
         for ($i = 0; $i -lt $paths.Count; $i++) {
             if (-not $paths_exist_mask[$i]) {
-                Write-Host ($paths[$i])
+                Write-Msg ($paths[$i])
             }
         }
     }
@@ -709,7 +709,7 @@ function Show-HexPatchInfo {
         
         for ($i = 0; $i -lt $paths.Count; $i++) {
             if (-not $paths_exist_mask[$i]) {
-                Write-Host ($paths[$i])
+                Write-Msg ($paths[$i])
             }
         }
         Write-Msg
@@ -720,7 +720,7 @@ function Show-HexPatchInfo {
         
         for ($i = 0; $i -lt $paths.Count; $i++) {
             if (-not $paths_exist_mask[$i]) {
-                Write-Host ($paths[$i])
+                Write-Msg ($paths[$i])
             }
         }
         Write-Msg

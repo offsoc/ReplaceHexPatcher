@@ -571,7 +571,7 @@ function DetectFilesAndPatternsAndPatchText {
         
         for ($i = 0; $i -lt $paths.Count; $i++) {
             if (-not $paths_exist_mask[$i]) {
-                Write-Host ($paths[$i])
+                Write-Msg ($paths[$i])
             }
         }
     }
@@ -674,7 +674,7 @@ function Show-TextPatchInfo {
         
         for ($i = 0; $i -lt $paths.Count; $i++) {
             if (-not $paths_exist_mask[$i]) {
-                Write-Host ($paths[$i])
+                Write-Msg ($paths[$i])
             }
         }
         Write-Msg
@@ -685,7 +685,7 @@ function Show-TextPatchInfo {
         
         for ($i = 0; $i -lt $paths.Count; $i++) {
             if (-not $paths_exist_mask[$i]) {
-                Write-Host ($paths[$i])
+                Write-Msg ($paths[$i])
             }
         }
         Write-Msg
