@@ -1140,7 +1140,7 @@ catch {
 }
 finally {
     # Delete all temp Powershell-script files
-    $tempFilesForRemove | foreach { Remove-Item -Path $_ -Force }
+    $tempFilesForRemove | foreach { Remove-Item -Path $_ -Force 2>$null }
 }
 
 if ($flagsAll.Contains($SHOW_EXECUTION_TIME_flag_text)) {
