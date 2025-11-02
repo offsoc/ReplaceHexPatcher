@@ -401,7 +401,7 @@ function GetVariables {
                 return
             }
             
-            $cleanedVariables[$key] = $cleanedVariables[$key].Replace($_, $cleanedVariables[$_])
+            $cleanedVariables[$_] = $cleanedVariables[$_].Replace($key, $cleanedVariables[$key])
         }
     }
 
