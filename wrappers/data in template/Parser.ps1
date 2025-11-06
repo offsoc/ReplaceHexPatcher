@@ -613,11 +613,14 @@ We can assume that...
 Here are examples of file paths in Windows:
 C:\Windows\System32\notepad.exe
 ..\Pictures\photo.jpg
-%USERPROFILE%\Desktop
 \\MyServer\SharedData\file.doc
 \\?\D:\...\file.txt
 
 Based on these examples, the function implements the calculation of the assumption that the string passed to the function is the path to a file or folder in Windows.
+
+Paths with environment variables are not supported and will not be considered a path:
+%USERPROFILE%\Desktop
+You need to replace the environment variables with their values in the passed strings before passing them to this function.
 #>
 function DoesItLooksLikeFSPath {
     [OutputType([bool])]
@@ -630,7 +633,7 @@ function DoesItLooksLikeFSPath {
         return $false
     }
     
-    if ($text.Contains(":\") -or $text.Contains("\\") -or ($text -match '%[^%]+%') -or $text.StartsWith("..\") -or $text.StartsWith(".\")) {
+    if ($text.Contains(":\") -or $text.Contains("\\") -or $text.StartsWith("..\") -or $text.StartsWith(".\")) {
         return $true
     }
 
