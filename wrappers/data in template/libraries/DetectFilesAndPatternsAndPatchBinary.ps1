@@ -128,6 +128,7 @@ function ExtractPathsAndHexPatterns {
             # and continue lines loop
 
             [string]$cleanedLine = $line
+            $cleanedLine = CleanHexString $cleanedLine
 
             if ($isWildcard1QS) {
                 [string]$cleanedLine = $cleanedLine.Replace('?', '??')
@@ -480,6 +481,8 @@ function DetectFilesAndPatternsAndPatchBinary {
     if ($flags.Contains($CHECK_OCCURRENCES_ONLY_flag_text)) {
         $checkOccurrencesOnly = $true
     }
+    
+    . $patcherFilePath
 
     ExtractPathsAndHexPatterns -content $content -isWildcard1QS $isWildcard1QS
 
@@ -496,8 +499,6 @@ function DetectFilesAndPatternsAndPatchBinary {
             exit 1
         }
     }
-    
-    . $patcherFilePath
 
     if ($flags.Contains($CHECK_ALREADY_PATCHED_ONLY_flag_text)) {
         $checkOccurrencesOnly = $true
