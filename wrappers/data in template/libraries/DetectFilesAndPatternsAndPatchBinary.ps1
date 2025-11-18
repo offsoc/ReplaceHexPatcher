@@ -491,7 +491,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         return
     }
 
-    if ($flags.Contains($EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST_flag_text) -or $flags.Contains($PATCH_ONLY_ALL_PATTERNS_EXIST_flag_text)) {
+    if ($flags.Contains($EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST_flag_text) -or $flags.Contains($PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_flag_text)) {
         if ($paths_exist_mask.ToArray() -contains $false) {
             Write-ProblemMsg "Not all files from section patch_bin exists!"
             Write-ProblemMsg "With current template need that all target files exist"
@@ -514,7 +514,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         }
     }
 
-    if ($flags.Contains($PATCH_ONLY_ALL_PATTERNS_EXIST_flag_text)) {
+    if ($flags.Contains($PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_flag_text)) {
         # only search all patterns for all files
         for ($i = 0; $i -lt $paths.Count; $i++) {
             [System.Collections.Generic.List[string[]]]$patternsPairs = New-Object System.Collections.Generic.List[string[]]
