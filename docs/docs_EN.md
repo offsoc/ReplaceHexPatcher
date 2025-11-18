@@ -308,10 +308,15 @@ Each flag must be written on a new line. You can duplicate the flags, write them
     - first check that all hex patterns are in the specified files and only then replace them
     - If at least 1 hex pattern is not found, none of the files will be modified.
     - at the same time, the search for hex patterns is actually performed 2 times, and this can be critical if the files are heavy and on slow HDDs.
+15. `PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_1_TIME`
+    - first check that all hex patterns in the specified files occur only 1 time and only then replace them
+    - if at least 1 hex pattern is not found or found more than 1 time, no file will be modified
+    - at the same time, the search for hex patterns is actually performed 2 times, and this can be critical if the files are heavy and on slow HDDs.
+16. `EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST`
     - when processing the `patch_bin` section, all lines in this section will be checked first, and for each line that looks like the file path, the file's existence on disk will be checked.
     - if at least 1 file does not exist - the template processing will be completed with an error
     - if all files exist on the disk - the standard processing of this and all subsequent sections will continue
-16. `EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST`
+17. `EXIT_IF_ANY_PATCH_TEXT_FILE_NOT_EXIST`
     - when processing the `patch_text` section, all lines in this section will be checked first, and for each line that looks like the file path, the file's existence on disk will be checked.
     - if at least 1 file does not exist - the template processing will be completed with an error
     - if all files exist on the disk - the standard processing of this and all subsequent sections will continue
@@ -366,7 +371,7 @@ All this data (file paths and patterns) can be stored in template variables and 
 
 The file paths may contain Windows environment variables, such as `%temp%` or `%programfiles%` or `%appdata%`, etc. These variables will be processed correctly.
 
-If any file from the section is not on the disk, then the processing of this file and the patterns for it is skipped without any errors and the section is analyzed further. But if the template has the `EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST` or `PATCH_ONLY_ALL_PATTERNS_EXIST` flag, then if at least 1 file is not on disk, then processing of the entire template will end.
+If any file from the section is not on the disk, then the processing of this file and the patterns for it is skipped without any errors and the section is analyzed further. But if the template has the `EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST` or `PATCH_ONLY_ALL_BIN_PATTERNS_EXIST` or `PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_1_TIME` flag, then if at least 1 file is not on disk, then processing of the entire template will end.
 
 6. `patch_text`
 

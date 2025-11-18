@@ -491,7 +491,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         return
     }
 
-    if ($flags.Contains($EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST_flag_text) -or $flags.Contains($PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_flag_text)) {
+    if ($flags.Contains($EXIT_IF_ANY_PATCH_BIN_FILE_NOT_EXIST_flag_text) -or $flags.Contains($PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_flag_text) -or $flags.Contains($PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_1_TIME_flag_text)) {
         if ($paths_exist_mask.ToArray() -contains $false) {
             Write-ProblemMsg "Not all files from section patch_bin exists!"
             Write-ProblemMsg "With current template need that all target files exist"
@@ -514,7 +514,7 @@ function DetectFilesAndPatternsAndPatchBinary {
         }
     }
 
-    if ($flags.Contains($PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_flag_text)) {
+    if ($flags.Contains($PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_flag_text) -or $flags.Contains($PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_1_TIME_flag_text)) {
         # only search all patterns for all files
         for ($i = 0; $i -lt $paths.Count; $i++) {
             [System.Collections.Generic.List[string[]]]$patternsPairs = New-Object System.Collections.Generic.List[string[]]
@@ -529,9 +529,19 @@ function DetectFilesAndPatternsAndPatchBinary {
         
         [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $($foundPositions_allPaths.ToArray())
         [bool]$isAllPatternsFound = Test-AllNonZero_allPaths $numbersFoundOccurrences
+        [bool]$isAllPatternsFound1Time = Test-AllOccurrencesFound1Time $numbersFoundOccurrences
 
         # if all patterns found/exist - apply all these patch-patterns
         if ($isAllPatternsFound) {
+            if ($flags.Contains($PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_1_TIME_flag_text) -and (-not $isAllPatternsFound1Time)) {
+            # if NOT all patterns found/exist 1 time - show info about it and stop execute script
+                Write-ProblemMsg "Not all patterns was found or not each pattern exist 1 time in file"
+                Write-ProblemMsg "but for current template need all patterns exist for start patch"
+                Show-HexPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundPositions $foundPositions_allPaths.ToArray() -isSearchOnly $true
+                ClearStorageArrays
+                exit 1
+            }
+
             for ($i = 0; $i -lt $paths.Count; $i++) {
                 [System.Collections.Generic.List[string[]]]$patternsPairs = New-Object System.Collections.Generic.List[string[]]
 
@@ -622,6 +632,27 @@ function Test-AllNonZero_allPaths {
     for ($i = 0; $i -lt $arrayFoundOccurrences.Count; $i++) {
         for ($x = 0; $x -lt $arrayFoundOccurrences[$i].Count; $x++) {
             if ($arrayFoundOccurrences[$i][$x] -eq 0) { return $false }
+        }
+    }
+
+    return $true
+}
+
+
+<#
+.SYNOPSIS
+Function check if all array items is 1
+#>
+function Test-AllOccurrencesFound1Time {
+    [OutputType([bool])]
+    param (
+        [Parameter(Mandatory)]
+        [int[][]]$arrayFoundOccurrences
+    )
+
+    for ($i = 0; $i -lt $arrayFoundOccurrences.Count; $i++) {
+        for ($x = 0; $x -lt $arrayFoundOccurrences[$i].Count; $x++) {
+            if ($arrayFoundOccurrences[$i][$x] -ne 1) { return $false }
         }
     }
 
