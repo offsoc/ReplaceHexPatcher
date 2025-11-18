@@ -2,6 +2,27 @@
 
 Language: [Русский](changelog_RU.md) | English
 
+### v2.3
+
+Added:
+- template flag `PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_1_TIME`
+- support for Windows environment variables in file paths in the template sections `patch_bin` and `patch_text`
+- display of the total number of patterns found
+
+Fixed:
+- the problem with the patcher is when all the files specified in the template sections `patch_bin` and `patch_text` are missing
+- the problem of incorrect deletion of comments from sections of the template during their processing
+- the problem was when offsets were displayed in decimal format and they were displayed in hexadecimal format, in situations where not all hex patterns were found.
+- the problem where the hex patterns from the template were not cleaned of unnecessary characters
+- the problem was when there was another template variable in the value of the template variable and it was not replaced with its own value when used.
+- the problem was when hex patterns were applied to multiple files with the `PATCH_ONLY_ALL_PATTERNS_EXIST` flag
+- improved hiding of the output of logging messages in the absence of the `VERBOSE` template flag
+
+Improved:
+- renamed the template flag `PATCH_ONLY_ALL_PATTERNS_EXIST` to `PATCH_ONLY_ALL_BIN_PATTERNS_EXIST`
+- output of information about not found patterns
+- hidden errors when trying to delete non-existent temporary files
+
 ### v2.2.2
 
 Fixed:
