@@ -87,10 +87,7 @@ function Find-TextsInFile {
             else {
                 Get-Content -Path $FilePath | ForEach-Object {
                     $lineMatches = $regex.Matches($_)
-                    
-                    if ($lineMatches.Count -gt 0) {
-                        $matchCount++
-                    }
+                    $matchCount += $lineMatches.Count
                 }
 
                 $matchCounts.Add($matchCount)
@@ -103,11 +100,13 @@ function Find-TextsInFile {
         if ($CaseSensitive) {
             for ($i = 0; $i -lt $SearchTexts.Count; $i++) {
                 Get-Content -Path $FilePath -Encoding UTF8 | ForEach-Object {
-                    if ($_.Contains($SearchTexts[$i])) {
+                    $line = $_
+                    $index = 0
+                    while (($index = $line.IndexOf($SearchTexts[$i], $index)) -ne -1) {
                         $matchCount++
+                        $index += $SearchTexts[$i].Length
                     }
                 }
-
                 $matchCounts.Add($matchCount)
                 $matchCount = 0
             }
@@ -115,12 +114,14 @@ function Find-TextsInFile {
         else {
             for ($i = 0; $i -lt $SearchTexts.Count; $i++) {
                 $escapedText = [Regex]::Escape($SearchTexts[$i])
-
                 $pattern = if ($CaseSensitive) { $escapedText } else { "(?i)$escapedText" }
-                
+
                 $matchesPattern = Select-String -Path $FilePath -Pattern $pattern -AllMatches
-                
-                $matchCounts.Add($matchesPattern.Count)
+                $totalMatches = 0
+                foreach ($match in $matchesPattern.Matches) {
+                    $totalMatches += $match.Count
+                }
+                $matchCounts.Add($totalMatches)
             }
         }
     }
