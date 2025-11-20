@@ -665,7 +665,7 @@ function Show-TextPatchInfo {
     [bool]$isAllPatternsNotFound = Test-AllZero_allPaths $foundMatches
     [bool]$isAllPatternsFound = Test-AllNonZero_allPaths $foundMatches
         
-    [int]$occurrencesSum = Get-OccurrencesSum $numbersFoundOccurrences
+    [int]$occurrencesSum = Get-OccurrencesSum $foundMatches
     
     if ($isAllPathsNotExist) {
         Write-ProblemMsg "No files were found!"
