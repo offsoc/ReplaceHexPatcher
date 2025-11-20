@@ -536,7 +536,7 @@ function DetectFilesAndPatternsAndPatchBinary {
             if ($flags.Contains($PATCH_ONLY_ALL_BIN_PATTERNS_EXIST_1_TIME_flag_text) -and (-not $isAllPatternsFound1Time)) {
             # if NOT all patterns found/exist 1 time - show info about it and stop execute script
                 Write-ProblemMsg "Not all patterns was found or not each pattern exist 1 time in file"
-                Write-ProblemMsg "but for current template need all patterns exist for start patch"
+                Write-ProblemMsg "but for the current template to run the patch, all patterns must exist and each pattern must be present in the file exactly 1 time"
                 Show-HexPatchInfo -searchPatternsLocal $searchPatterns.ToArray() -foundPositions $foundPositions_allPaths.ToArray() -isSearchOnly $true
                 ClearStorageArrays
                 exit 1
