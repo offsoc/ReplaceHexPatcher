@@ -553,6 +553,11 @@ function DetectFilesAndPatternsAndPatchText {
         }
     }
 
+    if ($flags.Contains($CHECK_ALREADY_PATCHED_ONLY_flag_text)) {
+        $checkOccurrencesOnly = $true
+        $searchPatterns = $replacePatterns
+    }
+
     for ($i = 0; $i -lt $paths.Count; $i++) {
         # if the file is not exist on the disk, then we do not apply patterns to it
         if (-not $paths_exist_mask[$i]) {
