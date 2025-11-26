@@ -57,7 +57,7 @@ function CombineLinesForHosts {
             if ($tempStatusCode -eq 200) {
                 $urlContent = (Invoke-WebRequest -Uri $urlText -UseBasicParsing).Content
                 
-                $contentForAddToHosts += $urlContent
+                CombineLinesForHosts $(RemoveEmptyLines $urlContent)
             }
             else {
                 CombineLinesForHosts ($content -replace "^SEE_HERE_FIRST.*[\r\n]+", "")
