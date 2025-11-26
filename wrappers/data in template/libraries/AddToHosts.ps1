@@ -139,7 +139,7 @@ function AddToHosts {
 
     if (Test-Path $hostsFilePath 2>$null) {
         # If required lines exist in hosts file - no need touch hosts file
-        if ($hostsFileContent.TrimEnd().EndsWith($contentForAddToHosts)) {
+        if ($hostsFileContent.TrimEnd().Contains($contentForAddToHosts)) {
             return
         }
 
