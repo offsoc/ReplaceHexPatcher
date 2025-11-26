@@ -114,20 +114,7 @@ function CreateFilesFromData {
         }
     }
     catch {
-        # create same files with same content but with admin privileges
-        if ($isBase64) {
-            # we can't execute WriteAllBytes in Start-Process because we can't set bytes to command string
-            # so WriteAllBytes to temp file then move temp file with admin privileges
-            $tempFile = [System.IO.Path]::GetTempFileName()
-            [System.IO.File]::WriteAllBytes($tempFile, $targetContent)
-            $processId = Start-Process $PSHost -Verb RunAs -PassThru -Wait -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command `"Copy-Item -Path '$tempFile' -Destination '$targetPath' -Force;Remove-Item '$tempFile'`""
-        }
-        else {
-            $processId = Start-Process $PSHost -Verb RunAs -PassThru -Wait -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command `"New-Item -Path `"$targetPath`" -ItemType File -Force;Set-Content -Value `"$targetContent`" -Path `"$targetPath`" -NoNewline`""
-        }
-    
-        if ($processId.ExitCode -gt 0) {
-            throw "Something happened wrong when create files with data with administrator privileges"
-        }
+        Write-ProblemMsg "Need admins rights for create/modify file: $targetPath"
+        continue
     }
 }
