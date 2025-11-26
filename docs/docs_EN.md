@@ -429,7 +429,7 @@ Here you can specify the data for creating a file based on the decrypted base64 
 
 12. `firewall_remove_block`
 
-Absolute file paths are specified here (obviously these should be `.exe` files) which must be removed from the Windows Firewall. It is assumed that this will be done to unlock Internet access for programs for which Internet access was previously blocked.All firewall rules for the specified paths will be deleted, although it may be worth adding some parameters so that only rules blocking Internet access are deleted.
+The file paths are specified here (obviously they should be `.exe` files), the rules for which must be removed from the Windows Firewall. It is assumed that this will be done to unlock Internet access for programs for which Internet access was previously blocked. All firewall rules for the specified paths will be deleted.
 
 If you need to apply the removal of rules to all `.exe` files in a folder and all subfolders, you can specify the path to this folder and at the end the path should end with the text `\*`. If you need to do the same thing, but without subfolders, but only for 1 specified folder, then the path should end with `\*.exe`.
 

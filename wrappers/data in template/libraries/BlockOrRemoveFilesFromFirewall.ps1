@@ -25,10 +25,6 @@ function GetPathsForExe {
         # Trim line is important because end line include \n
         $line = $line.Trim()
 
-        if ((-not (Test-Path $line)) -or (Test-Path $line -PathType Container)) {
-            continue
-        }
-
         if ($line.EndsWith("\$exeFilesPattern")) {
             [string]$folderPath = $line.Replace("\$exeFilesPattern", '')
             [string[]]$filesFromFolder = Get-ChildItem $folderPath -Filter $exeFilesPattern | ForEach-Object { $_.FullName }
@@ -110,7 +106,7 @@ function RemoveFilesFromFirewall {
     }
     else {
         try {
-            [Microsoft.Management.Infrastructure.CimInstance[]]$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { $_.Program -in $exePaths } | Get-NetFirewallRule
+            [Microsoft.Management.Infrastructure.CimInstance[]]$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { [Environment]::ExpandEnvironmentVariables($_.Program) -in $exePaths } | Get-NetFirewallRule
             if ($existRulesForExes.Length -gt 0) {
                 $existRulesForExes | Remove-NetFirewallRule
             }
