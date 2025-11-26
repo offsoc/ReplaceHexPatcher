@@ -178,10 +178,12 @@ function DeleteFilesOrFolders {
             }
             else {
                 if ($needRunAS -and (-not $isReadOnly)) {
-                    [void]$itemsDeleteWithAdminsPrivileges.Add($line)
+                    Write-ProblemMsg "Need admins rights for delete: $line"
+                    continue
                 }
                 if ($needRunAS -and $isReadOnly) {
-                    [void]$itemsDeleteWithAdminsPrivilegesAndDisableReadOnly.Add($line)
+                    Write-ProblemMsg "Need admins rights for delete: $line"
+                    continue
                 }
                 if (-not $isReadOnly) {
                     if ($needMoveToBin) {
