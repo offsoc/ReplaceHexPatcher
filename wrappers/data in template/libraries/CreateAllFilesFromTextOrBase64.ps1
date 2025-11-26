@@ -60,7 +60,7 @@ function CreateFilesFromData {
     }
     
     [string[]]$cleanedContentLines = $cleanedContent -split "\n"
-    $targetPath = $cleanedContentLines[0].Trim()
+    $targetPath = [Environment]::ExpandEnvironmentVariables($cleanedContentLines[0].Trim())
 
     # if target file exist - delete it
     if (Test-Path $targetPath) {
