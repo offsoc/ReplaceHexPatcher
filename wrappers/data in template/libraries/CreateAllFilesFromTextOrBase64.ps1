@@ -110,7 +110,7 @@ function CreateFilesFromData {
             [System.IO.File]::WriteAllBytes($targetPath, $targetContent)
         }
         else {
-            Set-Content -Value $targetContent -Path $targetPath -NoNewline -ErrorAction Stop
+            Set-Content -Value $targetContent -Path $targetPath -NoNewline -ErrorAction Stop -Encoding UTF8
         }
     }
     catch {
