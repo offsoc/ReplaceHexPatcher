@@ -413,7 +413,7 @@ If the first line in the section to add contains the text `SEE_HERE_FIRST`, and 
 
 Here you can specify the absolute paths to the files and folders that you want to delete.
 
-The function for working with this section works correctly - if the file has a "Read-only" attribute, then it will be removed before deletion so that there are no errors. If you need administrator rights to delete some files or folders, they will all be formed into a separate internal list and a separate Powershell process will be launched with a request for administrator rights that will delete all these files and folders.
+The function for working with this section acts correctly - if the file has a "Read-only" attribute, it will be removed before deleting so that there are no errors. If you need administrator rights to delete some files or folders, but the current process does not have these rights, then an error message about deleting the specified files and a message stating that administrator rights are needed to delete them will be displayed in the block with the logging information in this section.
 
 There is a "flag" (indicator/switch) for this section - the phrase `MOVE TO BIN'. If this phrase is at the very beginning of the section, all files and folders will be moved to the Trash, and not deleted from the system.
 
