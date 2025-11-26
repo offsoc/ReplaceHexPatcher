@@ -3,8 +3,9 @@
 [string]$notModifyFlag = 'NOT MODIFY IT'
 
 # IPs
-[string]$localhostIP = '127.0.0.1'
-[string]$zeroIP = '0.0.0.0'
+[string]$localhostIPv4 = '127.0.0.1'
+[string]$localhostIPv6 = '::1'
+[string]$zeroIPv4 = '0.0.0.0'
 
 
 
@@ -73,11 +74,14 @@ function CombineLinesForHosts {
             if ($line.StartsWith($urlFlag)) {
                 continue
             }
-            elseif ($line.StartsWith('#') -OR $line.StartsWith($localhostIP)) {
+            elseif ($line.StartsWith('#') -or $line.StartsWith($zeroIPv4) -or $line.StartsWith($localhostIPv4) -or $line.StartsWith($localhostIPv6)) {
                 $contentForAddToHosts += $line + "`r`n"
             }
             else {
-                $contentForAddToHosts += $zeroIP + ' ' + $line + "`r`n"
+                # block URL for IPv4
+                $contentForAddToHosts += $zeroIPv4 + ' ' + $line + "`r`n"
+                # block URL for IPv6
+                $contentForAddToHosts += $localhostIPv6 + ' ' + $line + "`r`n"
             }
         }
     }

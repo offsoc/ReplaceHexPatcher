@@ -393,21 +393,21 @@ If any file from the section is not on the disk, then the processing of this fil
 
 7. `hosts_remove`
 
-This specifies the strings or URLs that should be deleted from the `hosts` file. If the section line starts with the comment character `#` or with `127.0.0.1` or with `0.0.0.0`, then the exact same line will be searched, without taking into account the length of the spaces. Otherwise, it is assumed that the URL is specified (for example adobe.io), and lines containing such an address (such a word, that is, text and text borders will be spaces or line breaks) will be deleted.
+This specifies the strings or URLs that should be deleted from the `hosts` file. If the section line starts with the comment character `#` or with `127.0.0.1` or with `0.0.0.0` or with `::1`, then the exact same line will be searched, without taking into account the length of the spaces. Otherwise, it is assumed that the URL is specified (for example adobe.io), and lines containing such an address (such a word, that is, text and text borders will be spaces or line breaks) will be deleted.
 
 At the same time, you can specify the asterisk symbol `*` and this will mean the regular expression `.*` (up to the word boundaries). That is, you can write a line with `*adobe*` in the section and this will lead to the deletion of all lines containing the word `adobe` with any characters, but if there is a line `adobe` without stars in the section, then lines that contain exactly this word without any additional characters will be deleted. Alternatively, you can also specify `*adobe.io `and this will remove all rows with sub-domains `adobe.io `
 
 8. `hosts_add`
 
-Here you can specify the lines that need to be added to the `hosts` file. Usually lines are added to block access to some URLs, so in this section you can simply write URLs (of course, each on a new line) and the string `0.0.0.0 <URL>` will be added to `hosts` and this will block access to the URL.
+This specifies the lines that need to be added to the `hosts` file. Usually, lines are added to block access to some URLs, so in this section you can simply write the URLs (of course, each on a new line) and the string `0.0.0.0 <URL>` will be added to `hosts` (to block access to URLs over IPv4) and another line `::1 <URL>` (to block access to the URL over IPv6).
 
-If the line in the section starts with `127.0.0.1` or with the comment character `#`, then it will be added to hosts without changes. Otherwise, the string is considered an immediate URL (for example adobe.com) and `0.0.0.0` will be added to the beginning of it, which will block the URL.
+If a line in the section starts with `#` or `127.0.0.1` or `0.0.0.0` or `::1`, it will be added to hosts unchanged. Otherwise, the string is considered an immediate URL (for example adobe.com ) and `0.0.0.0` will be added to the beginning, which will block the IPv4 URL, followed by the same line starting with `::1`, which will block the IPv6 URL.
 
-The function for working with this section works correctly - if the `hosts` file does not exist, then it will be created. If there is a "Read-only" attribute, it will be removed before changing the file, and then the attribute will be set again. If the script does not have Administrator rights to change the file, a separate command will be formed with text to add to the `hosts` and it will run in a separate Powershell process requesting admin rights.
+The function for working with this section works correctly - if the `hosts` file does not exist, it will be created. If there is a "Read-only" attribute, it will be unchecked before changing the file, and then the attribute will be set again. If the script does not have Administrator rights to change the file, a separate command with text will be generated to add to the `hosts` and it will run in a separate Powershell process requesting admin rights.
 
-There is a "flag" (indicator/switch) for this section - the phrase `NOT MODIFY IT`. If this phrase is at the very beginning of the section, all lines will be added to the `hosts` without changes. Only `Trim()` will be applied to strings.
+There is a "flag" (indicator/switch) for this section - the phrase "NOT MODIFY IT". If this phrase is at the very beginning of the section, all lines will be added to the `hosts` without changes. Only `Trim()` will be applied to strings.
 
-If the first line in the add section contains the text `SEE_HERE_FIRST`, and then a link to the list and the link is indeed there and it is available for download, then we add the content downloaded from the link to hosts, and not the rest of the lines in the add section. For example first line can be like `SEE_HERE_FIRST https://a.dove.isdumb.one/list.txt`
+If the first line in the section to add contains the text `SEE_HERE_FIRST`, and then a link to the list and the link is indeed there and it is available for download, then the contents of the file will be downloaded from the specified link and processed according to the same rules, while the contents of the section itself will not be used. If the file cannot be downloaded, then the contents of the section will be processed. For example, the first line can be like this `SEE_HERE_FIRST https://a.dove.isdumb.one/list.txt`.
 
 9. `files_or_folders_delete`
 

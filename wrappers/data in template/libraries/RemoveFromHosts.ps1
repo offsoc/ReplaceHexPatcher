@@ -1,6 +1,7 @@
 
 # IPs
-[string]$localhostIP = '127.0.0.1'
+[string]$localhostIPv4 = '127.0.0.1'
+[string]$localhostIPv6 = '::1'
 [string]$zeroIP = '0.0.0.0'
 
 
@@ -59,8 +60,14 @@ function RemoveFromHosts {
             [string]$tempHostLine = $_.Trim()
             [string]$tempMatchLine = $line.Clone()
 
-            if (($line.StartsWith('#') -or ($line.StartsWith($localhostIP)) -or ($line.StartsWith($zeroIP)))) {
+            if (($line.StartsWith('#') -or ($line.StartsWith($localhostIPv4)) -or ($line.StartsWith($localhostIPv6)) -or ($line.StartsWith($zeroIP)))) {
                 $tempMatchLine = $tempMatchLine -replace "\s+", '\s+'
+
+                if ($line.StartsWith('#')) {
+                    # When searching for a comment in hosts, we specify the search expression so that the search for the exact specified comment string is performed.
+                    $tempMatchLine = $tempMatchLine -replace "$", '$'
+                }
+                
                 $tempHostLine -notmatch $tempMatchLine 
             }
             else {
