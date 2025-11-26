@@ -36,6 +36,7 @@ function PowershellCodeExecute {
             else {
                 Invoke-Expression $cleanedContent
             }
+            Remove-Item -Path $tempFile -Force -ErrorAction Stop 2>$null
         }
         else {
             [string]$nullFile = [System.IO.Path]::GetTempFileName()
@@ -52,8 +53,8 @@ function PowershellCodeExecute {
             
             $processId = Start-Process @processArgs
         
-            Remove-Item -Path $nullFile -Force -ErrorAction SilentlyContinue
-            Remove-Item -Path $tempFile -Force -ErrorAction Stop
+            Remove-Item -Path $nullFile -Force -ErrorAction SilentlyContinue 2>$null
+            Remove-Item -Path $tempFile -Force -ErrorAction Stop 2>$null
 
             if ($processId.ExitCode -gt 0) {
                 throw "Something happened wrong when execute Powershell code from template. Exit code is $($processId.ExitCode)"
