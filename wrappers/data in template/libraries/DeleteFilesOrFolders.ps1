@@ -209,7 +209,12 @@ function DeleteFilesOrFolders {
             #   with such files will require administrator rights.
             # So the surest way to determine if you need administrator rights to delete a folder is to try deleting the folder
             try {
-                Remove-Item -Path $line -Recurse -Force -ErrorAction Stop
+                if ($needMoveToBin) {
+                    Move-ToRecycleBin -targetPath $line
+                }
+                else {
+                    Remove-Item -Path $line -Recurse -Force -ErrorAction Stop
+                }
             }
             catch {
                 [void]$itemsDeleteWithAdminsPrivileges.Add($line)
