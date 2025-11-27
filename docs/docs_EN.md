@@ -6,7 +6,6 @@ Language: [Русский](docs_RU.md) | English
   - [Preface](#preface)
   - [The basis (Core)](#the-basis-core)
   - [Wrappers](#wrappers)
-    - [The "data inside" wrapper script](#the-data-inside-wrapper-script)
     - [The "data in template" wrapper script](#the-data-in-template-wrapper-script)
       - [Template template.txt](#template-templatetxt)
         - [Template structure:](#template-structure)
@@ -102,44 +101,8 @@ The main script only searches and replaces bytes in 1 file. What if you need to 
 
 All these additional actions (side effects) can be done using additional code that I wrote in separate scripts. These scripts form commands to run the main patcher script with dynamically generated arguments, as well as perform additional actions.
 
-There are 2 types of wrapper scripts:
-1. Data inside the script (data inside)
-2. Data from the template (data in template)
-
-
-### The "data inside" wrapper script
-
-This script is written in CMD with a small addition of Powershell code where you can't do without it. In this type of script, everything you need - paths or links to the "core", paths to target files for modifications, all patterns for search and replace, text for hosts and for other files - all this is inside the `Start.cmd` script
-
-Before you run the script, you need to configure it. You need to enter the data that it will work with - add patterns, file paths for modifications, etc. - all this manually by changing existing variables and adding new variables.
-I tried to write the script so that adding and changing these variables was a simple action and was done in a minimum number of places in the code (only in the "MAIN" code block).
-
-For convenience, a checklist of what needs to be checked before considering it ready has been added to the script.
-
-1. Target files for the patch
-    - If you need to patch several files (target files), then you need to enter the number of files for the patch in the `count_target_files` variable
-    - Put the path to each file in the variables `target_path_1` and the last digit of the variable must be a unique sequential index
-2. Patches - patterns for searching +byte replacement for target files
-    - The number of patterns for searching+byte replacement must be entered in the `count_patches_f1` variable. The last digit in the variable indicates the index of the target file for which patterns must be applied. If there are several target files, then you need to create several such variables by changing the indexes in their name to the indexes corresponding to the target files
-    - Create variables `original_f1_1` and `patched_f1_1` in which hex patterns must be stored to search and replace bytes, respectively. For 1 hex pattern, there is 1 variable and if there are several patterns, increase the last index number in the new variables by 1. The text `f1` means the index of the file for which the pattern is intended
-    - TODO: perhaps it is better to redo the script so that the search+replacement patterns are not written to different variables, but to 1 variable, for example `"pattern_f1_1=AABBCC/112233"`
-3. Creating text files
-    - If you do not need to create text files, comment out the line `call :create_all_text_files`
-    - If you need to create only 1 text file, then
-      - in the variable `file_text_path_1` - put the full path to the text file
-      - enter the line ending type (CRLF or LF) in the variable `endline_text_file_1` - enter the "creation mode" of the file - FORCE or NOTOVERWRITE in the variable `create_mode_text_file_1`. In FORCE mode, the file will be overwritten if such a file exists, and in NOTOVERWRITE mode, the file will not be affected/overwritten if it already exists
-      - inside the function `:create_text_file_1`, enter the text that needs to be placed in the file
-    - If you need to create several text files, then create several of the above variables for each file and increase the index number at the end of the variable
-      - And also for each file, create a function `:create_text_file_1` with individual text for the file content (well, increase the index number in the function name too)
-4. Adding lines to hosts
-    - If you do not need to add anything to the hosts file - comment out the line `call :block_hosts "NOTOVERWRITE" "WRITE HERE NAME OF GROUP FILES ADDED TO HOSTS"`
-    - If you need to add some lines to the hosts file, then add the URLs themselves to block inside the function `:block_hosts`, when executing the script function will generate the strings itself and add them to the hosts, if there were no such strings before
-      - Also, add the word "FORCE" or "NOTOVERWRITE" as the first argument to the call string of the function `call :block_hosts "NOTOVERWRITE" "WRITE HERE NAME OF GROUP FILES ADDED TO HOSTS"`. "FORCE" means stupidly adding lines to the end of hosts, and "NOTOVERWRITE" means not adding them if exactly the same set of lines with the same group name is at the end of the file
-      - Well, instead of "WRITE HERE NAME OF GROUP FILES ADDED TO HOSTS", write the name/title for a group of lines, for example "Adobe servers"
-5. Blocking target files using Windows Firewall
-    - If the target files do not need to be blocked using a firewall, then comment out the line `call :block_targets_with_firewall`, otherwise leave this line unchanged
-
-It might have been more logical to put some of the functionality in separate script files, but I wanted to make the most "monolithic" 2-click solution. 
+There are 1 type of wrapper scripts:
+1. Data from the template (data in template)
 
 
 ### The "data in template" wrapper script
@@ -481,11 +444,7 @@ About this in the [additional file](../tests/testing_EN.md )
 
 The folder [utilities](../utilities/) contains script files created based on functions from the main utility scripts.
 
-The `.cmd` files in this folder contain functions (or to put it another way, they are made based on functions) from the file [Start.cmd](../wrappers/data%20inside/Start.cmd). Cmd scripts such as:
-- [Add URLs To Hosts](../utilities/AddURLsToHosts.cmd)
-- [Block With Firewall](../utilities/BlockWithFirewall.cmd)
-
-I think the file names clearly say what these scripts do. The text/strings/data that the scripts work with are inside the scripts themselves, so to add/change URLs to add to hosts, you need to change 1 variable in the script [AddURLsToHosts.cmd](../utilities/AddURLsToHosts.cmd) by adding a list of addresses to it.
+The [Block With Firewall](../utilities/BlockWithFirewall.cmd) files in this folder contain the functions of a pre-existing wrapper script of the "data inside" type in the form of a `Start.cmd` file. I think the file name clearly says what this script does. The text/strings/data it works with are inside it.
 
 To change or add paths to files that need to be blocked using Windows Firewall, you need to add/change the variables `target_path_1` in the script [BlockWithFirewall](../utilities/BlockWithFirewall.cmd) by changing the counter-digit at the end of the variable, and then in the variable `count_target_files` change the digit that indicates the total number of these variables.
 Each such variable can store either the absolute path to the exe file, or the path to the folder in which all exe files need to be blocked. The path to the folder must end with `\*.exe`, for example `D:\TEMP\test\sub folder\*.exe` and then all exe files will be blocked only in this folder. If you need to recursively lock exe files in all subfolders, then you need to set the value "TRUE" for the variable `USE_SUBFOLDERS` below in the code.

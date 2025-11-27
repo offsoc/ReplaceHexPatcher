@@ -8,7 +8,6 @@ Language: [Русский](README_RU.md) | English
   - [Functions](#functions)
   - [Usage examples](#usage-examples)
     - [The main patcher script](#the-main-patcher-script)
-    - [Wrapper script with all the data inside](#wrapper-script-with-all-the-data-inside)
     - [Wrapper script with data processing from template.txt](#wrapper-script-with-data-processing-from-templatetxt)
   - [What gives nativity](#what-gives-nativity)
   - [Where to start](#where-to-start)
@@ -102,15 +101,9 @@ Here is an example:
 .\ReplaceHexBytesAll.ps1 -filePath "D:\TEMP\file.exe" -patterns "48 83EC2 8BA2F 000000 488A/202 0EB1 1111 11111 111111","C42518488D4D68\90909011111175","45A8488D55A8|75EB88909090","\xAA\x7F\xBB\x08\xE3\x4D|\xBB\x90\xB1\xE8\x99\x4D" -makeBackup -showMoreInfo -showFoundOffsetsInHex
 ```
 
-### Wrapper script with all the data inside
-
-The `wrappers` folder contains the `data inside` folder and the `Start.cmd` file in it
-Fill in all the data inside the `Start.cmd` file and you can double-click it.
-Inside the file there is a memo of what needs to be done/filled in inside the file, also it is written in more detail in [documentation](./docs/docs_EN.md)
-
 ### Wrapper script with data processing from template.txt
 
-The `wrappers` folder contains the `data inside` folder and the files `Start.cmd`, `Parser.ps1`, `template.txt`
+The `wrappers` folder contains the `data in template` folder and the files `Start.cmd`, `Parser.ps1`, `template.txt`
 
 An approximate algorithm:
 1. Fill in the form `template.txt` or any other txt file, depending on what you need to do.
