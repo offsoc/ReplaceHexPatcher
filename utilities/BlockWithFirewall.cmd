@@ -135,7 +135,7 @@ rem =====
         rem It mean given path to file - so block in firewall only given file path
         call :set_filename %1
         rem remove existing firewall rules for file
-        powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { $_.Program -in '!file!' } | Get-NetFirewallRule; if ($existRulesForExes.Length -gt 0) { $existRulesForExes | Remove-NetFirewallRule }"
+        powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { [Environment]::ExpandEnvironmentVariables($_.Program) -in [Environment]::ExpandEnvironmentVariables('!file!') } | Get-NetFirewallRule; if ($existRulesForExes.Length -gt 0) { $existRulesForExes | Remove-NetFirewallRule }"
         echo A blocking rule is being added for !file!
         netsh advfirewall firewall add rule name="Blocked !file!" dir=in action=block program="!file!" enable=yes profile=any >nul 2>&1
         netsh advfirewall firewall add rule name="Blocked !file!" dir=out action=block program="!file!" enable=yes profile=any >nul 2>&1
@@ -146,7 +146,7 @@ rem =====
             rem Block in firewall all files with extension only in given folder
             for %%G in (%1) do (
                 rem remove existing firewall rules for file
-                powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { $_.Program -in '%%G' } | Get-NetFirewallRule; if ($existRulesForExes.Length -gt 0) { $existRulesForExes | Remove-NetFirewallRule }"
+                powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { [Environment]::ExpandEnvironmentVariables($_.Program) -in [Environment]::ExpandEnvironmentVariables('%%G') } | Get-NetFirewallRule; if ($existRulesForExes.Length -gt 0) { $existRulesForExes | Remove-NetFirewallRule }"
                 echo A blocking rule is being added for %%G
                 netsh advfirewall firewall add rule name="Blocked %%G" dir=in action=block program="%%G" enable=yes profile=any >nul 2>&1
                 netsh advfirewall firewall add rule name="Blocked %%G" dir=out action=block program="%%G" enable=yes profile=any >nul 2>&1
@@ -155,7 +155,7 @@ rem =====
             rem Block in firewall all files with extension in given folder and all subfolders recursive
             for /f "delims=" %%G in ('dir /b /s %1') do (
                 rem remove existing firewall rules for file
-                powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { $_.Program -in '%%G' } | Get-NetFirewallRule; if ($existRulesForExes.Length -gt 0) { $existRulesForExes | Remove-NetFirewallRule }"
+                powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { [Environment]::ExpandEnvironmentVariables($_.Program) -in [Environment]::ExpandEnvironmentVariables('%%G') } | Get-NetFirewallRule; if ($existRulesForExes.Length -gt 0) { $existRulesForExes | Remove-NetFirewallRule }"
                 echo A blocking rule is being added for %%G
                 netsh advfirewall firewall add rule name="Blocked %%G" dir=in action=block program="%%G" enable=yes profile=any >nul 2>&1
                 netsh advfirewall firewall add rule name="Blocked %%G" dir=out action=block program="%%G" enable=yes profile=any >nul 2>&1

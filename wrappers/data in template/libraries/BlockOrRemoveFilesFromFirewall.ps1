@@ -106,7 +106,7 @@ function RemoveFilesFromFirewall {
     }
     else {
         try {
-            [Microsoft.Management.Infrastructure.CimInstance[]]$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { [Environment]::ExpandEnvironmentVariables($_.Program) -in $exePaths } | Get-NetFirewallRule
+            [Microsoft.Management.Infrastructure.CimInstance[]]$existRulesForExes = Get-NetFirewallApplicationFilter | Where-Object { [Environment]::ExpandEnvironmentVariables($_.Program) -in [Environment]::ExpandEnvironmentVariables($exePaths) } | Get-NetFirewallRule
             if ($existRulesForExes.Length -gt 0) {
                 $existRulesForExes | Remove-NetFirewallRule
             }
