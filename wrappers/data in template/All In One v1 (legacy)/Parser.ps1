@@ -1096,8 +1096,7 @@ $contentForAddToHosts
         $command = @"
 @'
 $contentForAddToHosts 
-'@
-| Out-File -FilePath $hostsFilePath -Encoding utf8 -Force
+'@ | Out-File -FilePath $hostsFilePath -Encoding utf8 -Force
 Clear-DnsClientCache
 "@
         Start-Process $PSHost -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command `"$command`""
@@ -1190,8 +1189,7 @@ function RemoveFromHosts {
         $command = @"
 @'
 $resultContent 
-'@
-| Out-File -FilePath $hostsFilePath -Encoding utf8 -Force
+'@ | Out-File -FilePath $hostsFilePath -Encoding utf8 -Force
 "@
         if ($needRemoveReadOnlyAttr) {
             # If hosts file have attribute "read only" we need remove this attribute before adding lines

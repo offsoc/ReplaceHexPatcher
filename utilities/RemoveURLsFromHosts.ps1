@@ -142,8 +142,7 @@ function RemoveFromHosts {
         $command = @"
 @'
 $resultContent 
-'@
-| Out-File -FilePath $hostsFilePath -Encoding utf8 -Force
+'@ | Out-File -FilePath $hostsFilePath -Encoding utf8 -Force
 "@
         if ($needRemoveReadOnlyAttr) {
             # If hosts file have attribute "read only" we need remove this attribute before adding lines
