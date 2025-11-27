@@ -4,7 +4,9 @@
 
 $PSHost = If ($PSVersionTable.PSVersion.Major -le 5) {'PowerShell'} Else {'PwSh'}
 
-[string]$localhostIP = '127.0.0.1'
+# IPs
+[string]$localhostIPv4 = '127.0.0.1'
+[string]$localhostIPv6 = '::1'
 [string]$zeroIP = '0.0.0.0'
 
 
@@ -62,7 +64,14 @@ function RemoveFromHosts {
         return
     }
 
+    [int]$lineCountOriginal = (Get-Content $hostsFilePath).Count
+
     [string]$cleanedContent = $content.Clone().Trim()
+    
+    # replace variables with variables values in all current content
+    foreach ($key in $variables.Keys) {
+        $cleanedContent = $cleanedContent.Replace($key, $variables[$key])
+    }
 
     [bool]$needRemoveReadOnlyAttr = $false
 
@@ -93,11 +102,18 @@ function RemoveFromHosts {
             [string]$tempHostLine = $_.Trim()
             [string]$tempMatchLine = $line.Clone()
 
-            if (($line.StartsWith('#') -or ($line.StartsWith($localhostIP)) -or ($line.StartsWith($zeroIP)))) {
+            if (($line.StartsWith('#') -or ($line.StartsWith($localhostIPv4)) -or ($line.StartsWith($localhostIPv6)) -or ($line.StartsWith($zeroIP)))) {
                 $tempMatchLine = $tempMatchLine -replace "\s+", '\s+'
+
+                if ($line.StartsWith('#')) {
+                    # When searching for a comment in hosts, we specify the search expression so that the search for the exact specified comment string is performed.
+                    $tempMatchLine = $tempMatchLine -replace "$", '$'
+                }
+                
                 $tempHostLine -notmatch $tempMatchLine 
-            } else {
-                $tempMatchLine = $tempMatchLine.Replace('*','.*')
+            }
+            else {
+                $tempMatchLine = $tempMatchLine.Replace('*', '.*')
                 $tempHostLine -notmatch "[^\.]\b$tempMatchLine\b"
             }
         }
@@ -118,7 +134,8 @@ function RemoveFromHosts {
         }
 
         Clear-DnsClientCache
-    } else {
+    }
+    else {
         # IMPORTANT !!!
         # Do not formate this command and not re-write it
         # it need for add multiline string to Start-Process command
@@ -132,14 +149,21 @@ $resultContent
             # If hosts file have attribute "read only" we need remove this attribute before adding lines
             # and restore "default state" (add this attribute to hosts file) after lines to hosts was added
             $command = "Set-ItemProperty -Path '$hostsFilePath' -Name Attributes -Value ('$fileAttributes' -bxor [System.IO.FileAttributes]::ReadOnly)" `
-            + "`n" `
-            + $command `
-            + "`n" `
-            + "Set-ItemProperty -Path '$hostsFilePath' -Name Attributes -Value ('$fileAttributes' -bor [System.IO.FileAttributes]::ReadOnly)" `
-            + "Clear-DnsClientCache"
+                + "`n" `
+                + $command `
+                + "`n" `
+                + "Set-ItemProperty -Path '$hostsFilePath' -Name Attributes -Value ('$fileAttributes' -bor [System.IO.FileAttributes]::ReadOnly)" `
+                + "Clear-DnsClientCache"
         }
         Start-Process $PSHost -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command `"$command`""
     }
+
+    Start-Sleep -Seconds 2
+    
+    [int]$lineCountCurrent = (Get-Content $hostsFilePath).Count
+    Write-Host "The hosts file contained lines: ${lineCountOriginal}"
+    Write-Host "Lines deleted: $($lineCountOriginal - $lineCountCurrent)"
+    Write-Host "Now the hosts file contained lines: ${lineCountCurrent}"
 }
 
 
