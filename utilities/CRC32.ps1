@@ -1,8 +1,19 @@
-
 param (
-    [Parameter(Mandatory)]
-    [string]$filePath
+    [Parameter(Mandatory=$false, ValueFromRemainingArguments=$true)]
+    [string[]]$filePaths = @()
 )
+
+# Если файлы не переданы как параметры, проверяем аргументы командной строки
+if ($filePaths.Count -eq 0) {
+    if ($args.Count -gt 0) {
+        $filePaths = $args
+    }
+    else {
+        Write-Host "Usage: .\CRC32.ps1 file1 [file2 file3 ...]" -ForegroundColor Yellow
+        Write-Host "Or: .\CRC32.ps1 -filePaths file1, file2, file3" -ForegroundColor Yellow
+        exit 1
+    }
+}
 
 # code provided https://chat.deepseek.com/
 $crc32Code = @"
@@ -89,7 +100,6 @@ public class Crc32 : HashAlgorithm {
 }
 "@
 
-
 <#
 .SYNOPSIS
     Compute CRC32 for file or text
@@ -99,42 +109,80 @@ public class Crc32 : HashAlgorithm {
     Get-Crc32 -File "C:\path\to\file.txt"
 .EXAMPLE
     "Test string" | Get-Crc32
+.EXAMPLE
+    Get-Crc32 -File @("file1.txt", "file2.txt")
 #>
 function Get-Crc32 {
     param(
         [Parameter(ValueFromPipeline=$true, ParameterSetName="Text")]
         [string]$InputObject,
         
-        [Parameter(Mandatory=$true)]
-        [string]$File
+        [Parameter(Mandatory=$true, ParameterSetName="File")]
+        [string[]]$File
     )
 
-    if ($InputObject) {
-        $bytes = [System.Text.Encoding]::UTF8.GetBytes($InputObject)
-    } elseif (Test-Path "$File") {
-        $bytes = [System.IO.File]::ReadAllBytes($File)
-    } else {
-        Write-Error "File not found: $File"
-        return
+    begin {
+        $results = @()
     }
 
-    # compute crc32
-    $crc32 = New-Object Crc32
-    $hashBytes = $crc32.ComputeHash($bytes)
-    $hash = [BitConverter]::ToString($hashBytes).Replace("-", "").ToLower()
-    
-    # return result
-    [PSCustomObject]@{
-        Algorithm = "CRC32"
-        Hash = $hash
-        Path = if ($PSCmdlet.ParameterSetName -eq "File") { $File } else { $null }
-        Content = if ($PSCmdlet.ParameterSetName -eq "Text") { $InputObject } else { $null }
+    process {
+        if ($PSCmdlet.ParameterSetName -eq "Text" -and $InputObject) {
+            $bytes = [System.Text.Encoding]::UTF8.GetBytes($InputObject)
+            $crc32 = New-Object Crc32
+            $hashBytes = $crc32.ComputeHash($bytes)
+            $hash = [BitConverter]::ToString($hashBytes).Replace("-", "").ToLower()
+            
+            $results += [PSCustomObject]@{
+                Algorithm = "CRC32"
+                Hash = $hash
+                Path = $null
+                Content = $InputObject
+            }
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "File" -and $File) {
+            foreach ($fileItem in $File) {
+                if (Test-Path $fileItem -PathType Leaf) {
+                    try {
+                        $bytes = [System.IO.File]::ReadAllBytes($fileItem)
+                        $crc32 = New-Object Crc32
+                        $hashBytes = $crc32.ComputeHash($bytes)
+                        $hash = [BitConverter]::ToString($hashBytes).Replace("-", "").ToLower()
+                        
+                        $results += [PSCustomObject]@{
+                            Algorithm = "CRC32"
+                            Hash = $hash
+                            Path = (Resolve-Path $fileItem).Path
+                            Content = $null
+                        }
+                    }
+                    catch {
+                        Write-Warning "Error reading file '$fileItem': $($_.Exception.Message)"
+                    }
+                }
+                else {
+                    Write-Warning "File not found or is not a file: $fileItem"
+                }
+            }
+        }
+    }
+
+    end {
+        return $results
     }
 }
 
-# if any method from C# code exist - C# already imported in the script and not need compile and import it again
+# Load C# code if not already loaded
 if (-not ("Crc32" -as [Type])) {
     Add-Type -TypeDefinition $crc32Code -Language CSharp
 }
 
-Get-Crc32 -File $filePath
+# Process all files
+$results = Get-Crc32 -File $filePaths
+
+# Display results
+if ($results) {
+    $results | Format-Table -AutoSize
+}
+else {
+    Write-Host "No files were processed successfully." -ForegroundColor Red
+}
