@@ -97,6 +97,11 @@ But it was not without drawbacks. And here they are:
 - Assigning attributes to a file may not work if it is done on pure Powershell, while on .NET - it works
   - When executing the code `Set-ItemProperty -Path "$backupAbsoluteName" -Name Attributes -Value ($fileAttributesForBackup -bxor [System.IO.FileAttributes]::ReadOnly)` I was getting an error `Set-ItemProperty : The attribute cannot be set because attributes are not supported. Only the following attributes can be set: Archive, Hidden, Normal, ReadOnly, or System.`, but the file had attributes at that time `Archive, NoScrubData`
   - When I started using the implementation on instead of that code .NET - `[System.IO.File]::SetAttributes($backupAbsoluteName, ($fileAttributesForBackup -bxor [System.IO.FileAttributes]::ReadOnly))`, then the error stopped appearing
+- You can't move a group of selected files to the Powershell window so that the paths to all these files are written
+in the window
+  - I'm used to macOS, if I select several objects (files, folders) in the Finder and move the selected one to the Terminal window, then the paths to all the objects that will be selected will be written in it.
+  - In Windows, when moving a group of objects (files and folders) from the Explorer to the Powershell window, we only get the path to the object that the cursor was hovering over when trying to drag the selected group.
+  - It turns out that if I want to calculate the CRC32 hash sum for 10 files from one folder using the script [CRC32.ps1](../utilities/CRC32.ps1) from the folder with utilities, then each file of the 10 necessary files should be moved to the Powershell window individually as a script argument. It's incredibly inconvenient!
 
 
 ## Usefulness
