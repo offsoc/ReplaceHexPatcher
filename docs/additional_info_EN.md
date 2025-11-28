@@ -58,7 +58,9 @@ Naturally, comparing CMD and Powershell is stupid, these are completely differen
 But it was not without drawbacks. And here they are:
 - `.ps1` scripts cannot be run with a double click, unlike Unix Shell scripts on Unix systems and unlike `.cmd` or `.bat` or `.vbs` files in Windows. You will have to write a wrapper script `.cmd` to run `.ps1` if you need to run by double click.
 - The typing is fictitious - the interpreter does not check the correspondence of the variable to the specified type anywhere. It looks like typing is used only in the IDE for auto add-ons.
-- When working in a Powershell window/terminal running as an Administrator, relative paths may suddenly become relative to the System32 folder
+- When working in a Powershell window/terminal, relative paths are considered relative to the path that was originally when you started Powershell, and if you navigate to another folder using the command `cd C:\path\to\file` and then you will execute some script or commands in the Powershell window using relative file paths, then they will not regarding the current directory
+  - When simply launching Powershell from the search bar at the bottom left (next to the Start button), the initial path is the path to the user's folder, that is, what is in the environment variable `%USERPROFILE%`
+  - When running Powershell from the search bar at the bottom left (next to the Start button) as an Administrator, the initial path is the path to the folder `C:\Windows\system32`
   - When testing wrappers like "data in template", I repeatedly ran the file [Parser.ps1](../wrappers/data%20in%20template/Parser.ps1), passing it test txt files that I created in the same folder. Sometimes I started Powershell as an administrator, went to the "data in template" folder with the command `cd "....../data in template"`, and then, as usual, executed the command `.\Parser.ps1 '.\template test.txt'`
   - But I was getting an error with the text `\ReplaceHexPatcher\wrappers\data in template\Parser.ps1 : Exception when calling "ReadAllText" with "1" arguments: "File 'C:\Windows\system32\template test.txt' not found."`
   - Although when executing the same commands in Powershell running NOT as an Administrator, everything is fine performed normally
@@ -102,6 +104,9 @@ in the window
   - I'm used to macOS, if I select several objects (files, folders) in the Finder and move the selected one to the Terminal window, then the paths to all the objects that will be selected will be written in it.
   - In Windows, when moving a group of objects (files and folders) from the Explorer to the Powershell window, we only get the path to the object that the cursor was hovering over when trying to drag the selected group.
   - It turns out that if I want to calculate the CRC32 hash sum for 10 files from one folder using the script [CRC32.ps1](../utilities/CRC32.ps1) from the folder with utilities, then each file of the 10 necessary files should be moved to the Powershell window individually as a script argument. It's incredibly inconvenient!
+- You can't delete a folder if you run Powershell from it.
+  - If you open a folder in the Explorer and write powershell in the path bar and press Enter to open a Powershell window with the specified path to the current folder, and then in the Powershell window go to any other folder at higher levels, let's say to the root of the C drive, and then try to delete the folder that was opened initially, the File Explorer will give an error stating that this folder is in use.
+  - It turns out that when we launch Powershell from the Explorer window while in a folder, Powershell somehow locks this folder wherever we "go" inside the Powershell window. Even if you delete everything from the original folder, you will not be able to delete the folder itself until the Powershell process is completed.
 
 
 ## Usefulness
