@@ -2,7 +2,8 @@ param (
     [Parameter(Mandatory=$false, ValueFromRemainingArguments=$true)]
     [string[]]$filePaths = @(),
     
-    [switch]$UpperCase
+    [switch]$UpperCase,
+    [switch]$HashOnly
 )
 
 # Если файлы не переданы как параметры, проверяем аргументы командной строки
@@ -11,9 +12,10 @@ if ($filePaths.Count -eq 0) {
         $filePaths = $args
     }
     else {
-        Write-Host "Usage: .\CRC32.ps1 file1 [file2 file3 ...] [-UpperCase]" -ForegroundColor Yellow
-        Write-Host "Or: .\CRC32.ps1 -filePaths file1, file2, file3 [-UpperCase]" -ForegroundColor Yellow
+        Write-Host "Usage: .\CRC32.ps1 file1 [file2 file3 ...] [-UpperCase] [-HashOnly]" -ForegroundColor Yellow
+        Write-Host "Or: .\CRC32.ps1 -filePaths file1, file2, file3 [-UpperCase] [-HashOnly]" -ForegroundColor Yellow
         Write-Host "If -UpperCase switch is provided, hash will be in uppercase, otherwise lowercase" -ForegroundColor Gray
+        Write-Host "If -HashOnly switch is provided, only hashes will be printed (one per line)" -ForegroundColor Gray
         exit 1
     }
 }
@@ -114,6 +116,8 @@ public class Crc32 : HashAlgorithm {
     "Test string" | Get-Crc32
 .EXAMPLE
     Get-Crc32 -File @("file1.txt", "file2.txt") -UpperCase
+.EXAMPLE
+    Get-Crc32 -File @("file1.txt", "file2.txt") -HashOnly
 #>
 function Get-Crc32 {
     param(
@@ -123,7 +127,8 @@ function Get-Crc32 {
         [Parameter(Mandatory=$true, ParameterSetName="File")]
         [string[]]$File,
         
-        [switch]$UpperCase
+        [switch]$UpperCase,
+        [switch]$HashOnly
     )
 
     begin {
@@ -184,11 +189,20 @@ if (-not ("Crc32" -as [Type])) {
 }
 
 # Process all files
-$results = Get-Crc32 -File $filePaths -UpperCase:$UpperCase
+$results = Get-Crc32 -File $filePaths -UpperCase:$UpperCase -HashOnly:$HashOnly
 
 # Display results
 if ($results) {
-    $results | Format-Table -AutoSize
+    if ($HashOnly) {
+        # Output only hashes, one per line
+        foreach ($result in $results) {
+            $result.Hash
+        }
+    }
+    else {
+        # Output full table
+        $results | Format-Table -AutoSize
+    }
 }
 else {
     Write-Host "No files were processed successfully." -ForegroundColor Red
