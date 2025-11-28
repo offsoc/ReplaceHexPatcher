@@ -1,6 +1,8 @@
 param (
     [Parameter(Mandatory=$false, ValueFromRemainingArguments=$true)]
-    [string[]]$filePaths = @()
+    [string[]]$filePaths = @(),
+    
+    [switch]$UpperCase
 )
 
 # Если файлы не переданы как параметры, проверяем аргументы командной строки
@@ -9,8 +11,9 @@ if ($filePaths.Count -eq 0) {
         $filePaths = $args
     }
     else {
-        Write-Host "Usage: .\CRC32.ps1 file1 [file2 file3 ...]" -ForegroundColor Yellow
-        Write-Host "Or: .\CRC32.ps1 -filePaths file1, file2, file3" -ForegroundColor Yellow
+        Write-Host "Usage: .\CRC32.ps1 file1 [file2 file3 ...] [-UpperCase]" -ForegroundColor Yellow
+        Write-Host "Or: .\CRC32.ps1 -filePaths file1, file2, file3 [-UpperCase]" -ForegroundColor Yellow
+        Write-Host "If -UpperCase switch is provided, hash will be in uppercase, otherwise lowercase" -ForegroundColor Gray
         exit 1
     }
 }
@@ -110,7 +113,7 @@ public class Crc32 : HashAlgorithm {
 .EXAMPLE
     "Test string" | Get-Crc32
 .EXAMPLE
-    Get-Crc32 -File @("file1.txt", "file2.txt")
+    Get-Crc32 -File @("file1.txt", "file2.txt") -UpperCase
 #>
 function Get-Crc32 {
     param(
@@ -118,7 +121,9 @@ function Get-Crc32 {
         [string]$InputObject,
         
         [Parameter(Mandatory=$true, ParameterSetName="File")]
-        [string[]]$File
+        [string[]]$File,
+        
+        [switch]$UpperCase
     )
 
     begin {
@@ -130,7 +135,8 @@ function Get-Crc32 {
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($InputObject)
             $crc32 = New-Object Crc32
             $hashBytes = $crc32.ComputeHash($bytes)
-            $hash = [BitConverter]::ToString($hashBytes).Replace("-", "").ToLower()
+            $hash = [BitConverter]::ToString($hashBytes).Replace("-", "")
+            $hash = if ($UpperCase) { $hash.ToUpper() } else { $hash.ToLower() }
             
             $results += [PSCustomObject]@{
                 Algorithm = "CRC32"
@@ -146,7 +152,8 @@ function Get-Crc32 {
                         $bytes = [System.IO.File]::ReadAllBytes($fileItem)
                         $crc32 = New-Object Crc32
                         $hashBytes = $crc32.ComputeHash($bytes)
-                        $hash = [BitConverter]::ToString($hashBytes).Replace("-", "").ToLower()
+                        $hash = [BitConverter]::ToString($hashBytes).Replace("-", "")
+                        $hash = if ($UpperCase) { $hash.ToUpper() } else { $hash.ToLower() }
                         
                         $results += [PSCustomObject]@{
                             Algorithm = "CRC32"
@@ -177,7 +184,7 @@ if (-not ("Crc32" -as [Type])) {
 }
 
 # Process all files
-$results = Get-Crc32 -File $filePaths
+$results = Get-Crc32 -File $filePaths -UpperCase:$UpperCase
 
 # Display results
 if ($results) {
