@@ -2,6 +2,35 @@
 
 Language: [Русский](changelog_RU.md) | English
 
+### v2.4
+
+Added:
+- processing of the `CHECK_ALREADY_PATCHED_ONLY` flag and for the `patch_text` section
+- IPv6 support when deleting rules from the hosts file and adding blocking rule lines to it
+- support for removing digital signatures for multiple files in the script `RemoveSignature.ps1`
+
+Fixed:
+- the problem is when calculating the found occurrences of text patterns in the `patch_text` section
+- a problem where empty lines from the `hosts_add` section were treated as non-empty (lines with data to add to hosts)
+- the problem in which the verification of the generated data for adding to the hosts file from the `hosts_add` section was checked for existence in the hosts file only at its end, and not in the entire file
+- a problem where with the `MOVE TO BIN` flag in the `files_or_folders_delete` section, files and folders were completely deleted from the disk, rather than being moved to the Trash
+- the problem where files created from the data in the `file_create_from_text` section were created with question characters instead of letters, in the presence of Cyrillic
+- the problem where the environment variables were not disclosed when specifying the path to create files in the sections `file_create_from_text` and `file_create_from_base64`
+- a problem where scripts downloaded to the %TEMP% folder were not deleted by the parser if it did not find them in the repository structure on the disk next to it.
+- the problem where data was not transmitted to pipe (the `|` symbol) when restarting individual commands with administrator rights when working with the hosts file and firewall
+- the problem where the firewall blocking rules for the same file with a path containing environment variables and an absolute path were considered as 2 different paths
+
+Improved:
+- script utility for calculating the CRC32 hash sum
+  - added support for transferring multiple file paths to the script, rather than a single path.
+  - added an argument to output only hash sums, not tables with information.
+  - added an argument for displaying hash sums in uppercase
+- output of the logging information
+
+Other:
+- the wrapper script of the "data inside" type and all links to it have been removed
+  - because during the verification of its use, bugs were revealed that could not be debugged in its CMD code
+
 ### v2.3
 
 Added:
