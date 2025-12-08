@@ -527,7 +527,7 @@ function DetectFilesAndPatternsAndPatchBinary {
             [void]($foundPositions_allPaths.Add($foundPositions))
         }
         
-        [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $($foundPositions_allPaths.ToArray())
+        [int[][]]$numbersFoundOccurrences = CalculateNumbersFoundOccurrences_allPaths $foundPositions_allPaths.ToArray()
         [bool]$isAllPatternsFound = Test-AllNonZero_allPaths $numbersFoundOccurrences
         [bool]$isAllPatternsFound1Time = Test-AllOccurrencesFound1Time $numbersFoundOccurrences
 
