@@ -389,7 +389,7 @@ Remove-Item -Path '$backupAbsoluteName' -Force
         $fileAcl | Set-Acl "$backupAbsoluteName"
     }
 
-    return $foundPositions
+    return ,$foundPositions
 }
 
 
@@ -450,8 +450,8 @@ function SearchReplace-HexPatternInBinaryFile {
     finally {
         $stream.Close()
     }
-
-    return [long[][]]$foundPositions.ToArray()
+    
+    return ,$foundPositions.ToArray()
 }
 
 

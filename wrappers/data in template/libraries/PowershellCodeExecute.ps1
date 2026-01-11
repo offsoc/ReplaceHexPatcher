@@ -36,6 +36,7 @@ function PowershellCodeExecute {
             else {
                 Invoke-Expression $cleanedContent
             }
+
             Remove-Item -Path $tempFile -Force -ErrorAction Stop 2>$null
         }
         else {
