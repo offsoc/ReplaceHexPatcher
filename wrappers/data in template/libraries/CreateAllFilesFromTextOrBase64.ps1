@@ -64,7 +64,6 @@ function CreateFilesFromData {
 
     # if target file exist - delete it
     if (Test-Path $targetPath) {
-        . (Resolve-Path "$scriptDirPath\$deleteFilesOrFoldersScriptName.ps1")
         DeleteFilesOrFolders $targetPath
     }
 
