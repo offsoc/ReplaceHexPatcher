@@ -964,6 +964,24 @@ try {
     if (($createFilesFromTextContent.Count -gt 0) -and ($createFilesFromTextContent[0].Length -gt 0) -and (-not $needUsePatchSectionsOnly)) {
         Write-InfoMsg "Start parsing lines for create files..." -isHeader
 
+        if (-not (Get-Command -Name DeleteFilesOrFolders -ErrorAction SilentlyContinue)) {
+            # Import external Powershell-code
+            $deleteFilesOrFoldersScriptNameFull = "$deleteFilesOrFoldersScriptName.ps1"
+            if (Test-Path ".\$deleteFilesOrFoldersScriptNameFull") {
+                . (Resolve-Path ".\$deleteFilesOrFoldersScriptNameFull")
+            }
+            elseif (Test-Path ".\libraries\$deleteFilesOrFoldersScriptNameFull") {
+                . (Resolve-Path ".\libraries\$deleteFilesOrFoldersScriptNameFull")
+            }
+            else {
+                $tempPSFile = (DownloadPSScript -link $deleteFilesOrFoldersScriptURL -fileName $deleteFilesOrFoldersScriptNameFull)
+                [void]($tempFilesForRemove.Add($tempPSFile))
+                . $tempPSFile
+            }
+
+            DeleteFilesOrFolders $deleteNeedContent
+        }
+
         if (Get-Command -Name CreateAllFilesFromText -ErrorAction SilentlyContinue) {
             CreateAllFilesFromText $createFilesFromTextContent
         }
