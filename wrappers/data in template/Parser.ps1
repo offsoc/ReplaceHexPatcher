@@ -978,8 +978,6 @@ try {
                 [void]($tempFilesForRemove.Add($tempPSFile))
                 . $tempPSFile
             }
-
-            DeleteFilesOrFolders $deleteNeedContent
         }
 
         if (Get-Command -Name CreateAllFilesFromText -ErrorAction SilentlyContinue) {
